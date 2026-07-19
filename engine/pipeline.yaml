@@ -1,0 +1,68 @@
+version: 5
+pipeline_id: ilka_mvp_12_day
+duration_days: 12
+stage_schema: schemas/stage.schema.json
+calendar_day:
+  boundary_source: expedition.day_boundary
+  advances_automatically: true
+  independent_from_product_stage: true
+recovery_day:
+  floating: true
+  max_uses: 1
+  consumes_program_day: false
+stage_progression:
+  mode: sequential
+  automatic_on_calendar_boundary: false
+  automatic_after_day_close: false
+  captain_confirmation_required: true
+  request_command: request_stage_advance
+  confirmation_command: advance_stage
+  override_command: override_stage_advance
+  completion_event: stage.completed
+  open_event: stage.opened
+  card_bundles_publish_on: day.started
+  final_stage:
+    id: demo_day
+    completion_command: close_expedition
+    stage_completion_event: stage.completed
+    expedition_completion_event: expedition.completed
+    next_stage_id: null
+    requires_closed_day: true
+    captain_confirmation_required: true
+stages:
+- order: 1
+  id: onboarding
+  file: stages/01_onboarding.yaml
+- order: 2
+  id: problem_discovery
+  file: stages/02_problem_discovery.yaml
+- order: 3
+  id: hypothesis
+  file: stages/03_hypothesis.yaml
+- order: 4
+  id: validation
+  file: stages/04_validation.yaml
+- order: 5
+  id: product_decision
+  file: stages/05_product_decision.yaml
+- order: 6
+  id: mvp_scope
+  file: stages/06_mvp_scope.yaml
+- order: 7
+  id: prototype
+  file: stages/07_prototype.yaml
+- order: 8
+  id: build
+  file: stages/08_build.yaml
+- order: 9
+  id: launch
+  file: stages/09_launch.yaml
+- order: 10
+  id: user_feedback
+  file: stages/10_user_feedback.yaml
+- order: 11
+  id: iteration
+  file: stages/11_iteration.yaml
+- order: 12
+  id: demo_day
+  file: stages/12_demo_day.yaml
