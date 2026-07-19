@@ -1,0 +1,404 @@
+version: 10
+source_of_truth: engine/event-catalog.yaml
+events:
+- event_type: expedition.created
+  payload_required:
+  - name
+  - timezone
+  - duration_days
+  - day_boundary_local_time
+  projection_effect:
+    expedition.status: draft
+- event_type: participant.added
+  payload_required:
+  - participant_id
+  - display_name
+  projection_effect:
+    participants.append: payload
+- event_type: participant.banned
+  payload_required:
+  - participant_id
+  - reason
+  - effective_at
+  projection_effect:
+    participants.status: banned
+    access.revoked: true
+- event_type: participant.unbanned
+  payload_required:
+  - participant_id
+  - reason
+  - effective_at
+  projection_effect:
+    participants.status: active
+    access.revoked: false
+- event_type: rotation.generated
+  payload_required:
+  - rotation_id
+  - seed
+  - rules_version
+  - assignments
+  projection_effect:
+    rotation.current: payload
+- event_type: rotation.recalculated
+  payload_required:
+  - rotation_id
+  - effective_from_day
+  - reason
+  projection_effect:
+    rotation.current: payload
+- event_type: expedition.started
+  payload_required: []
+  projection_effect:
+    expedition.status: active
+- event_type: expedition.completed
+  payload_required:
+  - final_stage_id
+  - final_day_number
+  - shore_package_ref
+  - completion_summary
+  - final_projection_version
+  projection_effect:
+    expedition.status: completed
+    expedition.completed_at: event.occurred_at
+    expedition.final_stage_id: payload.final_stage_id
+    expedition.shore_package_ref: payload.shore_package_ref
+- event_type: stage.opened
+  payload_required:
+  - stage_id
+  projection_effect:
+    stage.status: active
+- event_type: stage.advance_requested
+  payload_required:
+  - from_stage_id
+  - to_stage_id
+  - requested_for_day_number
+  projection_effect:
+    stage.advance_request: payload
+- event_type: stage.completed
+  payload_required:
+  - stage_id
+  - next_stage_id
+  - completed_on_day_number
+  projection_effect:
+    stage.status: completed
+- event_type: stage.advance_overridden
+  payload_required:
+  - from_stage_id
+  - to_stage_id
+  - effective_from_day_number
+  - reason
+  - unmet_conditions
+  projection_effect:
+    stage.advance_override: payload
+- event_type: role_assignments.expired
+  payload_required:
+  - day_number
+  - assignment_ids
+  projection_effect:
+    assignments.expire: payload.assignment_ids
+- event_type: role_assignments.revoked
+  payload_required:
+  - participant_id
+  - assignment_ids
+  - reason
+  projection_effect:
+    assignments.revoke: payload.assignment_ids
+- event_type: day.started
+  payload_required:
+  - day_number
+  - calendar_date
+  - stage_id
+  - boundary_at
+  projection_effect:
+    day.status: active
+- event_type: role_assignments.activated
+  payload_required:
+  - day_number
+  - assignments
+  projection_effect:
+    assignments.activate: payload.assignments
+- event_type: card_bundles.published
+  payload_required:
+  - day_number
+  - bundles
+  projection_effect:
+    card_bundles.upsert: payload.bundles
+- event_type: day.transition_failed
+  payload_required:
+  - local_calendar_date
+  - reason_code
+  - message
+  projection_effect:
+    day.status: transition_failed
+- event_type: day.transition_recovered
+  payload_required:
+  - local_calendar_date
+  - reason
+  projection_effect:
+    day.recovery: payload
+- event_type: day.transition_forced
+  payload_required:
+  - from_day_number
+  - to_day_number
+  - target_local_calendar_date
+  - reason
+  - expected_projection_version
+  projection_effect:
+    day.last_admin_transition: payload
+- event_type: day.rewind_applied
+  payload_required:
+  - from_day_number
+  - to_day_number
+  - new_day_revision
+  - superseded_day_numbers
+  - reason
+  projection_effect:
+    day.rewind: payload
+- event_type: role_assignment.overridden
+  payload_required:
+  - participant_id
+  - role_type
+  - previous_role_id
+  - new_role_id
+  - reason
+  projection_effect:
+    assignments.override: payload
+- event_type: card.acknowledged
+  payload_required:
+  - card_id
+  projection_effect:
+    card.acknowledged: true
+- event_type: task.started
+  payload_required:
+  - task_id
+  projection_effect:
+    task.status: in_progress
+    task.block_reason: null
+- event_type: task.blocked
+  payload_required:
+  - task_id
+  - reason
+  projection_effect:
+    task.status: blocked
+    task.block_reason: payload.reason
+- event_type: task.completed
+  payload_required:
+  - task_id
+  projection_effect:
+    task.status: completed
+    task.block_reason: null
+- event_type: task.overdue
+  payload_required:
+  - task_id
+  - due_day_number
+  projection_effect:
+    task.status: overdue
+- event_type: task.completed_late
+  payload_required:
+  - task_id
+  - due_day_number
+  - completed_on_day_number
+  projection_effect:
+    task.status: completed_late
+- event_type: task.waived
+  payload_required:
+  - task_id
+  - reason
+  projection_effect:
+    task.status: waived
+- event_type: day.evening_session_started
+  payload_required:
+  - day_number
+  projection_effect:
+    day.phase: evening_session
+- event_type: output.confirmed
+  payload_required:
+  - stage_id
+  - output_id
+  - evidence_refs
+  projection_effect:
+    outputs.confirm: payload
+- event_type: decision.draft_created
+  payload_required:
+  - decision_id
+  - stage_id
+  - question
+  - options
+  - criteria
+  - evidence_refs
+  projection_effect:
+    decision.draft: payload
+- event_type: vote.opened
+  payload_required:
+  - vote_id
+  - decision_id
+  - eligible_voter_ids
+  - vote_mode
+  - quorum_rule
+  - threshold_rule
+  - round_version
+  projection_effect:
+    decision.vote_round: payload
+    decision.vote_status: open
+- event_type: vote.cast
+  payload_required:
+  - vote_id
+  - choice
+  - ballot_revision
+  projection_effect:
+    decision.ballot: latest_revision_per_actor
+- event_type: vote.closed
+  payload_required:
+  - vote_id
+  - decision_id
+  - status
+  - selected_option_id
+  - eligible_voter_count
+  - effective_ballot_count
+  - abstention_count
+  - round_version
+  projection_effect:
+    decision.vote_status: closed
+    decision.vote_result: payload
+- event_type: product_decision.recorded
+  payload_required:
+  - decision_id
+  - vote_id
+  - selected_option_id
+  - rationale
+  - rejected_option_ids
+  - objection_summary
+  - evidence_refs
+  projection_effect:
+    decision.status: finalized
+    decision.result: payload
+- event_type: product_decision.overridden
+  payload_required:
+  - decision_id
+  - vote_id
+  - selected_option_id
+  - reason
+  - unresolved_objections
+  - evidence_refs
+  projection_effect:
+    decision.status: overridden
+    decision.result: payload
+- event_type: day.close_requested
+  payload_required:
+  - day_number
+  projection_effect:
+    day.close_requested: true
+- event_type: day.close_overridden
+  payload_required:
+  - day_number
+  - reason
+  - unmet_conditions
+  projection_effect:
+    day.close_override: payload
+- event_type: day.closed
+  payload_required:
+  - day_number
+  - stage_id
+  projection_effect:
+    day.status: closed
+- event_type: recovery_day.activated
+  payload_required:
+  - local_calendar_date
+  - reason
+  projection_effect:
+    recovery_day.active: true
+- event_type: program.suspended
+  payload_required:
+  - reason
+  projection_effect:
+    expedition.status: suspended
+- event_type: program.resumed
+  payload_required: []
+  projection_effect:
+    expedition.status: active
+- event_type: role_assignment.verified
+  payload_required:
+  - assignment_id
+  - participant_id
+  - role_id
+  - role_type
+  - outcome
+  - evidence_refs
+  - expected_assignment_version
+  projection_effect:
+    role_verification.status: payload.outcome
+    role_verification.evidence_refs: payload.evidence_refs
+- event_type: role_xp.awarded
+  payload_required:
+  - award_id
+  - participant_id
+  - role_id
+  - amount
+  - source_event_id
+  - assignment_id
+  - rules_version
+  - day_revision
+  projection_effect:
+    gamification.role_xp: increment_by_payload.amount
+- event_type: role_xp.adjusted
+  payload_required:
+  - adjustment_id
+  - participant_id
+  - role_id
+  - delta
+  - reason
+  - evidence_refs
+  - expected_balance_version
+  projection_effect:
+    gamification.role_xp: increment_by_payload.delta
+- event_type: role_level.changed
+  payload_required:
+  - participant_id
+  - role_id
+  - from_level
+  - to_level
+  - xp_balance
+  - rules_version
+  projection_effect:
+    gamification.role_level: payload.to_level
+- event_type: rating.snapshot_published
+  payload_required:
+  - snapshot_id
+  - day_number
+  - day_revision
+  - rules_version
+  - entries
+  - published_at
+  projection_effect:
+    gamification.rating_snapshot: payload
+replay_rules:
+- events apply in recorded_at then event_id order
+- duplicate command_id returns original event set
+- duplicate event_id is ignored
+- boundary idempotency uses expedition_id and local_calendar_date
+- task.completed, task.completed_late and task.waived are terminal
+- card.acknowledged is idempotent for actor/day/card
+- override and recovery events never mutate prior events
+- rotation advances on day.started
+- stage.advance_requested does not change the active stage
+- stage.completed followed by stage.opened changes the active stage
+- stage transition requests conflict when from_stage_id is stale
+- Captain Super Admin events are server-confirmed and append-only
+- participant.banned rejects commands recorded at or after payload.effective_at
+- participant.unbanned does not restore historical assignments
+- day.rewind_applied marks later days superseded and increments day_revision
+- commands from a superseded day revision fail with day_revision_conflict
+- Calendar Day rewind does not change Product Stage
+- decision draft options and electorate are immutable inside one vote round
+- vote.cast uses the highest ballot_revision per actor before vote.closed
+- normal Product Decision requires all eligible ballots and strict majority of all eligible voters
+- product_decision.overridden requires Captain authority and preserves unresolved objections
+- finalizing Product Decision does not close Calendar Day or advance Product Stage
+- role_xp.awarded is unique by expedition_id, source_event_id, participant_id and role_id
+- effective XP excludes awards whose source day_revision is superseded
+- role_xp.adjusted never mutates the source award and cannot produce a negative effective balance
+- rating.snapshot_published is a derived immutable snapshot and may be superseded by a later snapshot
+- ties share rank and Cook or low-load assignments are normalized by expected XP opportunity
+- stage.completed may use next_stage_id null only for the final demo_day Stage
+- expedition.completed is terminal for operational commands and preserves append-only history
+- duplicate close_expedition returns the original completion event set
