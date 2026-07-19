@@ -1,0 +1,165 @@
+version: '1.8'
+card_count: 132
+source_of_truth: cards/manifest.yaml
+stage_card_ids:
+  onboarding:
+  - knowledge_expedition_rules
+  - knowledge_day_01_flow
+  - safety_captain_authority
+  - task_team_agreement
+  - role_product_captain_day_01
+  - role_product_support_day_01
+  - onboard_navigation_day_01
+  - onboard_mooring_day_01
+  - onboard_order_day_01
+  - onboard_cook_day_01
+  - onboard_product_focus_day_01
+  problem_discovery:
+  - knowledge_problem_discovery_flow
+  - knowledge_evidence_quality
+  - role_product_captain_day_02
+  - task_problem_discovery_pack
+  - role_research_lead_day_02
+  - role_product_support_day_02
+  - onboard_navigation_day_02
+  - onboard_mooring_day_02
+  - onboard_order_day_02
+  - onboard_cook_day_02
+  - onboard_product_focus_day_02
+  hypothesis:
+  - knowledge_hypothesis_flow
+  - knowledge_testable_hypothesis
+  - role_product_captain_day_03
+  - task_hypothesis_pack
+  - role_research_lead_day_03
+  - role_product_support_day_03
+  - onboard_navigation_day_03
+  - onboard_mooring_day_03
+  - onboard_order_day_03
+  - onboard_cook_day_03
+  - onboard_product_focus_day_03
+  validation:
+  - knowledge_validation_plan
+  - knowledge_evidence_interpretation
+  - role_product_captain_day_04
+  - task_validation_pack
+  - role_validation_lead_day_04
+  - role_product_support_day_04
+  - onboard_navigation_day_04
+  - onboard_mooring_day_04
+  - onboard_order_day_04
+  - onboard_cook_day_04
+  - onboard_product_focus_day_04
+  product_decision:
+  - knowledge_product_decision_protocol
+  - knowledge_majority_and_objections
+  - role_product_captain_day_05
+  - task_product_decision_pack
+  - role_validation_lead_day_05
+  - role_product_support_day_05
+  - onboard_navigation_day_05
+  - onboard_mooring_day_05
+  - onboard_order_day_05
+  - onboard_cook_day_05
+  - onboard_product_focus_day_05
+  mvp_scope:
+  - knowledge_mvp_scope_principles
+  - knowledge_acceptance_criteria
+  - role_product_captain_day_06
+  - task_mvp_scope_pack
+  - role_scope_lead_day_06
+  - role_product_support_day_06
+  - onboard_navigation_day_06
+  - onboard_mooring_day_06
+  - onboard_order_day_06
+  - onboard_cook_day_06
+  - onboard_product_focus_day_06
+  prototype:
+  - knowledge_prototype_principles
+  - knowledge_prototype_test_plan
+  - role_product_captain_day_07
+  - task_prototype_pack
+  - role_build_lead_day_07
+  - role_product_support_day_07
+  - onboard_navigation_day_07
+  - onboard_mooring_day_07
+  - onboard_order_day_07
+  - onboard_cook_day_07
+  - onboard_product_focus_day_07
+  build:
+  - knowledge_build_increment_principles
+  - knowledge_build_verification
+  - role_product_captain_day_08
+  - task_build_pack
+  - role_build_lead_day_08
+  - role_product_support_day_08
+  - onboard_navigation_day_08
+  - onboard_mooring_day_08
+  - onboard_order_day_08
+  - onboard_cook_day_08
+  - onboard_product_focus_day_08
+  launch:
+  - knowledge_limited_launch_principles
+  - knowledge_launch_measurement
+  - role_product_captain_day_09
+  - task_launch_pack
+  - role_demo_lead_day_09
+  - role_product_support_day_09
+  - onboard_navigation_day_09
+  - onboard_mooring_day_09
+  - onboard_order_day_09
+  - onboard_cook_day_09
+  - onboard_product_focus_day_09
+  user_feedback:
+  - knowledge_user_feedback_principles
+  - knowledge_signal_prioritization
+  - role_product_captain_day_10
+  - task_user_feedback_pack
+  - role_validation_lead_day_10
+  - role_product_support_day_10
+  - onboard_navigation_day_10
+  - onboard_mooring_day_10
+  - onboard_order_day_10
+  - onboard_cook_day_10
+  - onboard_product_focus_day_10
+  iteration:
+  - knowledge_iteration_principles
+  - knowledge_iteration_verification
+  - role_product_captain_day_11
+  - task_iteration_pack
+  - role_build_lead_day_11
+  - role_product_support_day_11
+  - onboard_navigation_day_11
+  - onboard_mooring_day_11
+  - onboard_order_day_11
+  - onboard_cook_day_11
+  - onboard_product_focus_day_11
+  demo_day:
+  - knowledge_demo_day_principles
+  - knowledge_shore_package_handover
+  - role_product_captain_day_12
+  - task_demo_day_pack
+  - role_demo_lead_day_12
+  - role_product_support_day_12
+  - onboard_navigation_day_12
+  - onboard_mooring_day_12
+  - onboard_order_day_12
+  - onboard_cook_day_12
+  - onboard_product_focus_day_12
+validation:
+  require_unique_ids: true
+  require_manifest_file_match: true
+  require_stage_references_exist: true
+  schema: schemas/card.schema.json
+required_onboarding_ids:
+- knowledge_expedition_rules
+- knowledge_day_01_flow
+- safety_captain_authority
+- task_team_agreement
+- role_product_captain_day_01
+- role_product_support_day_01
+- onboard_navigation_day_01
+- onboard_mooring_day_01
+- onboard_order_day_01
+- onboard_cook_day_01
+- onboard_product_focus_day_01
