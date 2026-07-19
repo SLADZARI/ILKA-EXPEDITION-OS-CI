@@ -76,7 +76,7 @@ def test_frontend_transport_boundary_is_explicit():
 def test_adr_numbering_and_source_of_truth_are_unambiguous():
     adr10 = (ROOT / "docs/decisions/ADR-010-expedition-completion.md").read_text(encoding="utf-8")
     adr11 = (ROOT / "docs/decisions/ADR-011-frontend-root-generated-contracts-and-command-transport.md").read_text(encoding="utf-8")
-    source_map = (ROOT / "docs/workflows/source-of-truth.md").read_text(encoding="utf-8")
+    source_map = (ROOT / "docs/architecture/source-of-truth.md").read_text(encoding="utf-8")
     assert "Final Stage and Expedition Completion" in adr10
     assert "Frontend root" in adr11
     assert "ADR-011" in source_map
