@@ -4,7 +4,7 @@
 - Canonical source: `MP | Voyage OS/ilka-expedition-os`
 - Target: `SLADZARI/ILKA-EXPEDITION-OS`
 - Branch: `chore/bootstrap-canonical-repository`
-- Status: in progress — second import batch applied
+- Status: in progress — second import batch complete
 
 ## Imported
 
@@ -14,32 +14,31 @@
 - command and event catalogs;
 - game engine and reducers;
 - roles catalog and gamification rules;
-- command, stage, card and gamification schemas;
+- command, event, stage, card and gamification schemas;
 - offline command, TodayView and CaptainDayView schemas;
 - repository hygiene files.
 
-## Remaining before parity
+## Remaining before full parity
 
-1. `engine/event.schema.json`;
-2. remaining app/API descriptions;
-3. Stage 01–12 files;
-4. cards manifest and 132 cards;
-5. app requirements and sync documentation;
-6. frontend and design system;
-7. examples, scripts and tests;
-8. executable validation report.
+1. remaining app/API descriptions;
+2. Stage 01–12 files;
+3. cards manifest and 132 cards;
+4. app requirements and sync documentation;
+5. frontend and design system;
+6. examples, scripts and tests;
+7. executable validation report.
 
 ## Current checks
 
 - command catalog baseline: 36 commands;
-- event catalog baseline: 48 event types;
+- event catalog and schema baseline: 48 event types;
 - offline queue baseline: 10 commands;
-- JSON schemas are stored in valid minified JSON form;
-- semantic and path parity validation remains pending.
+- JSON schemas use valid minified JSON formatting;
+- cross-reference and path validation remains pending.
 
 ## Guardrails
 
 - Google Drive remains canonical during migration.
 - Archive and quarantine folders are excluded.
-- Supabase migrations remain blocked while ADR-012 is Proposed.
-- The Draft PR is not ready to merge until parity and tests pass.
+- Supabase migrations remain paused while ADR-012 is Proposed.
+- The Draft PR stays open until parity and tests pass.
