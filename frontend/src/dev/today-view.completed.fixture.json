@@ -1,0 +1,106 @@
+{
+  "expedition_id": "expedition_2026_01",
+  "participant_id": "participant_03",
+  "local_date": "2026-07-30",
+  "day": {
+    "number": 12,
+    "status": "closed",
+    "boundary_sync_state": "authoritative"
+  },
+  "stage": {
+    "stage_id": "demo_day",
+    "title": "Demo Day",
+    "status": "completed",
+    "next_stage_id": null,
+    "advance_request_status": "none",
+    "pending_target_stage_id": null
+  },
+  "product_role": {
+    "assignment_id": "assignment_product_03_day_05",
+    "role_id": "product_captain",
+    "title": "Product Captain",
+    "state": "active"
+  },
+  "onboard_role": {
+    "assignment_id": "assignment_onboard_03_day_05",
+    "role_id": "navigation",
+    "title": "Навигация",
+    "state": "active"
+  },
+  "sync_status": "offline",
+  "cards": [],
+  "tasks": [],
+  "outputs": [
+    {
+      "output_id": "selected_problem",
+      "title": "Зафиксированная проблема",
+      "required": true,
+      "confirmed": false,
+      "pending_sync": true
+    },
+    {
+      "output_id": "decision_rationale",
+      "title": "Аргументы решения",
+      "required": true,
+      "confirmed": false,
+      "pending_sync": false
+    }
+  ],
+  "gamification": {
+    "rules_version": 1,
+    "xp_state": "provisional",
+    "role_mastery": [
+      {
+        "role_id": "product_captain",
+        "xp": 120,
+        "level": "practiced",
+        "next_level_xp": 200
+      },
+      {
+        "role_id": "navigation",
+        "xp": 55,
+        "level": "crew",
+        "next_level_xp": 100
+      }
+    ],
+    "contribution": {
+      "score": 78,
+      "rank": 2,
+      "status": "active",
+      "snapshot_at": "2026-07-18T22:15:00+03:00"
+    }
+  },
+  "decision_vote": {
+    "status": "open",
+    "eligible": true,
+    "vote_id": "vote_product_decision_01",
+    "decision_id": "decision_product_01",
+    "round_version": 1,
+    "options": [
+      {
+        "option_id": "option_ai_assistant",
+        "title": "AI Shore Assistant"
+      },
+      {
+        "option_id": "option_team_bot",
+        "title": "Team Workflow Bot"
+      },
+      {
+        "option_id": "option_research_app",
+        "title": "Research Companion"
+      }
+    ],
+    "my_choice": null,
+    "my_ballot_revision": null,
+    "pending_sync": false
+  },
+  "expedition_status": "completed",
+  "expedition_completion": {
+    "completed_at": "2026-07-30T21:30:03+03:00",
+    "final_stage_id": "demo_day",
+    "final_day_number": 12,
+    "shore_package_ref": "artifact_shore_package_v1",
+    "completion_summary": "Expedition completed after Demo Day.",
+    "final_projection_version": 185
+  }
+}
