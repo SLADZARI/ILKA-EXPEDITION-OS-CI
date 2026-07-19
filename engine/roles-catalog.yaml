@@ -1,0 +1,42 @@
+version: 2
+load_levels: [low, medium, high]
+product_roles:
+  - id: product_captain
+    load: high
+    available_stages: ['*']
+    responsibilities: [run_daily_product_pipeline, facilitate_decisions, prepare_shore_package]
+    incompatible_onboard_roles: [cook]
+  - id: research_lead
+    load: medium
+    available_stages: [problem_discovery, hypothesis, validation]
+    responsibilities: [plan_research, collect_evidence]
+  - id: validation_lead
+    load: medium
+    available_stages: [validation, product_decision, user_feedback]
+    responsibilities: [test_assumptions, report_signals]
+  - id: scope_lead
+    load: high
+    available_stages: [mvp_scope, prototype]
+    responsibilities: [define_scope, prevent_overbuild]
+    incompatible_onboard_roles: [cook]
+  - id: build_lead
+    load: high
+    available_stages: [prototype, build, launch, iteration]
+    responsibilities: [coordinate_build, integrate_work]
+    incompatible_onboard_roles: [cook]
+  - id: demo_lead
+    load: high
+    available_stages: [launch, user_feedback, iteration, demo_day]
+    responsibilities: [prepare_story, rehearse_demo]
+    incompatible_onboard_roles: [cook]
+  - id: product_support
+    load: low
+    available_stages: ['*']
+    responsibilities: [execute_small_task, review_output, capture_evidence]
+    preferred_onboard_roles: [cook]
+onboard_roles:
+  - {id: navigation, load: medium}
+  - {id: mooring, load: medium}
+  - {id: order, load: low}
+  - {id: cook, load: high, product_load_limit: low}
+  - {id: product_focus, load: low}
