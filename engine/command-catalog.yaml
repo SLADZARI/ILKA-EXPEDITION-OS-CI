@@ -1,0 +1,242 @@
+version: 9
+source_of_truth: engine/command-catalog.yaml
+idempotency_key: command_id
+command_envelope:
+  required:
+  - command_id
+  - command_type
+  - expedition_id
+  - actor_id
+  - actor_role
+  - issued_at
+  - idempotency_key
+  - payload
+  idempotency_key: command_id
+  issued_at: ISO_8601_with_timezone
+legacy_aliases:
+  start_day:
+    replacement: process_day_boundary
+    external_api_allowed: false
+commands:
+- command_type: create_expedition
+  allowed_actors: [captain]
+  payload_required: [name, timezone, duration_days, day_boundary_local_time]
+  emits: [expedition.created]
+  offline_allowed: false
+- command_type: add_participant
+  allowed_actors: [captain]
+  payload_required: [participant_id, display_name]
+  emits: [participant.added]
+  offline_allowed: false
+- command_type: ban_participant
+  allowed_actors: [captain]
+  payload_required: [participant_id, reason, effective_at]
+  offline_allowed: false
+  emits: [participant.banned, role_assignments.revoked, rotation.recalculated]
+  conditional_emits: [program.suspended]
+- command_type: unban_participant
+  allowed_actors: [captain]
+  payload_required: [participant_id, reason, effective_at]
+  offline_allowed: false
+  emits: [participant.unbanned, rotation.recalculated]
+- command_type: generate_rotation
+  allowed_actors: [captain, system]
+  payload_required: [seed, rules_version]
+  emits: [rotation.generated]
+  offline_allowed: false
+- command_type: start_expedition
+  allowed_actors: [captain]
+  payload_required: []
+  emits: [expedition.started, stage.opened]
+  offline_allowed: false
+- command_type: request_stage_advance
+  allowed_actors: [product_captain, captain]
+  payload_required: [from_stage_id, to_stage_id, requested_for_day_number]
+  offline_allowed: true
+  emits: [stage.advance_requested]
+- command_type: advance_stage
+  allowed_actors: [captain]
+  payload_required: [from_stage_id, to_stage_id, effective_from_day_number]
+  offline_allowed: false
+  emits: [stage.completed, stage.opened]
+- command_type: override_stage_advance
+  allowed_actors: [captain]
+  payload_required: [from_stage_id, to_stage_id, effective_from_day_number, reason, unmet_conditions]
+  offline_allowed: false
+  emits: [stage.advance_overridden, stage.completed, stage.opened]
+- command_type: process_day_boundary
+  allowed_actors: [system_clock]
+  payload_required: [local_calendar_date, boundary_at]
+  idempotency_key_template: day_boundary:<expedition_id>:<local_calendar_date>
+  emits: [role_assignments.expired, task.overdue, day.started, role_assignments.activated, card_bundles.published]
+  failure_emits: [day.transition_failed]
+  offline_allowed: false
+- command_type: recover_day_transition
+  allowed_actors: [captain, system]
+  payload_required: [local_calendar_date, reason]
+  emits: [day.transition_recovered]
+  offline_allowed: false
+- command_type: force_day_transition
+  allowed_actors: [captain]
+  payload_required: [target_local_calendar_date, reason, expected_projection_version]
+  offline_allowed: false
+  idempotency_key_template: forced_day:<expedition_id>:<target_local_calendar_date>:<command_id>
+  emits: [day.transition_forced, role_assignments.expired, task.overdue, day.started, role_assignments.activated, card_bundles.published]
+  failure_emits: [day.transition_failed]
+- command_type: rewind_day
+  allowed_actors: [captain]
+  payload_required: [from_day_number, to_day_number, reason, expected_projection_version]
+  offline_allowed: false
+  idempotency_key_template: day_rewind:<expedition_id>:<from_day_number>:<to_day_number>:<expected_projection_version>
+  emits: [role_assignments.expired, day.rewind_applied, rotation.recalculated, role_assignments.activated, card_bundles.published]
+- command_type: start_evening_session
+  allowed_actors: [captain, product_captain]
+  payload_required: [day_number, stage_id]
+  offline_allowed: false
+  emits: [day.evening_session_started]
+- command_type: acknowledge_card
+  allowed_actors: [participant, product_captain, captain]
+  payload_required: [card_id]
+  offline_allowed: true
+  emits: [card.acknowledged]
+- command_type: start_task
+  allowed_actors: [participant, product_captain, captain]
+  payload_required: [task_id]
+  offline_allowed: true
+  emits: [task.started]
+- command_type: block_task
+  allowed_actors: [participant, product_captain, captain]
+  payload_required: [task_id, reason]
+  offline_allowed: true
+  emits: [task.blocked]
+- command_type: complete_task
+  allowed_actors: [participant, product_captain, captain]
+  payload_required: [task_id]
+  offline_allowed: true
+  emits_one_of: [task.completed, task.completed_late]
+- command_type: waive_task
+  allowed_actors: [captain]
+  payload_required: [task_id, reason]
+  emits: [task.waived]
+  offline_allowed: false
+- command_type: confirm_output
+  allowed_actors: [product_captain, captain]
+  payload_required: [stage_id, output_id, evidence_refs]
+  offline_allowed: true
+  emits: [output.confirmed]
+- command_type: create_decision_draft
+  allowed_actors: [product_captain, captain]
+  payload_required: [decision_id, stage_id, question, options, criteria, evidence_refs]
+  offline_allowed: true
+  emits: [decision.draft_created]
+- command_type: create_vote
+  allowed_actors: [product_captain, captain]
+  payload_required: [vote_id, decision_id, eligible_voter_ids, vote_mode, quorum_rule, threshold_rule, round_version]
+  offline_allowed: true
+  emits: [vote.opened]
+- command_type: vote
+  allowed_actors: [participant, product_captain, captain]
+  payload_required: [vote_id, choice, ballot_revision]
+  offline_allowed: true
+  emits: [vote.cast]
+- command_type: finalize_product_decision
+  allowed_actors: [product_captain, captain]
+  payload_required: [vote_id, decision_id, selected_option_id, rationale, rejected_option_ids, objection_summary, evidence_refs, expected_round_version]
+  offline_allowed: false
+  emits: [vote.closed, product_decision.recorded]
+- command_type: override_product_decision
+  allowed_actors: [captain]
+  payload_required: [vote_id, decision_id, selected_option_id, reason, unresolved_objections, evidence_refs, expected_round_version]
+  offline_allowed: false
+  emits: [vote.closed, product_decision.overridden]
+- command_type: request_day_close
+  allowed_actors: [product_captain, captain]
+  payload_required: [day_number]
+  emits: [day.close_requested]
+  offline_allowed: true
+- command_type: close_day
+  allowed_actors: [captain]
+  payload_required: [day_number]
+  emits: [day.closed]
+  offline_allowed: false
+- command_type: close_expedition
+  allowed_actors: [captain]
+  payload_required: [final_stage_id, final_day_number, shore_package_ref, completion_summary, expected_projection_version]
+  offline_allowed: false
+  idempotency_key_template: expedition_completion:<expedition_id>:<expected_projection_version>
+  emits: [role_assignments.expired, stage.completed, expedition.completed]
+- command_type: override_day_close
+  allowed_actors: [captain]
+  payload_required: [day_number, reason, unmet_conditions]
+  emits: [day.close_overridden, day.closed]
+  offline_allowed: false
+- command_type: override_role_assignment
+  allowed_actors: [captain]
+  payload_required: [participant_id, role_type, previous_role_id, new_role_id, reason]
+  emits: [role_assignment.overridden, rotation.recalculated]
+  offline_allowed: false
+- command_type: activate_recovery_day
+  allowed_actors: [captain]
+  payload_required: [local_calendar_date, reason]
+  emits: [recovery_day.activated]
+  offline_allowed: false
+- command_type: suspend_program
+  allowed_actors: [captain]
+  payload_required: [reason]
+  emits: [program.suspended]
+  offline_allowed: false
+- command_type: resume_program
+  allowed_actors: [captain]
+  payload_required: []
+  emits: [program.resumed]
+  offline_allowed: false
+- command_type: verify_role_assignment
+  allowed_actors: [captain]
+  payload_required: [assignment_id, participant_id, role_id, role_type, outcome, evidence_refs, expected_assignment_version]
+  offline_allowed: false
+  emits: [role_assignment.verified, role_xp.awarded]
+  conditional_emits: [role_level.changed]
+- command_type: adjust_role_xp
+  allowed_actors: [captain]
+  payload_required: [adjustment_id, participant_id, role_id, delta, reason, evidence_refs, expected_balance_version]
+  offline_allowed: false
+  emits: [role_xp.adjusted]
+  conditional_emits: [role_level.changed]
+- command_type: publish_rating_snapshot
+  allowed_actors: [system]
+  payload_required: [day_number, day_revision, rules_version, projection_version]
+  offline_allowed: false
+  idempotency_key_template: rating:<expedition_id>:<day_number>:<day_revision>:<rules_version>
+  emits: [rating.snapshot_published]
+error_codes:
+- command_duplicate
+- permission_denied
+- invalid_state
+- validation_failed
+- version_conflict
+- captain_confirmation_required
+- boundary_not_reached
+- transition_recovery_required
+- stage_transition_conflict
+- stage_advance_not_ready
+- stage_override_not_allowed
+- participant_banned
+- participant_already_banned
+- participant_not_banned
+- cannot_ban_captain
+- rewind_target_invalid
+- day_revision_conflict
+- forced_transition_conflict
+- super_admin_server_confirmation_required
+- decision_draft_conflict
+- vote_not_open
+- voter_not_eligible
+- ballot_revision_conflict
+- decision_quorum_not_met
+- decision_majority_not_reached
+- decision_already_finalized
+- decision_round_version_conflict
+- product_decision_override_requires_reason
+- expedition_close_not_ready
+- expedition_already_completed
+- expedition_projection_version_conflict
