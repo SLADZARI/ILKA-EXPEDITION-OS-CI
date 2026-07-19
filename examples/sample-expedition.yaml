@@ -1,0 +1,57 @@
+version: 2
+expedition_id: ilka_demo_2026_01
+name: ILKA Demo Expedition
+status: ready
+timezone: Europe/Athens
+duration_days: 12
+recovery_days_available: 1
+day_boundary:
+  local_time: 06:00
+  timezone: Europe/Athens
+calendar_day:
+  day_number: 1
+  local_date: '2026-07-18'
+  status: not_started
+product_stage:
+  stage_id: onboarding
+  status: active
+captain:
+  participant_id: captain_01
+  display_name: Captain Alex
+participants:
+- participant_id: participant_01
+  display_name: Anna
+  status: active
+- participant_id: participant_02
+  display_name: Boris
+  status: active
+- participant_id: participant_03
+  display_name: Daria
+  status: active
+- participant_id: participant_04
+  display_name: Ivan
+  status: active
+- participant_id: participant_05
+  display_name: Maria
+  status: active
+rotation:
+  rotation_id: rotation_demo_2026_01
+  seed: ilka_demo_2026_01:v2
+  rules_version: 2
+  day_01:
+    product_roles:
+      participant_01: product_captain
+      participant_02: product_support
+      participant_03: product_support
+      participant_04: product_support
+      participant_05: product_support
+    onboard_roles:
+      participant_01: navigation
+      participant_02: mooring
+      participant_03: order
+      participant_04: cook
+      participant_05: product_focus
+constraints_verified:
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
