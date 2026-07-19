@@ -1,0 +1,95 @@
+version: 3
+stage_id: hypothesis
+order: 3
+title: Hypothesis
+objective: Сформулировать проверяемую гипотезу и критерии её подтверждения или опровержения.
+required_inputs:
+- problem_statement
+- evidence_log
+required_outputs:
+- id: hypothesis_statement
+  type: document
+  required: true
+- id: assumptions_map
+  type: document
+  required: true
+- id: success_criteria
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- research_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: research_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_hypothesis_flow
+  - knowledge_testable_hypothesis
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_03
+    - task_hypothesis_pack
+    research_lead:
+    - role_research_lead_day_03
+    product_support:
+    - role_product_support_day_03
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_03
+    mooring:
+    - onboard_mooring_day_03
+    order:
+    - onboard_order_day_03
+    cook:
+    - onboard_cook_day_03
+    product_focus:
+    - onboard_product_focus_day_03
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - output_confirmed: hypothesis_statement
+  - output_confirmed: assumptions_map
+  - output_confirmed: success_criteria
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements

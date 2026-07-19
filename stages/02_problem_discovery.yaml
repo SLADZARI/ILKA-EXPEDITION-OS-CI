@@ -1,0 +1,94 @@
+version: 3
+stage_id: problem_discovery
+order: 2
+title: Problem Discovery
+objective: Выбрать и доказательно описать одну реальную проблему общего продукта.
+required_inputs:
+- team_agreement
+required_outputs:
+- id: problem_statement
+  type: document
+  required: true
+- id: target_user_profile
+  type: record
+  required: true
+- id: evidence_log
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- research_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: research_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_problem_discovery_flow
+  - knowledge_evidence_quality
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_02
+    - task_problem_discovery_pack
+    research_lead:
+    - role_research_lead_day_02
+    product_support:
+    - role_product_support_day_02
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_02
+    mooring:
+    - onboard_mooring_day_02
+    order:
+    - onboard_order_day_02
+    cook:
+    - onboard_cook_day_02
+    product_focus:
+    - onboard_product_focus_day_02
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - output_confirmed: problem_statement
+  - output_confirmed: target_user_profile
+  - output_confirmed: evidence_log
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements
