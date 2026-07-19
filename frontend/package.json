@@ -1,0 +1,27 @@
+{
+  "name": "@ilka/expedition-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "preview": "vite preview",
+    "generate:design": "node scripts/generate-design-system.mjs",
+    "generate:contracts": "node scripts/generate-contracts.mjs",
+    "generate": "npm run generate:design && npm run generate:contracts",
+    "validate:sources": "python3 scripts/validate-sources.py",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build",
+    "check": "npm run generate && npm run validate:sources && npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.21",
+    "@types/react-dom": "18.3.7",
+    "typescript": "5.8.3",
+    "vite": "6.3.5"
+  }
+}
