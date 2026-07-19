@@ -1,0 +1,103 @@
+version: 1
+source_of_truth: engine/gamification-rules.yaml
+feature_flags:
+  role_xp_enabled: true
+  ratings_enabled: true
+  team_rating_visibility: expedition_team
+ledger:
+  scope: expedition
+  balance_key:
+  - expedition_id
+  - participant_id
+  - role_id
+  award_uniqueness_key: "xp:<expedition_id>:<source_event_id>:<participant_id>:<role_id>"
+  allow_direct_client_award: false
+  allow_negative_balance: false
+  preserve_history_after_ban: true
+  superseded_day_revision_policy: exclude_from_effective_projection
+verification:
+  product_assignment:
+    mode: engine_or_captain
+    auto_verify_when:
+    - required_tasks_completed_or_waived
+    - required_outputs_confirmed
+    - role_handover_prepared
+  onboard_assignment:
+    mode: captain_required
+  outcomes:
+    completed:
+      multiplier: 1.0
+    partial:
+      multiplier: 0.5
+    waived:
+      multiplier: 0.0
+xp_sources:
+  role_assignment.verified:
+    base_xp_by_load:
+      low: 10
+      medium: 20
+      high: 30
+    late_multiplier: 0.5
+    daily_cap_per_role: 40
+  task.completed:
+    supplementary_xp: 5
+    requires_verified_assignment: true
+  task.completed_late:
+    supplementary_xp: 2
+    requires_verified_assignment: true
+excluded_sources:
+- card.acknowledged
+- task.waived
+- recovery_day.activated
+- program.suspended
+- captain.override_applied
+- safety.override_applied
+- day.transition_forced
+role_levels:
+- id: observer
+  minimum_xp: 0
+- id: crew
+  minimum_xp: 40
+- id: practiced
+  minimum_xp: 100
+- id: lead
+  minimum_xp: 200
+- id: mentor
+  minimum_xp: 350
+ratings:
+  role_mastery_rating:
+    source: effective_role_xp_balance
+  expedition_contribution_rating:
+    range:
+    - 0
+    - 100
+    formula: "average(min(verified_assignment_xp / expected_assignment_xp, 1.0)) * 100"
+    eligible_assignment_outcomes:
+    - completed
+    - partial
+    excluded_assignment_outcomes:
+    - waived
+    ties_share_rank: true
+    active_team_only_for_current_rank: true
+    normalize_cook_and_low_load_roles: true
+  snapshot:
+    publish_trigger: day.closed
+    republish_after:
+    - role_xp.adjusted
+    - day.rewind_applied
+    - participant.banned
+    - participant.unbanned
+    includes_rules_version: true
+permissions:
+  verify_role_assignment: captain
+  adjust_role_xp: captain
+  publish_rating_snapshot: system
+  compute_award: system
+sync:
+  authoritative_after_server_event: true
+  provisional_client_state: provisional
+  states:
+  - provisional
+  - synced
+  - conflict
+  - rejected
