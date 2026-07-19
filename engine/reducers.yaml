@@ -1,0 +1,199 @@
+version: 7
+day_projection:
+  initial_status: not_started
+  handlers:
+    day.started:
+      set:
+        status: active
+    day.transition_failed:
+      set:
+        status: transition_failed
+    day.closed:
+      set:
+        status: closed
+    day.transition_forced:
+      set:
+        last_transition_mode: forced
+        last_transition_reason: payload.reason
+    day.rewind_applied:
+      action: restore_target_day_as_new_revision_preserving_history
+role_assignment_projection:
+  handlers:
+    role_assignments.expired:
+      action: expire_assignment_ids
+    role_assignments.activated:
+      action: activate_assignments
+    role_assignment.overridden:
+      action: replace_active_assignment_preserving_history
+    role_assignments.revoked:
+      action: revoke_assignment_ids_preserving_history
+task_projection:
+  initial_status: available
+  handlers:
+    task.started:
+      set:
+        status: in_progress
+        block_reason: null
+    task.blocked:
+      set:
+        status: blocked
+        block_reason: payload.reason
+    task.completed:
+      set:
+        status: completed
+        block_reason: null
+    task.overdue:
+      set:
+        status: overdue
+    task.completed_late:
+      set:
+        status: completed_late
+        block_reason: null
+    task.waived:
+      set:
+        status: waived
+        block_reason: null
+  terminal_states: [completed, completed_late, waived]
+card_projection:
+  initial_acknowledged: false
+  handlers:
+    card.acknowledged:
+      set:
+        acknowledged: true
+offline_replay:
+  sort: [issued_at, command_id]
+  statuses: [pending, synced, conflict, rejected]
+  stop_on: [conflict, non_retryable_rejection, safety_hold, participant_banned, day_revision_conflict, vote_not_open, voter_not_eligible, ballot_revision_conflict, decision_round_version_conflict, expedition_already_completed]
+  reapply_after_server_projection: true
+output_projection:
+  initial_confirmed: false
+  handlers:
+    output.confirmed:
+      set:
+        confirmed: true
+        evidence_refs: payload.evidence_refs
+        confirmed_by: event.actor_id
+stage_projection:
+  initial_status: locked
+  handlers:
+    stage.advance_requested:
+      set:
+        advance_request_status: requested
+        requested_from_stage_id: payload.from_stage_id
+        requested_to_stage_id: payload.to_stage_id
+        requested_for_day_number: payload.requested_for_day_number
+    stage.advance_overridden:
+      set:
+        advance_override: payload
+    stage.completed:
+      set:
+        status: completed
+        completed_stage_id: payload.stage_id
+        next_stage_id: payload.next_stage_id
+        completed_on_day_number: payload.completed_on_day_number
+    stage.opened:
+      set:
+        status: active
+        stage_id: payload.stage_id
+        advance_request_status: null
+        requested_from_stage_id: null
+        requested_to_stage_id: null
+        requested_for_day_number: null
+participant_projection:
+  initial_status: active
+  handlers:
+    participant.added:
+      set:
+        status: active
+        access_revoked: false
+    participant.banned:
+      set:
+        status: banned
+        access_revoked: true
+        ban_reason: payload.reason
+        effective_at: payload.effective_at
+    participant.unbanned:
+      set:
+        status: active
+        access_revoked: false
+        ban_reason: null
+        effective_at: null
+decision_projection:
+  initial_status: none
+  handlers:
+    decision.draft_created:
+      set:
+        status: draft
+        draft: payload
+    vote.opened:
+      set:
+        status: vote_open
+        vote_round: payload
+        effective_ballots: {}
+    vote.cast:
+      action: upsert_actor_ballot_when_ballot_revision_is_higher
+    vote.closed:
+      set:
+        vote_status: closed
+        vote_result: payload
+    product_decision.recorded:
+      set:
+        status: finalized
+        result: payload
+    product_decision.overridden:
+      set:
+        status: overridden
+        result: payload
+  invariants: [eligible_voter_ids_are_frozen, one_effective_ballot_per_actor, closed_round_rejects_new_ballots, decision_history_is_append_only]
+role_verification_projection:
+  initial_status: unverified
+  handlers:
+    role_assignment.verified:
+      set:
+        status: payload.outcome
+        evidence_refs: payload.evidence_refs
+        verified_by: event.actor_id
+gamification_projection:
+  initial_role_xp: 0
+  handlers:
+    role_xp.awarded:
+      action: add_unique_award_unless_source_day_revision_superseded
+    role_xp.adjusted:
+      action: apply_append_only_adjustment_if_balance_remains_non_negative
+    role_level.changed:
+      set:
+        role_level: payload.to_level
+    rating.snapshot_published:
+      action: replace_current_snapshot_preserving_snapshot_history
+    day.rewind_applied:
+      action: replay_effective_xp_and_republish_rating_snapshot
+    participant.banned:
+      action: freeze_history_and_mark_rating_inactive
+    participant.unbanned:
+      action: restore_active_rating_eligibility_without_restoring_assignments
+  invariants: [one_award_per_source_event_participant_role, effective_role_xp_never_negative, ui_never_computes_authoritative_rank, ties_share_rank]
+expedition_projection:
+  initial_status: draft
+  handlers:
+    expedition.created:
+      set:
+        status: draft
+    expedition.started:
+      set:
+        status: active
+    program.suspended:
+      set:
+        status: suspended
+    program.resumed:
+      set:
+        status: active
+    expedition.completed:
+      set:
+        status: completed
+        completed_at: event.occurred_at
+        final_stage_id: payload.final_stage_id
+        final_day_number: payload.final_day_number
+        shore_package_ref: payload.shore_package_ref
+        completion_summary: payload.completion_summary
+        final_projection_version: payload.final_projection_version
+  terminal_states: [completed, cancelled]
