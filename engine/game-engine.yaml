@@ -1,0 +1,310 @@
+version: 8
+engine_id: ilka_expedition_engine
+expedition:
+  duration_days: 12
+  recovery_days_available: 1
+  team_size_min: 3
+  team_size_max: 5
+  captain_required: true
+  day_boundary:
+    local_time: 06:00
+    timezone_source: expedition.timezone
+aggregate_states:
+  expedition:
+  - draft
+  - ready
+  - active
+  - suspended
+  - completed
+  - cancelled
+  day:
+  - not_started
+  - active
+  - review
+  - closed
+  - suspended
+  - transition_failed
+  - superseded
+  stage:
+  - locked
+  - available
+  - active
+  - completed
+  role_assignment:
+  - scheduled
+  - active
+  - expired
+  - overridden
+  task:
+  - available
+  - in_progress
+  - blocked
+  - completed
+  - overdue
+  - completed_late
+  - waived
+  participant:
+  - active
+  - banned
+  decision:
+  - draft
+  - vote_open
+  - finalized
+  - overridden
+  role_verification:
+  - unverified
+  - verified
+  - partial
+  - waived
+commands:
+  create_expedition:
+    actor_roles: [captain]
+    expedition_from: [null]
+    emits: [expedition.created]
+  add_participant:
+    actor_roles: [captain]
+    expedition_from: [draft, ready]
+    guards: [team_capacity_available, participant_not_already_added]
+    emits: [participant.added]
+  ban_participant:
+    actor_roles: [captain]
+    expedition_from: [draft, ready, active, suspended]
+    guards: [participant_is_active, target_is_not_current_captain, ban_reason_present, no_concurrent_participant_admin_operation]
+    emits: [participant.banned, role_assignments.revoked, rotation.recalculated]
+    conditional_emits:
+      active_team_below_minimum: program.suspended
+  unban_participant:
+    actor_roles: [captain]
+    expedition_from: [draft, ready, active, suspended]
+    guards: [participant_is_banned, target_is_not_current_captain, unban_reason_present, no_concurrent_participant_admin_operation]
+    emits: [participant.unbanned, rotation.recalculated]
+  generate_rotation:
+    actor_roles: [captain, system]
+    expedition_from: [draft, ready, active]
+    guards: [team_size_valid, participant_order_defined]
+    emits: [rotation.generated]
+  start_expedition:
+    actor_roles: [captain]
+    expedition_from: [draft, ready]
+    guards: [captain_present, team_size_valid, rotation_exists, first_stage_resolvable]
+    emits: [expedition.started, stage.opened]
+  request_stage_advance:
+    actor_roles: [product_captain, captain]
+    expedition_from: [active]
+    day_from: [active, review, closed]
+    guards: [active_stage_matches_from_stage, target_stage_is_immediate_next, stage_definition_of_done_satisfied, stage_advance_request_not_already_active]
+    emits: [stage.advance_requested]
+  advance_stage:
+    actor_roles: [captain]
+    expedition_from: [active]
+    day_from: [closed]
+    guards: [active_stage_matches_from_stage, target_stage_is_immediate_next, stage_definition_of_done_satisfied, effective_day_is_next_unstarted_day, stage_transition_not_already_applied]
+    emits: [stage.completed, stage.opened]
+  override_stage_advance:
+    actor_roles: [captain]
+    expedition_from: [active]
+    day_from: [closed]
+    guards: [active_stage_matches_from_stage, target_stage_is_immediate_next, effective_day_is_next_unstarted_day, stage_override_allowed, override_reason_present, unmet_conditions_recorded, stage_transition_not_already_applied]
+    emits: [stage.advance_overridden, stage.completed, stage.opened]
+  process_day_boundary:
+    actor_roles: [system_clock]
+    expedition_from: [active]
+    guards: [local_boundary_reached, boundary_key_not_processed, no_active_day_for_target_date, current_stage_resolvable, scheduled_assignments_resolvable]
+    emits: [role_assignments.expired, task.overdue, day.started, role_assignments.activated, card_bundles.published]
+    failure_emits: [day.transition_failed]
+  recover_day_transition:
+    actor_roles: [captain, system]
+    expedition_from: [active]
+    day_from: [transition_failed, not_started]
+    guards: [failed_transition_exists, recovery_reason_present]
+    emits: [day.transition_recovered]
+  force_day_transition:
+    actor_roles: [captain]
+    expedition_from: [active]
+    day_from: [active, review, closed, transition_failed, not_started]
+    guards: [target_date_is_next_uncreated_date, expected_projection_version_matches, force_reason_present, no_concurrent_day_admin_operation, current_stage_resolvable, scheduled_assignments_resolvable]
+    emits: [day.transition_forced, role_assignments.expired, task.overdue, day.started, role_assignments.activated, card_bundles.published]
+    failure_emits: [day.transition_failed]
+  rewind_day:
+    actor_roles: [captain]
+    expedition_from: [active, suspended]
+    day_from: [active, review, closed, transition_failed]
+    guards: [from_day_is_current_authoritative_day, target_day_exists, target_day_precedes_current_day, expected_projection_version_matches, rewind_reason_present, no_concurrent_day_admin_operation]
+    emits: [role_assignments.expired, day.rewind_applied, rotation.recalculated, role_assignments.activated, card_bundles.published]
+  start_evening_session:
+    actor_roles: [captain, product_captain]
+    day_from: [active]
+    emits: [day.evening_session_started]
+  acknowledge_card:
+    actor_roles: [participant, product_captain, captain]
+    guards: [assignment_exists, card_assigned_to_actor, card_not_already_acknowledged]
+    emits: [card.acknowledged]
+  start_task:
+    actor_roles: [participant, product_captain, captain]
+    day_from: [active, review]
+    guards: [assignment_exists, actor_can_update_assignment, task_not_terminal, no_active_safety_hold_for_task]
+    emits: [task.started]
+  block_task:
+    actor_roles: [participant, product_captain, captain]
+    day_from: [active, review]
+    guards: [assignment_exists, actor_can_update_assignment, block_reason_present, task_not_terminal]
+    emits: [task.blocked]
+  complete_task:
+    actor_roles: [participant, product_captain, captain]
+    guards: [assignment_exists, actor_can_complete_assignment, task_not_terminal]
+    emits_one_of: [task.completed, task.completed_late]
+  waive_task:
+    actor_roles: [captain]
+    guards: [assignment_exists, waiver_reason_present, task_not_terminal]
+    emits: [task.waived]
+  confirm_output:
+    actor_roles: [product_captain, captain]
+    day_from: [active, review]
+    guards: [output_defined_for_active_stage, evidence_present_when_required]
+    emits: [output.confirmed]
+  create_decision_draft:
+    actor_roles: [product_captain, captain]
+    expedition_from: [active]
+    day_from: [active, review]
+    guards: [active_stage_is_product_decision, decision_not_finalized, decision_id_not_used, decision_options_between_two_and_five, decision_criteria_present, decision_evidence_refs_present]
+    emits: [decision.draft_created]
+  create_vote:
+    actor_roles: [product_captain, captain]
+    expedition_from: [active]
+    day_from: [active, review]
+    guards: [active_stage_is_product_decision, decision_draft_exists, decision_not_finalized, no_open_vote_round_for_decision, eligible_voters_are_active_and_not_banned, eligible_voter_count_valid, round_version_is_next]
+    emits: [vote.opened]
+  vote:
+    actor_roles: [participant, product_captain, captain]
+    expedition_from: [active]
+    day_from: [active, review]
+    guards: [vote_round_open, actor_is_eligible_voter, actor_not_banned, choice_is_option_or_abstain, ballot_revision_is_next_for_actor, current_day_revision_matches]
+    emits: [vote.cast]
+  finalize_product_decision:
+    actor_roles: [product_captain, captain]
+    expedition_from: [active]
+    day_from: [active, review]
+    guards: [active_stage_is_product_decision, vote_round_open, expected_round_version_matches, all_eligible_voters_have_effective_ballot, selected_option_has_strict_majority_of_all_eligible, selected_option_matches_computed_result, decision_not_finalized, rationale_and_rejected_alternatives_present]
+    emits: [vote.closed, product_decision.recorded]
+  override_product_decision:
+    actor_roles: [captain]
+    expedition_from: [active, suspended]
+    day_from: [active, review]
+    guards: [active_stage_is_product_decision, vote_round_exists, expected_round_version_matches, selected_option_exists, override_reason_present, unresolved_objections_recorded, decision_not_finalized]
+    emits: [vote.closed, product_decision.overridden]
+  request_day_close:
+    actor_roles: [captain, product_captain]
+    day_from: [active, review]
+    emits: [day.close_requested]
+  close_day:
+    actor_roles: [captain]
+    day_from: [active, review]
+    guards: [required_outputs_confirmed, required_tasks_completed_or_waived, decisions_logged, role_handover_prepared]
+    emits: [day.closed]
+  override_day_close:
+    actor_roles: [captain]
+    day_from: [active, review]
+    guards: [override_reason_present, unmet_conditions_recorded]
+    emits: [day.close_overridden, day.closed]
+  override_role_assignment:
+    actor_roles: [captain]
+    guards: [override_reason_present, replacement_is_active_member, resulting_assignment_valid]
+    emits: [role_assignment.overridden, rotation.recalculated]
+  activate_recovery_day:
+    actor_roles: [captain]
+    expedition_from: [active]
+    guards: [recovery_day_remaining, no_closed_day_for_date]
+    emits: [recovery_day.activated]
+  suspend_program:
+    actor_roles: [captain]
+    expedition_from: [active]
+    emits: [program.suspended]
+  resume_program:
+    actor_roles: [captain]
+    expedition_from: [suspended]
+    emits: [program.resumed]
+  verify_role_assignment:
+    actor_roles: [captain]
+    expedition_from: [active, suspended]
+    guards: [assignment_exists, assignment_is_expired_or_day_in_review, expected_assignment_version_matches, verification_outcome_valid, evidence_present_when_required, verification_not_already_applied]
+    emits: [role_assignment.verified, role_xp.awarded]
+    conditional_emits:
+      role_level_threshold_crossed: role_level.changed
+  adjust_role_xp:
+    actor_roles: [captain]
+    expedition_from: [active, suspended, completed]
+    guards: [xp_adjustment_reason_present, xp_adjustment_evidence_present, expected_xp_balance_version_matches, resulting_xp_balance_not_negative, xp_adjustment_not_already_applied]
+    emits: [role_xp.adjusted]
+    conditional_emits:
+      role_level_threshold_crossed: role_level.changed
+  publish_rating_snapshot:
+    actor_roles: [system]
+    expedition_from: [active, suspended, completed]
+    guards: [gamification_enabled, ratings_enabled, authoritative_projection_available, rating_snapshot_key_not_published]
+    emits: [rating.snapshot_published]
+  close_expedition:
+    actor_roles: [captain]
+    expedition_from: [active]
+    day_from: [closed]
+    stage_from: [active]
+    guards: [active_stage_is_final_demo_day, final_stage_definition_of_done_satisfied, final_calendar_day_is_closed, final_outputs_confirmed, shore_package_confirmed, no_unresolved_critical_demo_blocker, no_unresolved_safety_hold, expected_projection_version_matches, expedition_completion_not_already_applied]
+    emits: [role_assignments.expired, stage.completed, expedition.completed]
+idempotency:
+  command_key: command_id
+  boundary_key: day_boundary:<expedition_id>:<local_calendar_date>
+  duplicate_policy: return_original_result
+  event_uniqueness: [event_id, expedition_id_command_id_event_type]
+  forced_day_key: forced_day:<expedition_id>:<target_local_calendar_date>:<command_id>
+  day_rewind_key: day_rewind:<expedition_id>:<from_day_number>:<to_day_number>:<expected_projection_version>
+  xp_award_key: xp:<expedition_id>:<source_event_id>:<participant_id>:<role_id>
+  rating_snapshot_key: rating:<expedition_id>:<day_number>:<day_revision>:<rules_version>
+  expedition_completion_key: expedition_completion:<expedition_id>:<expected_projection_version>
+invariants:
+- safety_override_always_available
+- captain_authority_over_vessel_is_absolute
+- calendar_day_and_product_stage_are_separate
+- only_one_active_day
+- only_one_active_stage
+- normal_day_start_is_system_clock_only
+- rotation_advances_on_day_started
+- closed_day_is_read_only
+- events_are_append_only
+- corrections_are_new_events
+- one_product_role_and_one_onboard_role_per_participant_per_day
+- cook_product_load_must_be_low
+- task_status_is_derived_from_events
+- card_acknowledgement_is_idempotent
+- blocked_task_requires_reason
+- offline_replay_preserves_command_order
+- product_stage_advances_only_by_captain_command
+- stage_transition_is_sequential
+- stage_advance_requires_closed_day
+- stage_card_bundles_publish_on_next_day_started
+- captain_is_expedition_super_admin
+- captain_inherits_product_captain_and_participant_capabilities
+- super_admin_actions_require_reason_and_server_confirmation
+- captain_cannot_delete_or_rewrite_events
+- captain_cannot_impersonate_system_clock
+- participant_ban_is_expedition_scoped
+- current_captain_cannot_be_banned
+- banned_participant_cannot_read_or_submit_new_expedition_data
+- day_rewind_preserves_event_history
+- days_after_rewind_target_are_superseded
+- rewind_increments_day_revision
+- rewind_does_not_change_product_stage
+- superseded_revision_commands_conflict
+- final_stage_has_no_next_stage
+- final_stage_completes_only_with_close_expedition
+- expedition_completion_requires_final_day_closed
+- expedition_completion_is_captain_only
+- completed_expedition_is_operationally_read_only
+decision_rules:
+  vote_mode: single_choice
+  ballot_visibility: attributable
+  eligible_voters_frozen_on: vote.opened
+  quorum: all_eligible_voters_cast_option_or_abstain
+  threshold: strict_majority_of_all_eligible_voters
+  recast_policy: highest_ballot_revision_before_vote.closed
+  captain_override_event: product_decision.overridden
+  does_not_advance_calendar_day: true
+  does_not_advance_product_stage: true
