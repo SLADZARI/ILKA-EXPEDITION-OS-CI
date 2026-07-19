@@ -1,0 +1,75 @@
+* { box-sizing: border-box; }
+html { background: var(--ilka-color-background-canvas); }
+body { margin: 0; min-width: 320px; color: var(--ilka-color-text-primary); background: var(--ilka-color-background-canvas); font-family: var(--ilka-font-family-sans); }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+h1, h2, h3, p { margin: 0; }
+
+.ilka-app-shell { min-height: 100dvh; padding: max(20px, env(safe-area-inset-top)) 0 max(32px, env(safe-area-inset-bottom)); }
+.ilka-screen-content { width: min(100%, var(--ilka-layout-mobile-max)); margin: 0 auto; padding: 0 var(--ilka-layout-screen-padding); display: grid; gap: var(--ilka-layout-section-gap); }
+.ilka-screen-header { display: grid; gap: 12px; }
+.ilka-screen-header__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ilka-screen-header h1 { font-size: var(--ilka-font-size-display); line-height: var(--ilka-line-height-tight); letter-spacing: -0.035em; }
+.ilka-brand { display: flex; align-items: center; gap: 8px; }
+.ilka-brand__mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: var(--ilka-color-text-inverse); background: var(--ilka-color-brand-navy); font-size: 24px; }
+.ilka-brand > span:last-child { display: grid; }
+.ilka-brand strong { font-size: 14px; letter-spacing: .08em; }
+.ilka-brand small { font-size: 8px; letter-spacing: .12em; color: var(--ilka-color-text-muted); }
+.ilka-eyebrow { font-size: var(--ilka-font-size-caption); line-height: 1.2; letter-spacing: var(--ilka-letter-spacing-label); font-weight: var(--ilka-font-weight-semibold); color: var(--ilka-color-text-muted); text-transform: uppercase; }
+.ilka-eyebrow--inverse { color: rgba(255,255,255,.7); }
+.ilka-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.ilka-section-header h2 { font-size: var(--ilka-font-size-card-title); letter-spacing: -.02em; }
+
+.ilka-role-grid, .ilka-card-grid { display: grid; gap: var(--ilka-layout-card-gap); }
+.ilka-card { position: relative; overflow: hidden; border: var(--ilka-border-width-default) solid var(--ilka-color-border-default); border-radius: var(--ilka-radius-card); background: var(--ilka-color-background-surface); box-shadow: var(--ilka-shadow-card); padding: var(--ilka-space-5); }
+.ilka-card h2 { margin-top: 9px; font-size: 28px; line-height: 1.12; }
+.ilka-card h3 { margin-top: 8px; font-size: var(--ilka-font-size-card-title); line-height: 1.2; }
+.ilka-card-caption { margin: 16px 0; color: var(--ilka-color-text-secondary); font-size: var(--ilka-font-size-label); line-height: var(--ilka-line-height-normal); }
+.ilka-role-card--product { min-height: 232px; color: var(--ilka-color-text-inverse); border: 0; background: var(--ilka-color-card-product); }
+.ilka-role-card--product .ilka-card-caption { color: rgba(255,255,255,.72); max-width: 74%; }
+.ilka-role-card__icon { position: absolute; right: 18px; top: 22px; opacity: .18; }
+.ilka-role-card--onboard { background: var(--ilka-color-card-onboard); }
+.ilka-knowledge-card { background: var(--ilka-color-card-knowledge); }
+.ilka-card-icon { width: 38px; height: 38px; display: grid; place-items: center; margin-bottom: 18px; border-radius: var(--ilka-radius-control); background: rgba(36,94,219,.09); color: var(--ilka-color-brand-blue); }
+.ilka-badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+
+.ilka-badge { display: inline-flex; align-items: center; gap: 5px; width: fit-content; min-height: 28px; padding: 5px 9px; border-radius: var(--ilka-radius-pill); background: var(--ilka-color-background-subtle); color: var(--ilka-color-text-secondary); font-size: 11px; font-weight: var(--ilka-font-weight-semibold); line-height: 1; }
+.ilka-badge--success { background: var(--ilka-color-status-success-subtle); color: var(--ilka-color-status-success); }
+.ilka-badge--warning, .ilka-badge--sync_pending { background: var(--ilka-color-status-warning-subtle); color: var(--ilka-color-status-warning); }
+.ilka-badge--critical { background: var(--ilka-color-status-critical-subtle); color: var(--ilka-color-status-critical); }
+.ilka-badge--info { background: var(--ilka-color-status-info-subtle); color: var(--ilka-color-status-info); }
+.ilka-badge--offline { background: var(--ilka-color-status-offline-subtle); color: var(--ilka-color-status-offline); }
+.ilka-role-card--product .ilka-badge { background: rgba(255,255,255,.14); color: #fff; }
+
+.ilka-list { display: grid; gap: 10px; }
+.ilka-row { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: center; padding: 14px; border: 1px solid var(--ilka-color-border-default); border-radius: var(--ilka-radius-control); background: var(--ilka-color-background-surface); }
+.ilka-row__icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--ilka-color-background-subtle); color: var(--ilka-color-brand-navy); }
+.ilka-row__body { min-width: 0; }
+.ilka-row__body h3 { font-size: 15px; line-height: 1.35; }
+.ilka-row__body p { margin-top: 3px; font-size: 12px; color: var(--ilka-color-text-muted); }
+.ilka-row__status { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; }
+.ilka-row[data-state='overdue'], .ilka-row[data-state='blocked'] { border-color: var(--ilka-color-status-warning); }
+
+.ilka-button { min-height: var(--ilka-control-min-height); padding: 0 18px; border: 0; border-radius: var(--ilka-radius-control); font-weight: var(--ilka-font-weight-semibold); }
+.ilka-button--primary { color: var(--ilka-color-text-inverse); background: var(--ilka-color-brand-navy); }
+.ilka-button--secondary { color: var(--ilka-color-brand-navy); background: var(--ilka-color-background-subtle); }
+.ilka-button--ghost { color: var(--ilka-color-brand-blue); background: transparent; }
+.ilka-button--destructive { color: var(--ilka-color-text-inverse); background: var(--ilka-color-status-critical); }
+.ilka-progress__meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 7px; }
+.ilka-progress__track { height: 7px; border-radius: var(--ilka-radius-pill); background: var(--ilka-color-background-subtle); overflow: hidden; }
+.ilka-progress__fill { height: 100%; background: var(--ilka-color-brand-blue); }
+
+@media (min-width: 430px) {
+  .ilka-role-grid { grid-template-columns: 1.2fr .8fr; }
+  .ilka-role-card--onboard { min-height: 232px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+
+.ilka-metric { display: flex; align-items: baseline; gap: 8px; margin-top: 18px; }
+.ilka-metric strong { font-size: 34px; line-height: 1; letter-spacing: -.04em; }
+.ilka-metric span { color: var(--ilka-color-text-muted); font-size: 12px; font-weight: 600; }
+.ilka-rating-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.ilka-rating-grid > div { display: grid; gap: 4px; padding: 14px; border-radius: var(--ilka-radius-control); background: var(--ilka-color-background-subtle); }
+.ilka-rating-grid strong { font-size: 30px; line-height: 1; }
+.ilka-rating-grid span { color: var(--ilka-color-text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.ilka-contribution-card { background: var(--ilka-color-card-team); }
