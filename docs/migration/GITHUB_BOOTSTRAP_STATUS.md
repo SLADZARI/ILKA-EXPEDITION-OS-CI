@@ -4,36 +4,42 @@
 - Canonical source: `MP | Voyage OS/ilka-expedition-os`
 - Target: `SLADZARI/ILKA-EXPEDITION-OS`
 - Branch: `chore/bootstrap-canonical-repository`
-- Status: in progress
+- Status: in progress — second import batch applied
 
-## Imported in this bootstrap
+## Imported
 
-- repository README;
-- project instructions;
-- source-of-truth map;
-- proposed ADR-012;
-- 12-stage pipeline;
-- permission matrix;
-- deterministic role-rotation rules;
-- changelog and repository hygiene files.
+- repository README, instructions, source-of-truth map and ADR-012;
+- ADR-004 through ADR-011;
+- pipeline, permissions and rotation rules;
+- command and event catalogs;
+- game engine and reducers;
+- roles catalog and gamification rules;
+- command, stage, card and gamification schemas;
+- offline command, TodayView and CaptainDayView schemas;
+- repository hygiene files.
 
-## Required next import batch
+## Remaining before parity
 
-1. accepted ADR-004 through ADR-011;
-2. command and event catalogs;
-3. command/event/read-model JSON Schemas;
-4. game engine and reducers;
-5. roles and gamification rules;
-6. Stage 01–12 definitions;
-7. cards manifest and 132 card files;
-8. Participant/Captain app requirements and API contracts;
-9. frontend and design-system packages;
-10. examples, scripts and tests.
+1. `engine/event.schema.json`;
+2. remaining app/API descriptions;
+3. Stage 01–12 files;
+4. cards manifest and 132 cards;
+5. app requirements and sync documentation;
+6. frontend and design system;
+7. examples, scripts and tests;
+8. executable validation report.
+
+## Current checks
+
+- command catalog baseline: 36 commands;
+- event catalog baseline: 48 event types;
+- offline queue baseline: 10 commands;
+- JSON schemas are stored in valid minified JSON form;
+- semantic and path parity validation remains pending.
 
 ## Guardrails
 
-- Google Drive remains the canonical baseline during migration.
+- Google Drive remains canonical during migration.
 - Archive and quarantine folders are excluded.
-- No Supabase migration is applied while ADR-012 is Proposed.
-- Imported files must preserve stable IDs and source-of-truth ownership.
-- The bootstrap PR must not be merged until file parity and validation are reported.
+- Supabase migrations remain blocked while ADR-012 is Proposed.
+- The Draft PR is not ready to merge until parity and tests pass.
