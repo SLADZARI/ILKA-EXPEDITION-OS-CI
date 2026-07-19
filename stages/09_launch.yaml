@@ -1,0 +1,115 @@
+version: 3
+stage_id: launch
+order: 9
+title: Launch
+objective: Провести ограниченный и воспроизводимый запуск подтверждённого Working Increment для заранее определённой проверочной аудитории, зафиксировать distribution evidence и стартовые launch metrics без расширения MVP Scope и преждевременных выводов о продуктовой успешности.
+required_inputs:
+- working_increment
+- build_log
+- known_limitations
+- mvp_scope
+- out_of_scope
+- acceptance_criteria
+required_outputs:
+- id: launch_package
+  type: artifact
+  required: true
+- id: distribution_log
+  type: record_set
+  required: true
+- id: launch_metrics
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- demo_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: demo_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_limited_launch_principles
+  - knowledge_launch_measurement
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_09
+    demo_lead:
+    - role_demo_lead_day_09
+    - task_launch_pack
+    product_support:
+    - role_product_support_day_09
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_09
+    mooring:
+    - onboard_mooring_day_09
+    order:
+    - onboard_order_day_09
+    cook:
+    - onboard_cook_day_09
+    product_focus:
+    - onboard_product_focus_day_09
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+  demo_lead_incompatible_onboard_roles:
+  - cook
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - launch_package_targets_bounded_audience: true
+  - launched_version_matches_confirmed_working_increment: true
+  - primary_user_scenario_is_accessible: true
+  - known_limitations_are_disclosed: true
+  - access_data_and_stop_conditions_are_recorded: true
+  - no_out_of_scope_feature_is_required_for_launch: true
+  - distribution_log_contains_verified_exposure: true
+  - distribution_records_include_version_channel_and_timestamp: true
+  - launch_metrics_use_predeclared_definitions: true
+  - launch_metrics_baseline_is_recorded: true
+  - no_unresolved_critical_launch_blocker: true
+  - user_feedback_handover_prepared: true
+  - output_confirmed: launch_package
+  - output_confirmed: distribution_log
+  - output_confirmed: launch_metrics
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- verify_role_assignment
+- adjust_role_xp
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements

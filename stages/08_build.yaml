@@ -1,0 +1,112 @@
+version: 3
+stage_id: build
+order: 8
+title: Build
+objective: Собрать проверяемый working increment по подтверждённому Prototype и MVP Scope, выполнить acceptance checks и подготовить прозрачный handover в ограниченный Launch без скрытого расширения продукта.
+required_inputs:
+- prototype
+- prototype_test_plan
+- open_questions
+- mvp_scope
+- out_of_scope
+- acceptance_criteria
+required_outputs:
+- id: working_increment
+  type: artifact
+  required: true
+- id: build_log
+  type: record_set
+  required: true
+- id: known_limitations
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- build_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: build_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_build_increment_principles
+  - knowledge_build_verification
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_08
+    build_lead:
+    - role_build_lead_day_08
+    - task_build_pack
+    product_support:
+    - role_product_support_day_08
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_08
+    mooring:
+    - onboard_mooring_day_08
+    order:
+    - onboard_order_day_08
+    cook:
+    - onboard_cook_day_08
+    product_focus:
+    - onboard_product_focus_day_08
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+  build_lead_incompatible_onboard_roles:
+  - cook
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - working_increment_covers_primary_user_scenario: true
+  - working_increment_maps_to_mvp_scope: true
+  - prototype_test_plan_executed_against_increment: true
+  - acceptance_criteria_checks_are_recorded: true
+  - no_out_of_scope_feature_is_required_for_launch: true
+  - no_unresolved_critical_build_blocker: true
+  - build_log_is_traceable: true
+  - known_limitations_are_classified: true
+  - launch_handover_prepared: true
+  - output_confirmed: working_increment
+  - output_confirmed: build_log
+  - output_confirmed: known_limitations
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- verify_role_assignment
+- adjust_role_xp
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements

@@ -1,0 +1,108 @@
+version: 3
+stage_id: prototype
+order: 7
+title: Prototype
+objective: Создать проверяемый прототип основного пользовательского сценария, связанный с MVP Scope и acceptance criteria, без преждевременного перехода к production Build.
+required_inputs:
+- mvp_scope
+- out_of_scope
+- acceptance_criteria
+required_outputs:
+- id: prototype
+  type: artifact
+  required: true
+- id: prototype_test_plan
+  type: document
+  required: true
+- id: open_questions
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- build_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: build_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_prototype_principles
+  - knowledge_prototype_test_plan
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_07
+    build_lead:
+    - role_build_lead_day_07
+    - task_prototype_pack
+    product_support:
+    - role_product_support_day_07
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_07
+    mooring:
+    - onboard_mooring_day_07
+    order:
+    - onboard_order_day_07
+    cook:
+    - onboard_cook_day_07
+    product_focus:
+    - onboard_product_focus_day_07
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+  build_lead_incompatible_onboard_roles:
+  - cook
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - prototype_covers_primary_user_scenario: true
+  - prototype_maps_to_mvp_scope: true
+  - prototype_steps_map_to_acceptance_criteria: true
+  - no_out_of_scope_feature_is_required_for_walkthrough: true
+  - prototype_is_walkthrough_ready: true
+  - prototype_test_plan_is_executable: true
+  - open_questions_are_classified: true
+  - build_handover_prepared: true
+  - output_confirmed: prototype
+  - output_confirmed: prototype_test_plan
+  - output_confirmed: open_questions
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- verify_role_assignment
+- adjust_role_xp
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements
