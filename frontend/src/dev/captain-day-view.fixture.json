@@ -1,0 +1,205 @@
+{
+  "expedition_id": "expedition_2026_01",
+  "local_date": "2026-07-18",
+  "day": {
+    "number": 5,
+    "stage_id": "product_decision",
+    "status": "active",
+    "boundary_at": "2026-07-18T06:00:00+03:00",
+    "revision": 1,
+    "superseded_day_numbers": [],
+    "transition_mode": "automatic"
+  },
+  "participants": [
+    {
+      "participant_id": "participant_01",
+      "product_role_id": "product_support",
+      "onboard_role_id": "cook",
+      "required_cards_acknowledged": true,
+      "required_tasks_terminal": true,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_02",
+      "product_role_id": "validation_lead",
+      "onboard_role_id": "mooring",
+      "required_cards_acknowledged": true,
+      "required_tasks_terminal": false,
+      "overdue_task_count": 1,
+      "sync_status": "pending",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_03",
+      "product_role_id": "product_captain",
+      "onboard_role_id": "navigation",
+      "required_cards_acknowledged": false,
+      "required_tasks_terminal": false,
+      "overdue_task_count": 1,
+      "sync_status": "offline",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_04",
+      "product_role_id": "product_support",
+      "onboard_role_id": "order",
+      "required_cards_acknowledged": true,
+      "required_tasks_terminal": true,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_05",
+      "product_role_id": "product_support",
+      "onboard_role_id": "product_focus",
+      "required_cards_acknowledged": true,
+      "required_tasks_terminal": true,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    }
+  ],
+  "blockers": [
+    {
+      "code": "required_output_unconfirmed",
+      "message": "decision_rationale is not confirmed",
+      "entity_id": "decision_rationale"
+    }
+  ],
+  "can_close_day": false,
+  "controls": {
+    "override_day_close": true,
+    "recover_day_transition": true,
+    "activate_recovery_day": true,
+    "override_role_assignment": true,
+    "normal_start_day": false,
+    "request_stage_advance": true,
+    "advance_stage": false,
+    "override_stage_advance": true,
+    "force_day_transition": true,
+    "rewind_day": true,
+    "ban_participant": true,
+    "unban_participant": true,
+    "create_decision_draft": true,
+    "create_vote": true,
+    "finalize_product_decision": false,
+    "override_product_decision": true,
+    "close_expedition": false
+  },
+  "sync_status": "pending",
+  "outputs": [
+    {
+      "output_id": "selected_product_direction",
+      "required": true,
+      "confirmed": true,
+      "evidence_refs": [
+        "event_decision_01"
+      ],
+      "confirmed_by": "participant_03",
+      "pending_sync": false
+    },
+    {
+      "output_id": "decision_rationale",
+      "required": true,
+      "confirmed": false,
+      "evidence_refs": [],
+      "confirmed_by": null,
+      "pending_sync": true
+    }
+  ],
+  "stage": {
+    "stage_id": "product_decision",
+    "status": "active",
+    "next_stage_id": "mvp_scope",
+    "advance_request_status": "none",
+    "requested_by": null,
+    "can_advance": false,
+    "advance_blockers": [
+      {
+        "code": "definition_of_done_incomplete",
+        "message": "Required decision rationale is not confirmed"
+      }
+    ]
+  },
+  "super_admin": {
+    "enabled": true,
+    "scope": "expedition",
+    "server_confirmation_required": true,
+    "can_delete_events": false,
+    "can_impersonate_system_clock": false
+  },
+  "decision": {
+    "status": "vote_open",
+    "decision_id": "decision_product_01",
+    "vote_id": "vote_product_decision_01",
+    "round_version": 1,
+    "eligible_voter_ids": [
+      "participant_01",
+      "participant_02",
+      "participant_03",
+      "participant_04",
+      "participant_05"
+    ],
+    "effective_ballot_count": 3,
+    "abstention_count": 2,
+    "selected_option_id": null,
+    "can_finalize": false,
+    "blockers": [
+      {
+        "code": "quorum_incomplete",
+        "message": "All eligible voters must submit a ballot"
+      }
+    ]
+  },
+  "gamification_summary": {
+    "rules_version": 1,
+    "snapshot_at": "2026-07-17T22:15:00+03:00",
+    "entries": [
+      {
+        "participant_id": "participant_01",
+        "score": 82,
+        "rank": 1,
+        "status": "active"
+      },
+      {
+        "participant_id": "participant_03",
+        "score": 78,
+        "rank": 2,
+        "status": "active"
+      },
+      {
+        "participant_id": "participant_02",
+        "score": 74,
+        "rank": 3,
+        "status": "active"
+      }
+    ],
+    "pending_verifications": [
+      {
+        "assignment_id": "assignment_onboard_03_day_05",
+        "participant_id": "participant_03",
+        "role_id": "navigation",
+        "role_type": "onboard"
+      }
+    ]
+  },
+  "expedition_status": "active",
+  "expedition_completion": null,
+  "completion_readiness": {
+    "state": "unavailable",
+    "can_close_expedition": false,
+    "final_stage_id": null,
+    "final_day_number": null,
+    "shore_package_ref": null,
+    "expected_projection_version": 42,
+    "blockers": []
+  }
+}
