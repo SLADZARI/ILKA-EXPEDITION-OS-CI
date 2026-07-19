@@ -1,0 +1,116 @@
+version: 3
+stage_id: demo_day
+order: 12
+title: Demo Day
+objective: Продемонстрировать подтверждённую версию Updated Increment, связать продуктовую историю с evidence всей экспедиции,
+  передать проверяемый Shore Package и подготовить Captain к явному завершению Expedition без создания следующего Product
+  Stage.
+required_inputs:
+- iteration_decision
+- updated_increment
+- change_log
+- launch_metrics
+- signal_summary
+- known_limitations
+- mvp_scope
+- out_of_scope
+- acceptance_criteria
+required_outputs:
+- id: demo
+  type: artifact
+  required: true
+- id: shore_package
+  type: artifact
+  required: true
+- id: next_steps
+  type: document
+  required: true
+allowed_product_roles:
+- product_captain
+- demo_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: demo_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_demo_day_principles
+  - knowledge_shore_package_handover
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_12
+    demo_lead:
+    - role_demo_lead_day_12
+    - task_demo_day_pack
+    product_support:
+    - role_product_support_day_12
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_12
+    mooring:
+    - onboard_mooring_day_12
+    order:
+    - onboard_order_day_12
+    cook:
+    - onboard_cook_day_12
+    product_focus:
+    - onboard_product_focus_day_12
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+  demo_lead_incompatible_onboard_roles:
+  - cook
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - demo_uses_confirmed_updated_increment_version: true
+  - primary_user_scenario_is_reproducible: true
+  - demo_story_links_problem_evidence_scope_launch_feedback_and_iteration: true
+  - offline_demo_fallback_is_available: true
+  - demo_questions_and_evidence_are_recorded: true
+  - shore_package_contains_final_artifact_and_source_map: true
+  - shore_package_contains_metrics_limitations_and_change_log: true
+  - shore_package_integrity_manifest_is_complete: true
+  - next_steps_are_prioritized_and_owned: true
+  - next_steps_separate_maintenance_validation_and_new_opportunities: true
+  - no_unresolved_critical_demo_blocker: true
+  - output_confirmed: demo
+  - output_confirmed: shore_package
+  - output_confirmed: next_steps
+  - all_required_tasks_completed_or_waived: true
+  - final_role_handover_recorded: true
+  - final_day_close_ready: true
+  - expedition_close_handover_prepared: true
+captain_controls:
+- verify_role_assignment
+- adjust_role_xp
+- close_day
+- override_day_close
+- close_expedition
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements

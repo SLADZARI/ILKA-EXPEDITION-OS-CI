@@ -1,0 +1,120 @@
+version: 3
+stage_id: iteration
+order: 11
+title: Iteration
+objective: Выбрать одну evidence-backed проблему из Stage 10, заранее определить границы и проверки, внести одну ограниченную итерацию в подтверждённый Working Increment и подготовить проверяемый handover для Demo Day без расширения MVP Scope.
+required_inputs:
+- working_increment
+- launch_package
+- launch_metrics
+- known_limitations
+- feedback_log
+- signal_summary
+- priority_issues
+- mvp_scope
+- out_of_scope
+- acceptance_criteria
+required_outputs:
+- id: iteration_decision
+  type: decision
+  required: true
+- id: updated_increment
+  type: artifact
+  required: true
+- id: change_log
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- build_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: build_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_iteration_principles
+  - knowledge_iteration_verification
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_11
+    build_lead:
+    - role_build_lead_day_11
+    - task_iteration_pack
+    product_support:
+    - role_product_support_day_11
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_11
+    mooring:
+    - onboard_mooring_day_11
+    order:
+    - onboard_order_day_11
+    cook:
+    - onboard_cook_day_11
+    product_focus:
+    - onboard_product_focus_day_11
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+  build_lead_incompatible_onboard_roles:
+  - cook
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - iteration_decision_selects_one_priority_issue: true
+  - selected_issue_references_feedback_and_metric_evidence: true
+  - selected_issue_is_within_mvp_scope: true
+  - iteration_acceptance_checks_declared_before_change: true
+  - baseline_and_target_versions_are_recorded: true
+  - updated_increment_contains_only_the_approved_iteration: true
+  - primary_user_scenario_regression_passed: true
+  - prior_acceptance_criteria_rechecked: true
+  - selected_issue_acceptance_checks_passed: true
+  - known_limitations_reclassified_after_iteration: true
+  - change_log_links_issue_change_version_and_evidence: true
+  - no_unresolved_critical_iteration_blocker: true
+  - demo_day_handover_prepared: true
+  - output_confirmed: iteration_decision
+  - output_confirmed: updated_increment
+  - output_confirmed: change_log
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- verify_role_assignment
+- adjust_role_xp
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements

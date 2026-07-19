@@ -1,0 +1,116 @@
+version: 3
+stage_id: user_feedback
+order: 10
+title: User Feedback
+objective: Собрать traceable first-party feedback по ограниченному Launch, отделить raw observations от интерпретаций, сопоставить качественные сигналы с launch metrics и сформировать ранжированный список проблем без выбора решения или реализации итерации.
+required_inputs:
+- launch_package
+- distribution_log
+- launch_metrics
+- known_limitations
+- mvp_scope
+- out_of_scope
+- acceptance_criteria
+required_outputs:
+- id: feedback_log
+  type: record_set
+  required: true
+- id: signal_summary
+  type: document
+  required: true
+- id: priority_issues
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- validation_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: validation_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_user_feedback_principles
+  - knowledge_signal_prioritization
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_10
+    validation_lead:
+    - role_validation_lead_day_10
+    - task_user_feedback_pack
+    product_support:
+    - role_product_support_day_10
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_10
+    mooring:
+    - onboard_mooring_day_10
+    order:
+    - onboard_order_day_10
+    cook:
+    - onboard_cook_day_10
+    product_focus:
+    - onboard_product_focus_day_10
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+  validation_lead_incompatible_onboard_roles:
+  - cook
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - feedback_scope_matches_bounded_launch_audience: true
+  - feedback_records_reference_launched_version: true
+  - feedback_collection_method_and_consent_are_recorded: true
+  - feedback_log_contains_first_party_user_evidence: true
+  - feedback_log_separates_raw_observation_from_interpretation: true
+  - known_limitations_are_tagged_separately_from_new_signals: true
+  - signal_summary_preserves_repeated_signals_and_outliers: true
+  - signal_summary_cross_checks_launch_metrics: true
+  - priority_issues_use_predeclared_scoring: true
+  - priority_issues_include_frequency_severity_impact_confidence_and_evidence_refs: true
+  - no_solution_or_iteration_is_selected: true
+  - iteration_handover_prepared: true
+  - output_confirmed: feedback_log
+  - output_confirmed: signal_summary
+  - output_confirmed: priority_issues
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- verify_role_assignment
+- adjust_role_xp
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements
