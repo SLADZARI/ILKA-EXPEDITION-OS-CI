@@ -1,0 +1,104 @@
+version: 3
+stage_id: mvp_scope
+order: 6
+title: MVP Scope
+objective: Зафиксировать минимальный проверяемый объём продукта, acceptance criteria и явный out-of-scope без размывания Product Decision.
+required_inputs:
+- product_decision
+- decision_rationale
+- rejected_alternatives
+required_outputs:
+- id: mvp_scope
+  type: document
+  required: true
+- id: out_of_scope
+  type: record_set
+  required: true
+- id: acceptance_criteria
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- scope_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: scope_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_mvp_scope_principles
+  - knowledge_acceptance_criteria
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_06
+    scope_lead:
+    - role_scope_lead_day_06
+    - task_mvp_scope_pack
+    product_support:
+    - role_product_support_day_06
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_06
+    mooring:
+    - onboard_mooring_day_06
+    order:
+    - onboard_order_day_06
+    cook:
+    - onboard_cook_day_06
+    product_focus:
+    - onboard_product_focus_day_06
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+  scope_lead_incompatible_onboard_roles:
+  - cook
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - scope_maps_to_product_decision: true
+  - every_in_scope_item_has_acceptance_criteria: true
+  - out_of_scope_is_explicit: true
+  - build_handover_prepared: true
+  - output_confirmed: mvp_scope
+  - output_confirmed: out_of_scope
+  - output_confirmed: acceptance_criteria
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- verify_role_assignment
+- adjust_role_xp
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements

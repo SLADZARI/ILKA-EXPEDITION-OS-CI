@@ -1,0 +1,104 @@
+version: 3
+stage_id: product_decision
+order: 5
+title: Product Decision
+objective: Принять одно evidence-based продуктовое решение, зафиксировать основания, голоса и отказ от альтернатив.
+required_inputs:
+- hypothesis_decision
+- insight_summary
+- validation_evidence
+required_outputs:
+- id: product_decision
+  type: decision
+  required: true
+- id: decision_rationale
+  type: document
+  required: true
+- id: rejected_alternatives
+  type: record_set
+  required: true
+allowed_product_roles:
+- product_captain
+- validation_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: validation_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_product_decision_protocol
+  - knowledge_majority_and_objections
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_05
+    - task_product_decision_pack
+    validation_lead:
+    - role_validation_lead_day_05
+    product_support:
+    - role_product_support_day_05
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_05
+    mooring:
+    - onboard_mooring_day_05
+    order:
+    - onboard_order_day_05
+    cook:
+    - onboard_cook_day_05
+    product_focus:
+    - onboard_product_focus_day_05
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - decision_round_finalized: true
+  - product_decision_traceable_to_validation: true
+  - rejected_alternatives_recorded: true
+  - output_confirmed: product_decision
+  - output_confirmed: decision_rationale
+  - output_confirmed: rejected_alternatives
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- create_decision_draft
+- create_vote
+- finalize_product_decision
+- override_product_decision
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - votes
+  - evidence
+  - acknowledgements

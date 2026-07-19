@@ -1,0 +1,98 @@
+version: 3
+stage_id: validation
+order: 4
+title: Validation
+objective: Проверить критические assumptions по заранее заданным критериям и сформировать evidence-based статус гипотезы.
+required_inputs:
+- hypothesis_statement
+- assumptions_map
+- success_criteria
+required_outputs:
+- id: validation_evidence
+  type: record_set
+  required: true
+- id: insight_summary
+  type: document
+  required: true
+- id: hypothesis_decision
+  type: decision
+  required: true
+allowed_product_roles:
+- product_captain
+- validation_lead
+- product_support
+required_product_roles:
+- role_id: product_captain
+  count: 1
+- role_id: validation_lead
+  count: 1
+- role_id: product_support
+  count: remaining
+card_refs:
+  shared:
+  - knowledge_validation_plan
+  - knowledge_evidence_interpretation
+  by_product_role:
+    product_captain:
+    - role_product_captain_day_04
+    - task_validation_pack
+    validation_lead:
+    - role_validation_lead_day_04
+    product_support:
+    - role_product_support_day_04
+  by_onboard_role:
+    navigation:
+    - onboard_navigation_day_04
+    mooring:
+    - onboard_mooring_day_04
+    order:
+    - onboard_order_day_04
+    cook:
+    - onboard_cook_day_04
+    product_focus:
+    - onboard_product_focus_day_04
+assignment_rules:
+  team_size:
+    minimum: 3
+    maximum: 5
+  exactly_one_product_role_per_participant: true
+  exactly_one_onboard_role_per_participant: true
+  cook_product_load_limit: low
+  assignment_bundle_requires_all_shared_cards: true
+automations:
+  on_stage_opened:
+  - prepare_stage_content
+  on_day_started:
+  - publish_daily_assignment_bundles
+definition_of_done:
+  all:
+  - output_confirmed: validation_evidence
+  - output_confirmed: insight_summary
+  - output_confirmed: hypothesis_decision
+  - all_critical_assumptions_addressed: true
+  - decision_uses_predeclared_criteria: true
+  - all_required_tasks_completed_or_waived: true
+  - role_handover_prepared: true
+  captain_override:
+    allowed: true
+    requires_reason: true
+    emits: stage.advance_overridden
+captain_controls:
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- suspend_program
+- override_role_assignment
+- recover_day_transition
+- activate_recovery_day
+offline:
+  required_content_cached: true
+  completion_events_queueable: true
+  acknowledgements_queueable: true
+  evidence_queueable: true
+  local_boundary_projection: expired_pending_sync
+  sync_order:
+  - commands
+  - evidence
+  - acknowledgements
