@@ -1,0 +1,74 @@
+version: 7
+kind: transport_projection
+source_of_truth: engine/command-catalog.yaml
+generated_from: engine/command-catalog.yaml
+purpose: API transport and offline delivery hints only; business rules remain in the Engine catalog.
+transport:
+  endpoint: /commands
+  method: POST
+  request_schema: ../../schemas/command.schema.json
+  idempotency_header: Idempotency-Key
+idempotency: command_id
+server_only_commands:
+- process_day_boundary
+- publish_rating_snapshot
+offline_delivery:
+  queueable_commands:
+  - acknowledge_card
+  - start_task
+  - block_task
+  - complete_task
+  - confirm_output
+  - request_day_close
+  - request_stage_advance
+  - create_decision_draft
+  - create_vote
+  - vote
+  statuses:
+  - pending
+  - synced
+  - conflict
+  - rejected
+  retry_policy: idempotent_by_command_id
+server_confirmation_required:
+- advance_stage
+- override_stage_advance
+- close_day
+- override_day_close
+- override_role_assignment
+- activate_recovery_day
+- suspend_program
+- resume_program
+- force_day_transition
+- rewind_day
+- ban_participant
+- unban_participant
+- finalize_product_decision
+- override_product_decision
+- verify_role_assignment
+- adjust_role_xp
+- close_expedition
+dangerous_super_admin_commands:
+- force_day_transition
+- rewind_day
+- ban_participant
+- unban_participant
+- close_expedition
+offline_draft_only_commands:
+- force_day_transition
+- rewind_day
+- ban_participant
+- unban_participant
+- close_expedition
+product_decision_commands:
+- create_decision_draft
+- create_vote
+- vote
+- finalize_product_decision
+- override_product_decision
+gamification_commands:
+- verify_role_assignment
+- adjust_role_xp
+- publish_rating_snapshot
+expedition_completion_commands:
+- close_expedition

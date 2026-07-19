@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "app/contracts/gamification-view.schema.json",
+  "title": "GamificationView",
+  "allOf": [
+    {"$ref": "../../schemas/gamification.schema.json"}
+  ]
+}

@@ -1,0 +1,21 @@
+version: 2
+endpoint: GET /api/v1/expeditions/{expedition_id}/days/{day_number}/projection
+returns_by_actor:
+  participant: TodayView
+  product_captain: TodayView
+  captain: CaptainDayView
+schemas:
+  TodayView: app/contracts/today-view.schema.json
+  CaptainDayView: app/contracts/captain-day-view.schema.json
+headers:
+- ETag
+- X-Server-Revision
+offline_fallback:
+- IndexedDB.day_projection
+- IndexedDB.assignment_bundle
+- CacheStorage.card_content
+merge_policy:
+  server_events: authoritative
+  pending_local_commands: reapplied_after_server_projection
+  rejected_commands: rollback_and_surface
+  duplicate_command_id: acknowledge_existing_result
