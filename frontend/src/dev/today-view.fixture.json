@@ -1,0 +1,136 @@
+{
+  "expedition_id": "expedition_2026_01",
+  "participant_id": "participant_03",
+  "local_date": "2026-07-18",
+  "day": {
+    "number": 5,
+    "status": "active",
+    "boundary_sync_state": "authoritative"
+  },
+  "stage": {
+    "stage_id": "product_decision",
+    "title": "Выбор идеи",
+    "status": "active",
+    "next_stage_id": "mvp_scope",
+    "advance_request_status": "none",
+    "pending_target_stage_id": null
+  },
+  "product_role": {
+    "assignment_id": "assignment_product_03_day_05",
+    "role_id": "product_captain",
+    "title": "Product Captain",
+    "state": "active"
+  },
+  "onboard_role": {
+    "assignment_id": "assignment_onboard_03_day_05",
+    "role_id": "navigation",
+    "title": "Навигация",
+    "state": "active"
+  },
+  "sync_status": "offline",
+  "cards": [
+    {
+      "card_id": "role_product_captain_day_05",
+      "title": "Product Captain",
+      "required": true,
+      "acknowledged": true,
+      "pending_sync": false
+    },
+    {
+      "card_id": "knowledge_decision_flow",
+      "title": "Как принять командное решение",
+      "required": true,
+      "acknowledged": false,
+      "pending_sync": false
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "task_frame_decision",
+      "title": "Сформулировать вопрос решения",
+      "status": "completed",
+      "due_day_number": 5,
+      "pending_sync": false
+    },
+    {
+      "task_id": "task_facilitate_session",
+      "title": "Провести вечернюю сессию",
+      "status": "in_progress",
+      "due_day_number": 5,
+      "pending_sync": true
+    },
+    {
+      "task_id": "task_previous_evidence",
+      "title": "Добавить недостающее подтверждение",
+      "status": "overdue",
+      "due_day_number": 4,
+      "pending_sync": false
+    }
+  ],
+  "outputs": [
+    {
+      "output_id": "selected_problem",
+      "title": "Зафиксированная проблема",
+      "required": true,
+      "confirmed": false,
+      "pending_sync": true
+    },
+    {
+      "output_id": "decision_rationale",
+      "title": "Аргументы решения",
+      "required": true,
+      "confirmed": false,
+      "pending_sync": false
+    }
+  ],
+  "gamification": {
+    "rules_version": 1,
+    "xp_state": "provisional",
+    "role_mastery": [
+      {
+        "role_id": "product_captain",
+        "xp": 120,
+        "level": "practiced",
+        "next_level_xp": 200
+      },
+      {
+        "role_id": "navigation",
+        "xp": 55,
+        "level": "crew",
+        "next_level_xp": 100
+      }
+    ],
+    "contribution": {
+      "score": 78,
+      "rank": 2,
+      "status": "active",
+      "snapshot_at": "2026-07-18T22:15:00+03:00"
+    }
+  },
+  "decision_vote": {
+    "status": "open",
+    "eligible": true,
+    "vote_id": "vote_product_decision_01",
+    "decision_id": "decision_product_01",
+    "round_version": 1,
+    "options": [
+      {
+        "option_id": "option_ai_assistant",
+        "title": "AI Shore Assistant"
+      },
+      {
+        "option_id": "option_team_bot",
+        "title": "Team Workflow Bot"
+      },
+      {
+        "option_id": "option_research_app",
+        "title": "Research Companion"
+      }
+    ],
+    "my_choice": null,
+    "my_ballot_revision": null,
+    "pending_sync": false
+  },
+  "expedition_status": "active",
+  "expedition_completion": null
+}
