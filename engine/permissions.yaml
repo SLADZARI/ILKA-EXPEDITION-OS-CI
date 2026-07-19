@@ -1,0 +1,134 @@
+version: 7
+roles:
+  captain:
+    can:
+    - create_expedition
+    - add_participant
+    - generate_rotation
+    - start_expedition
+    - recover_day_transition
+    - start_evening_session
+    - request_day_close
+    - close_day
+    - close_expedition
+    - override_day_close
+    - request_stage_advance
+    - advance_stage
+    - override_stage_advance
+    - override_role_assignment
+    - waive_task
+    - activate_recovery_day
+    - suspend_program
+    - resume_program
+    - acknowledge_safety
+    - start_task
+    - block_task
+    - complete_task
+    - acknowledge_card
+    - apply_safety_override
+    - confirm_output
+    - ban_participant
+    - unban_participant
+    - force_day_transition
+    - rewind_day
+    - create_decision_draft
+    - create_vote
+    - vote
+    - finalize_product_decision
+    - override_product_decision
+    - verify_role_assignment
+    - adjust_role_xp
+    scope: expedition
+    super_admin: true
+    inherits: [product_captain, participant]
+  product_captain:
+    can:
+    - start_evening_session
+    - request_day_close
+    - request_stage_advance
+    - create_decision_draft
+    - create_vote
+    - submit_shore_package
+    - complete_task
+    - start_task
+    - block_task
+    - acknowledge_card
+    - confirm_output
+    - vote
+    - finalize_product_decision
+  participant:
+    can:
+    - accept_role
+    - complete_task
+    - add_note
+    - add_attachment
+    - vote
+    - acknowledge_card
+    - request_help
+    - start_task
+    - block_task
+  shore_operator:
+    can: [read_shared_events, create_ai_artifact]
+  system:
+    can:
+    - generate_rotation
+    - recover_day_transition
+    - validate_transition
+    - queue_sync
+    - apply_synced_events
+    - publish_rating_snapshot
+  system_clock:
+    can: [process_day_boundary]
+restrictions:
+  vessel_safety_decisions: captain_only
+  normal_day_start: system_clock_only
+  captain_override_requires_reason: true
+  role_assignment_changes_after_day_start: captain_only
+  delete_event: nobody
+  task_update_requires_assignment: true
+  task_block_requires_reason: true
+  task_waiver_requires_reason: true
+  card_acknowledgement_requires_assignment: true
+  product_captain_cannot_apply_safety_override: true
+  product_captain_cannot_change_captain: true
+  product_captain_cannot_close_expedition: true
+  output_confirmation_requires_product_captain_or_captain: true
+  product_stage_change: captain_only
+  stage_advance_requires_closed_day: true
+  stage_override_requires_reason_and_unmet_conditions: true
+  product_captain_can_only_request_stage_advance: true
+  captain_is_expedition_super_admin: true
+  captain_super_admin_scope: expedition_only
+  captain_inherits_product_captain_and_participant: true
+  super_admin_commands_require_server_confirmation: true
+  super_admin_commands_require_reason: true
+  captain_cannot_delete_event: true
+  captain_cannot_impersonate_system_clock: true
+  captain_cannot_ban_current_captain: true
+  participant_ban_scope: current_expedition_only
+  participant_ban_preserves_history: true
+  rewind_preserves_append_only_history: true
+  rewind_does_not_change_product_stage: true
+  decision_vote_mode: single_choice_attributable
+  decision_electorate_frozen_on_vote_opened: true
+  decision_quorum_requires_all_eligible_ballots: true
+  decision_threshold: strict_majority_of_all_eligible_voters
+  decision_finalize_requires_server_confirmation: true
+  decision_override_captain_only: true
+  decision_override_requires_reason_and_unresolved_objections: true
+  voter_cannot_impersonate_other_voter: true
+  authoritative_xp_award: system_only
+  role_assignment_verification: captain_or_engine_contract
+  xp_adjustment: captain_only_server_confirmed
+  xp_adjustment_requires_reason_and_evidence: true
+  xp_balance_cannot_be_negative: true
+  rating_snapshot_publish: system_only
+  ui_cannot_calculate_xp_or_rank: true
+  safety_actions_do_not_generate_competitive_bonus: true
+  recovery_day_has_no_xp_penalty: true
+  cook_rating_is_load_normalized: true
+  expedition_close: captain_only
+  expedition_close_requires_server_confirmation: true
+  expedition_close_requires_final_day_closed: true
+  final_stage_has_no_next_stage: true
+  completed_expedition_operational_commands: read_only
