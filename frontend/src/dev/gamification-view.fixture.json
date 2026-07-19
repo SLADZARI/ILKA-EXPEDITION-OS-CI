@@ -1,0 +1,32 @@
+{
+  "expedition_id": "expedition_2026_01",
+  "participant_id": "participant_03",
+  "rules_version": 1,
+  "role_mastery": [
+    {
+      "role_id": "product_captain",
+      "xp": 120,
+      "level": "practiced",
+      "next_level_xp": 200
+    },
+    {
+      "role_id": "navigation",
+      "xp": 55,
+      "level": "crew",
+      "next_level_xp": 100
+    },
+    {
+      "role_id": "cook",
+      "xp": 40,
+      "level": "crew",
+      "next_level_xp": 100
+    }
+  ],
+  "contribution": {
+    "score": 78,
+    "rank": 2,
+    "status": "active",
+    "snapshot_at": "2026-07-18T22:15:00+03:00"
+  },
+  "sync_state": "synced"
+}

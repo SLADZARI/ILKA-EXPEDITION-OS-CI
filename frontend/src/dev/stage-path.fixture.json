@@ -1,0 +1,62 @@
+[
+  {
+    "stage_id": "onboarding",
+    "title": "Onboarding",
+    "status": "completed"
+  },
+  {
+    "stage_id": "problem_discovery",
+    "title": "Problem Discovery",
+    "status": "completed"
+  },
+  {
+    "stage_id": "hypothesis",
+    "title": "Hypothesis",
+    "status": "completed"
+  },
+  {
+    "stage_id": "validation",
+    "title": "Validation",
+    "status": "completed"
+  },
+  {
+    "stage_id": "product_decision",
+    "title": "Product Decision",
+    "status": "active"
+  },
+  {
+    "stage_id": "mvp_scope",
+    "title": "MVP Scope",
+    "status": "available"
+  },
+  {
+    "stage_id": "prototype",
+    "title": "Prototype",
+    "status": "locked"
+  },
+  {
+    "stage_id": "build",
+    "title": "Build",
+    "status": "locked"
+  },
+  {
+    "stage_id": "launch",
+    "title": "Launch",
+    "status": "locked"
+  },
+  {
+    "stage_id": "user_feedback",
+    "title": "User Feedback",
+    "status": "locked"
+  },
+  {
+    "stage_id": "iteration",
+    "title": "Iteration",
+    "status": "locked"
+  },
+  {
+    "stage_id": "demo_day",
+    "title": "Demo Day",
+    "status": "locked"
+  }
+]
