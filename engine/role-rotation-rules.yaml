@@ -1,0 +1,38 @@
+version: 2
+rotation:
+  mode: sequential
+  participant_order_source: expedition_membership_order
+  advance_trigger: day.started
+  preview_days: 3
+  deterministic: true
+  seed_fields: [expedition_id, participant_order]
+onboard_role_cycle: [navigation, mooring, order, cook, product_focus]
+assignment_constraints:
+  exactly_one_onboard_role_per_participant: true
+  exactly_one_product_role_per_participant: true
+  unique_onboard_role_per_day: true
+rules:
+  - id: cook_light_product_load
+    priority: 100
+    when: onboard_role == cook
+    require_product_load: low
+  - id: incompatible_pair_blocked
+    priority: 90
+    when: product_role.incompatible_onboard_roles contains onboard_role
+    action: reject_assignment
+  - id: stage_role_availability
+    priority: 80
+    when: current_stage not_in product_role.available_stages and '*' not_in product_role.available_stages
+    action: reject_assignment
+  - id: avoid_same_product_role_consecutive_days
+    priority: 40
+    when: alternative_valid_assignment_exists
+    prefer: product_role_differs_from_previous_day
+  - id: captain_override
+    priority: 1000
+    actor: captain
+    requires_reason: true
+    emits: role_assignment.overridden
+  - id: restore_fairness_after_override
+    after: role_assignment.overridden
+    action: recalculate_future_rotation_preserving_completed_history
