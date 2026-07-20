@@ -1,8 +1,9 @@
-import Ajv2020, {
-  type ErrorObject,
-  type ValidateFunction,
-} from "npm:ajv@8.20.0/dist/2020.js";
-import addFormats from "npm:ajv-formats@3.0.1";
+import Ajv2020Module from "npm:ajv@8.20.0/dist/2020.js";
+import addFormatsModule from "npm:ajv-formats@3.0.1";
+import type {
+  ErrorObject,
+  ValidateFunction,
+} from "npm:ajv@8.20.0";
 
 import commandSchema from "../../../../schemas/command.schema.json" with {
   type: "json",
@@ -21,6 +22,30 @@ import type {
   SchemaValidator,
   ValidationIssue,
 } from "./types.ts";
+
+interface AjvLike {
+  addSchema(schema: unknown): AjvLike;
+  getSchema(key: string): ValidateFunction | undefined;
+  compile(schema: unknown): ValidateFunction;
+}
+
+type AjvConstructor = new (options: Record<string, unknown>) => AjvLike;
+
+function commonJsDefault(value: unknown): unknown {
+  if (
+    value !== null &&
+    typeof value === "object" &&
+    "default" in value
+  ) {
+    return (value as { default: unknown }).default;
+  }
+  return value;
+}
+
+const Ajv2020 = commonJsDefault(Ajv2020Module) as AjvConstructor;
+const addFormats = commonJsDefault(addFormatsModule) as (
+  ajv: AjvLike,
+) => unknown;
 
 function issues(errors: ErrorObject[] | null | undefined): ValidationIssue[] {
   return (errors ?? []).map((error) => ({
