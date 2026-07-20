@@ -1,6 +1,7 @@
 name: Command gateway diagnostics
 
 on:
+  pull_request:
   push:
     branches:
       - feat/supabase-command-gateway
