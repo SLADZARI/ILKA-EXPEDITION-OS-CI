@@ -11,6 +11,32 @@ permissions:
   contents: read
 
 jobs:
+  identity-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Run concise database diagnostics
+        shell: bash
+        run: |
+          set -o pipefail
+          supabase start >/tmp/supabase-start.log 2>&1
+          supabase db reset >/tmp/supabase-reset.log 2>&1
+          supabase test db 2>&1 | tail -n 160
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup >/dev/null 2>&1 || true
+
   contracts-and-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
