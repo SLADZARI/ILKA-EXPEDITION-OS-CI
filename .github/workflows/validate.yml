@@ -25,13 +25,40 @@ jobs:
           version: 2.101.0
           github-token: ${{ github.token }}
 
-      - name: Run concise database diagnostics
+      - name: Run database diagnostics
         shell: bash
         run: |
-          set -o pipefail
+          set +e
           supabase start >/tmp/supabase-start.log 2>&1
+          start_status=$?
+          if [[ $start_status -ne 0 ]]; then
+            tail -n 200 /tmp/supabase-start.log > /tmp/identity-test-tail.log
+            cat /tmp/identity-test-tail.log
+            exit $start_status
+          fi
+
           supabase db reset >/tmp/supabase-reset.log 2>&1
-          supabase test db 2>&1 | tail -n 160
+          reset_status=$?
+          if [[ $reset_status -ne 0 ]]; then
+            tail -n 200 /tmp/supabase-reset.log > /tmp/identity-test-tail.log
+            cat /tmp/identity-test-tail.log
+            exit $reset_status
+          fi
+
+          supabase test db >/tmp/identity-test.log 2>&1
+          test_status=$?
+          tail -n 200 /tmp/identity-test.log > /tmp/identity-test-tail.log
+          cat /tmp/identity-test-tail.log
+          exit $test_status
+
+      - name: Upload database diagnostic tail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: identity-test-tail
+          path: /tmp/identity-test-tail.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Stop local Supabase
         if: always()
