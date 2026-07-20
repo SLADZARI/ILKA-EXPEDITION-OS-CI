@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-07-20 — Supabase Command Gateway
+
+- Accepted `ADR-014` for authenticated command transport, direct PostgreSQL access and exact pinned runtime loading.
+- Added `POST /functions/v1/command-gateway` with explicit platform JWT verification and code-level Supabase Auth session verification.
+- Kept `private` outside the Data API and connected through the default `SUPABASE_DB_URL` using short parameterized transactions under `SET LOCAL ROLE service_role`.
+- Added canonical Command Schema validation, request-size/media-type checks, controlled CORS and stable public success/error envelopes.
+- Added normalized SHA-256 request hashing that excludes client actor claims, sorts object keys recursively, preserves arrays and normalizes command timestamps to UTC.
+- Added authenticated exact replay before current membership/runtime checks, restricted to the original persisted Auth actor.
+- Added request-hash/Expedition mismatch rejection without persistence.
+- Added authoritative Expedition membership and Participant actor resolution; human `system`/`system_clock` claims are denied.
+- Kept Product Captain as a runtime-verified Day assignment rather than a JWT or membership role.
+- Added generated command actor metadata from `engine/command-catalog.yaml` without creating a competing permission source.
+- Added exact runtime-bundle registry matching release key, Git commit, rules release, content release and reducer version.
+- Added canonical event, private transaction-request and private transaction-result validation around `private.process_command(jsonb)`.
+- Added a committed Deno lockfile, formatting, lint, strict typecheck, 24 unit tests and direct local PostgreSQL integration to protected CI.
+- Added a static Command Gateway contract validator while preserving all earlier repository, frontend, pgTAP, database lint and Supabase contract gates.
+
+Gate 5 intentionally registers no production reducer bundle. New valid commands return retryable `runtime_release_unavailable` without creating a receipt, event or projection. This gate does not add concrete Participant/Captain read models, public read functions, a frontend network adapter, cloud fixtures, scheduler, Realtime, Storage, pilot data or production data. Remote Edge Function deployment remains blocked until the implementation PR and protected CI are green. The next gate is the first vertical Engine runtime and read-model slice.
+
 ## 2026-07-20 — Supabase Atomic Command Transaction deployment
 
 - Applied the reviewed Atomic Command Transaction migration to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`).
