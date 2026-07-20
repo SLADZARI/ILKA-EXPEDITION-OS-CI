@@ -30,6 +30,56 @@ jobs:
       - name: Generate command metadata
         run: python scripts/generate_supabase_command_gateway_contract.py
 
+      - name: Normalize async test capture
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("supabase/functions/command-gateway/tests/unit/handler.test.ts")
+          text = path.read_text(encoding="utf-8")
+          before = '''Deno.test("accepted runtime result is sent to the atomic transaction", async () => {
+            let captured: Record<string, unknown> | null = null;
+            const handler = createCommandGatewayHandler(dependencies({
+              database: database({
+                processCommand: async (request) => {
+                  captured = request;
+                  return result();
+                },
+              }),
+            }));
+            const response = await handler(post(command()));
+            assertEquals(response.status, 200);
+            assertExists(captured);
+            const persistedCommand = captured.command as Record<string, unknown>;
+            assertEquals(persistedCommand.actor_id, "participant_01");
+            assertEquals(persistedCommand.actor_role, "participant");
+            assertEquals((captured.request_hash as string).length, 64);
+          });'''
+          after = '''Deno.test("accepted runtime result is sent to the atomic transaction", async () => {
+            const capture: { value?: Record<string, unknown> } = {};
+            const handler = createCommandGatewayHandler(dependencies({
+              database: database({
+                processCommand: async (request) => {
+                  capture.value = request;
+                  return result();
+                },
+              }),
+            }));
+            const response = await handler(post(command()));
+            assertEquals(response.status, 200);
+            assertExists(capture.value);
+            const captured = capture.value;
+            const persistedCommand = captured.command as Record<string, unknown>;
+            assertEquals(persistedCommand.actor_id, "participant_01");
+            assertEquals(persistedCommand.actor_role, "participant");
+            assertEquals((captured.request_hash as string).length, 64);
+          });'''
+          if before in text:
+              path.write_text(text.replace(before, after, 1), encoding="utf-8")
+          elif "const capture: { value?: Record<string, unknown> } = {};" not in text:
+              raise SystemExit("expected async capture block not found")
+          PY
+
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
