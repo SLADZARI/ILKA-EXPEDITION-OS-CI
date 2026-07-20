@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-20 — Supabase Identity and Expedition Membership
+
+- Added Auth-linked `ilka.profiles` while preserving Profile identity after Auth-user deletion.
+- Added runtime-release-pinned `ilka.expeditions` using canonical Expedition status vocabulary.
+- Added Expedition-scoped `ilka.expedition_members` with `captain`, `participant` and `shore_operator` roles.
+- Enforced at most one active Captain per Expedition and one membership per Profile and Expedition.
+- Added separate domain `ilka.participants` identities restricted to participant memberships and order positions 1–5.
+- Added expiring `ilka.invitations` that persist only normalized email and 32-byte SHA-256 token hashes.
+- Added terminal invitation transitions and immutable invitation identity fields.
+- Added server-only `private.resolve_actor_context(...)` for active, Expedition-scoped actor resolution.
+- Added forced RLS, explicit no-delete service grants and pgTAP coverage for Auth/Profile lifecycle, cross-Expedition isolation, bans, Captain uniqueness and invitation security.
+- Added a dedicated static contract validator and protected CI gate.
+
+This gate does not add invitation delivery or acceptance transport, command receipts, event log, projections, Edge Functions, scheduler jobs or Storage buckets. Remote application remains blocked until the PR and protected CI are green.
+
 ## 2026-07-20 — Supabase Foundation deployment
 
 - Applied the reviewed Supabase Foundation to the development-only cloud project `VOYAGE` (`rehfxjlyfojkpascjtmb`).
