@@ -5,33 +5,47 @@ on:
   pull_request:
     paths:
       - 'frontend/package.json'
+      - 'frontend/package-lock.json'
       - '.github/workflows/generate-frontend-lockfile.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate-lockfile:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout
+      - name: Checkout pull request branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Check whether lockfile is missing
+        id: lockfile
+        run: |
+          if [ -f frontend/package-lock.json ]; then
+            echo "missing=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "missing=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up Node
+        if: steps.lockfile.outputs.missing == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-          cache-dependency-path: frontend/package.json
 
       - name: Generate package lock
+        if: steps.lockfile.outputs.missing == 'true'
         working-directory: frontend
         run: npm install --package-lock-only --ignore-scripts
 
-      - name: Upload package lock
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-package-lock
-          path: frontend/package-lock.json
-          if-no-files-found: error
+      - name: Commit package lock to pull request branch
+        if: steps.lockfile.outputs.missing == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/package-lock.json
+          git commit -m "chore(frontend): add npm lockfile"
+          git push origin HEAD:${{ github.head_ref }}
