@@ -1,0 +1,46 @@
+name: Generate Supabase database types
+
+on:
+  push:
+    branches:
+      - feat/supabase-foundation
+    paths:
+      - .github/workflows/generate-supabase-types.yml
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.event.head_commit.message == 'ci: generate Supabase database types'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/supabase-foundation
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Generate database types
+        run: supabase gen types typescript --local > supabase/database.types.ts
+
+      - name: Commit generated types
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/database.types.ts
+          git commit -m "chore(supabase): commit generated database types"
+          git push origin HEAD:feat/supabase-foundation
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
