@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-20 — Supabase Foundation
+
+- Added reproducible local Supabase CLI configuration on PostgreSQL 17.
+- Limited the Data API exposed schema list to `api`.
+- Added internal `ilka` and `private` schemas with explicit grants and revoked implicit domain access.
+- Added immutable `ilka.runtime_releases` with rules, content, reducer and exact Git commit pinning.
+- Added 25 pgTAP foundation assertions for schema boundaries, privileges and release immutability.
+- Added database linting, migration replay and generated database type parity to protected `contracts-and-tests` CI.
+- Added generated TypeScript database contracts for `api`, `ilka` and `private`.
+- Added a static Supabase Foundation contract validator and local runtime documentation.
+
+No Supabase migration has been applied to the cloud `VOYAGE` project. `VOYAGE` remains development-only and contains no ILKA domain data.
+
 ## 2026-07-20 — Supabase runtime architecture
 
 - Audited the development-only Supabase `VOYAGE` project and confirmed that no ILKA application schemas, domain tables, migrations, Edge Functions, Storage buckets or scheduled jobs have been applied.
@@ -12,7 +25,7 @@
 - Formalized schema-valid Participant/Captain projection transport, Realtime invalidation-only behavior and private versioned evidence storage.
 - Added `docs/architecture/supabase-runtime.md` with the implementation sequence and Supabase Foundation gate.
 
-No Supabase migrations have been applied. `VOYAGE` remains development-only and contains no pilot or production data.
+No Supabase migrations had been applied. `VOYAGE` remained development-only and contained no domain data.
 
 ## 2026-07-20 — Frontend Foundation
 
@@ -27,7 +40,7 @@ No Supabase migrations have been applied. `VOYAGE` remains development-only and 
 - Added an installable PWA manifest, projection-safe service worker and offline fallback.
 - Completed the Frontend Foundation gate on protected `main`.
 
-No Supabase migrations have been applied. ADR-012 was Proposed at completion of this gate.
+No Supabase migrations had been applied. ADR-012 was Proposed at completion of this gate.
 
 ## 2026-07-20 — Canonical baseline
 
