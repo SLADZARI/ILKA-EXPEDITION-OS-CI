@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-07-20 — Supabase Atomic Command Transaction
+
+- Accepted `ADR-013` for one private command transaction and a neutral projection-document persistence substrate.
+- Added version-controlled request and result JSON Schemas for `private.process_command(jsonb)`.
+- Added one `ilka.projection_heads` row per Expedition with a monotonic Expedition-wide projection version.
+- Added versioned `ilka.projection_documents` for complete rebuildable JSON read documents.
+- Added transaction-scoped command and Expedition advisory locks in a fixed order.
+- Added exact replay before current actor validation, preserving the original accepted or rejected receipt.
+- Added unpersisted request-hash mismatch rejection and stale stream-position conflict results.
+- Added persisted deterministic rejected receipts without event or projection version changes.
+- Added atomic accepted-command persistence for receipt, consecutive canonical events and projection upserts.
+- Added actor-context and pinned runtime-release integrity checks without duplicating Engine permissions or reducers.
+- Added complete rollback coverage when projection persistence fails after receipt and event insertion.
+- Denied browser execution and direct `service_role` projection writes while granting only the private transaction entry point.
+- Added pgTAP coverage, generated database type validation, architecture documentation and a protected static contract gate.
+
+This gate does not add `command-gateway`, TypeScript reducers, concrete Participant/Captain read models, public API functions, frontend transport, Realtime, scheduler, Storage, pilot data or production data. Remote migration application remains blocked until the implementation PR and protected CI are green. The next gate is Command Gateway.
+
 ## 2026-07-20 — Supabase Immutable History deployment
 
 - Applied the reviewed Immutable History migration to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`).
