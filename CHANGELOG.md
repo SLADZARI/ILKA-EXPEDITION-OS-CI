@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-20 — Supabase Immutable History
+
+- Added one `ilka.stream_heads` row per Expedition with automatic initialization at stream position `0`.
+- Added immutable `ilka.command_receipts` keyed by canonical `command_id` and 32-byte SHA-256 `request_hash`.
+- Added append-only `ilka.event_log` with unique, gap-free `(expedition_id, stream_position)` ordering.
+- Added reusable private helpers for command idempotency and expected stream-position conflict detection.
+- Added ordered receipt-to-event-set validation, including a deferred constraint that prevents partial accepted command persistence.
+- Added same-Expedition correction-event references that preserve the original event unchanged.
+- Added UPDATE, DELETE and TRUNCATE protection for command receipts and events.
+- Denied raw browser access and direct `service_role` history writes while retaining trusted internal SELECT access.
+- Reconciled `engine/event-catalog.yaml` with accepted `ADR-012`: persisted replay now uses `stream_position`; canonical fixture arrays preserve explicit array order.
+- Added pgTAP coverage, generated-type validation, architecture documentation and a protected static contract gate.
+
+This gate does not add `private.process_command(...)`, advisory command locking, projections, Edge Functions, API read functions or production data. Remote migration application remains blocked until the implementation PR and protected CI are green. The next gate is the atomic command transaction.
+
 ## 2026-07-20 — Supabase Identity and Expedition Membership deployment
 
 - Applied the reviewed Identity and Expedition Membership migration to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`).

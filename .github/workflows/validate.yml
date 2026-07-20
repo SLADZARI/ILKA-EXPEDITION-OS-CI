@@ -104,6 +104,9 @@ jobs:
       - name: Validate Supabase identity and membership contract
         run: python scripts/validate_supabase_identity_membership.py
 
+      - name: Validate Supabase immutable history contract
+        run: python scripts/validate_supabase_immutable_history.py
+
       - name: Verify generated sources are committed
         shell: bash
         run: |

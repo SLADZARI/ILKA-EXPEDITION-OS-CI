@@ -102,7 +102,19 @@ Identity and Expedition Membership are complete locally and deployed to developm
 
 The reviewed identity migration is deployed to development-only `VOYAGE` as remote migration `20260720162648` (`identity_membership`). All five identity tables use forced RLS, `anon` and `authenticated` have no raw table access, `service_role` has no direct DELETE privilege, and the actor resolver is unavailable to browser roles. The tables remain empty: no ILKA profiles, Expeditions, memberships, Participants or invitations were created.
 
-Production authentication UI, invitation delivery/acceptance transport, remote projection loading, server command transport and multi-device synchronization are not yet implemented. The next persistence gate is immutable history: stream heads, command receipts and append-only event log.
+Immutable History is implemented as the next local gate:
+
+- each Expedition receives a stream head at position `0`;
+- accepted command receipts declare ordered canonical event IDs and resulting stream position;
+- `command_id` plus SHA-256 `request_hash` supports new/replay/mismatch detection;
+- canonical events append consecutively to an Expedition-scoped `event_log`;
+- a deferred constraint prevents accepted receipts from committing with a partial event set;
+- correction events reference earlier events in the same Expedition and preserve the original event;
+- UPDATE, DELETE and TRUNCATE are blocked for receipts and events;
+- persisted replay order is authoritative by `stream_position`, not by timestamps;
+- browser roles and direct `service_role` history writes remain denied.
+
+The immutable-history migration is not applied remotely until its reviewed PR and protected CI gate are green. `private.process_command(...)`, projections, command transport and real frontend synchronization are still absent. The next backend gate is the atomic command transaction.
 
 ## Run the Day 1 prototype
 
@@ -147,6 +159,7 @@ supabase db lint --local --level error
 supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 python scripts/validate_supabase_foundation.py
 python scripts/validate_supabase_identity_membership.py
+python scripts/validate_supabase_immutable_history.py
 supabase stop
 ```
 

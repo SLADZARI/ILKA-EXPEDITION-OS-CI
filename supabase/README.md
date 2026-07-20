@@ -23,7 +23,19 @@ The Identity and Expedition Membership gate adds:
 - server-only `private.resolve_actor_context(...)`;
 - forced RLS, explicit grants and cross-Expedition/ban tests.
 
-It does **not** contain invitation delivery or acceptance transport, command receipts, event log, projections, Edge Functions, scheduler jobs or Storage buckets.
+The Immutable History gate adds:
+
+- one `ilka.stream_heads` row per Expedition;
+- immutable `ilka.command_receipts` keyed by canonical `command_id`;
+- append-only `ilka.event_log` ordered by Expedition `stream_position`;
+- SHA-256 request-hash idempotency helpers;
+- expected stream-position conflict detection;
+- ordered command-to-event-set validation;
+- same-Expedition correction-event references;
+- UPDATE, DELETE and TRUNCATE protection;
+- forced RLS and no direct browser or `service_role` history writes.
+
+It does **not** contain `private.process_command(...)`, projections, Edge Functions, API read functions, scheduler jobs or Storage buckets.
 
 ## Local verification
 
@@ -37,6 +49,7 @@ supabase db lint --local --level error
 supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 python scripts/validate_supabase_foundation.py
 python scripts/validate_supabase_identity_membership.py
+python scripts/validate_supabase_immutable_history.py
 ```
 
 Stop the local stack when finished:
@@ -50,7 +63,7 @@ supabase stop
 - The Data API exposes only `api`.
 - Generated server types explicitly include `api`, `ilka` and `private`.
 - Browser code must not query `ilka` or `private` directly.
-- `anon` and `authenticated` have no raw identity-table grants.
+- `anon` and `authenticated` have no raw domain-table grants.
 - Trusted server runtime resolves actor context through `private.resolve_actor_context(...)`.
 - `public` is not an ILKA application schema.
 
@@ -62,6 +75,16 @@ supabase stop
 - Raw invitation tokens are never stored.
 - Identity and membership mutations require server confirmation and are not offline commands.
 
+## History boundary
+
+- Database `expedition_id` is an internal UUID; canonical `event_json.expedition_id` is the stable `expedition_key`.
+- `stream_position` is persistence metadata and does not change `engine/event.schema.json`.
+- Persisted runtime replay uses ascending `stream_position`.
+- Canonical fixture arrays without persistence metadata preserve explicit array order.
+- A retry preserves the original `command_id` and normalized request hash.
+- Corrections append a new event with `correction_of_event_id`; prior events remain immutable.
+- The next gate must compose history writes and projection mutations inside `private.process_command(...)`.
+
 ## Remote safety
 
 The accepted development project is `VOYAGE` (`rehfxjlyfojkpascjtmb`).
@@ -71,4 +94,4 @@ The following reviewed migrations are deployed remotely:
 - `20260720142526 foundation`;
 - `20260720162648 identity_membership`.
 
-Identity tables remain empty. No command/event/projection runtime, Edge Functions, scheduler, Storage or pilot data exists. Further migrations must not be applied from a feature branch; immutable history is the next reviewed gate.
+Identity tables remain empty. The Immutable History migration must not be applied remotely from the feature branch. Remote application is allowed only after the implementation PR and protected CI are green. No pilot or production data is authorized.
