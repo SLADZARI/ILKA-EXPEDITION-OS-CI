@@ -7,8 +7,8 @@ import { CardShell } from './CardShell';
 
 type Task = TodayView['tasks'][number];
 export function ActionCard({ task, onStart, onComplete }: { task: Task; onStart?: () => void; onComplete?: () => void }) {
-  const canStart = task.status === 'available';
-  const canComplete = task.status === 'in_progress' || task.status === 'blocked';
+  const canStart = task.status === 'available' && !task.pending_sync;
+  const canComplete = (task.status === 'in_progress' || task.status === 'blocked') && !task.pending_sync;
   return <CardShell id={COMPONENT_IDS.action_card} state={task.status}>
     <StatusBadge label={TASK_STATUS_LABEL[task.status]} tone={TASK_STATUS_TONE[task.status]} />
     <h3>{task.title}</h3>
