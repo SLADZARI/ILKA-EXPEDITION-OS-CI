@@ -537,6 +537,101 @@ export type Database = {
         }
         Relationships: []
       }
+      projection_documents: {
+        Row: {
+          created_at: string
+          expedition_id: string
+          generated_at: string
+          projection_json: Json
+          projection_key: string
+          projection_type: string
+          projection_version: number
+          reducer_version: string
+          runtime_release_id: string
+          schema_id: string
+          schema_version: string
+          source_stream_position: number
+          subject_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expedition_id: string
+          generated_at: string
+          projection_json: Json
+          projection_key: string
+          projection_type: string
+          projection_version: number
+          reducer_version: string
+          runtime_release_id: string
+          schema_id: string
+          schema_version: string
+          source_stream_position: number
+          subject_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expedition_id?: string
+          generated_at?: string
+          projection_json?: Json
+          projection_key?: string
+          projection_type?: string
+          projection_version?: number
+          reducer_version?: string
+          runtime_release_id?: string
+          schema_id?: string
+          schema_version?: string
+          source_stream_position?: number
+          subject_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projection_documents_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projection_documents_runtime_release_id_fkey"
+            columns: ["runtime_release_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projection_heads: {
+        Row: {
+          created_at: string
+          current_projection_version: number
+          expedition_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_projection_version?: number
+          expedition_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_projection_version?: number
+          expedition_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projection_heads_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: true
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       runtime_releases: {
         Row: {
           content_release: string
@@ -622,6 +717,15 @@ export type Database = {
         Args: { p_expected_stream_position: number; p_expedition_id: string }
         Returns: number
       }
+      build_persisted_command_result: {
+        Args: {
+          p_command_id: string
+          p_expected_stream_position: number
+          p_projection_updates: Json
+          p_replayed: boolean
+        }
+        Returns: Json
+      }
       check_command_idempotency: {
         Args: { p_command_id: string; p_request_hash: string }
         Returns: {
@@ -631,6 +735,7 @@ export type Database = {
           stream_position: number
         }[]
       }
+      process_command: { Args: { p_request: Json }; Returns: Json }
       resolve_actor_context: {
         Args: { p_auth_user_id: string; p_expedition_id: string }
         Returns: {
