@@ -1,0 +1,46 @@
+name: Commit generated frontend sources
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/commit-generated-frontend.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Generate canonical frontend sources
+        working-directory: frontend
+        run: npm run generate
+
+      - name: Commit generated sources
+        run: |
+          if git diff --quiet; then
+            echo "Generated sources are already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/design-system/generated frontend/src/contracts/generated
+          git commit -m "chore(frontend): synchronize generated sources"
+          git push origin HEAD:${{ github.head_ref }}
