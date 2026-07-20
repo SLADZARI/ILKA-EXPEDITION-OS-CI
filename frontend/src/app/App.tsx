@@ -4,7 +4,9 @@ import {
   applyParticipantCommandOverlay,
   type ConnectivityState,
 } from '../application/projections/participant-command-overlay';
-import { participantPreviewBootstrap } from '../dev/preview-bootstrap';
+import { resolvePreviewBootstrap } from '../dev/preview-bootstrap';
+import { PreviewLauncher } from '../dev/PreviewLauncher';
+import { PreviewSwitcher } from '../dev/PreviewSwitcher';
 import { AppShell } from '../layout/AppShell';
 import type { NavigationItem } from '../navigation/BottomNavigation';
 import {
@@ -123,9 +125,25 @@ function CaptainApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode: 'c
   return <AppShell variant="captain" navigation={navigation} activeNavigationId={route} onNavigate={setRoute}>{content}</AppShell>;
 }
 
+function renderRuntime(bootstrap: AppBootstrap) {
+  return bootstrap.mode === 'participant' ? <ParticipantApp bootstrap={bootstrap} /> : <CaptainApp bootstrap={bootstrap} />;
+}
+
 export function App() {
-  const bootstrap = window.__ILKA_BOOTSTRAP__ ?? (import.meta.env.DEV ? participantPreviewBootstrap : undefined);
+  const injectedBootstrap = window.__ILKA_BOOTSTRAP__;
+  const previewEnabled = import.meta.env.DEV || import.meta.env.VITE_ILKA_PREVIEW === 'true';
+  const previewBootstrap = !injectedBootstrap && previewEnabled
+    ? resolvePreviewBootstrap(window.location.search)
+    : null;
+
+  if (!injectedBootstrap && previewEnabled && !previewBootstrap) {
+    return <><PreviewSwitcher /><AppShell><PreviewLauncher /></AppShell></>;
+  }
+
+  const bootstrap = injectedBootstrap ?? previewBootstrap;
   if (!bootstrap) return <AppShell><EmptyState title="Projection bootstrap is missing"
     description="Inject window.__ILKA_BOOTSTRAP__ from the application composition root. UI does not invent domain state." /></AppShell>;
-  return bootstrap.mode === 'participant' ? <ParticipantApp bootstrap={bootstrap} /> : <CaptainApp bootstrap={bootstrap} />;
+
+  const runtime = renderRuntime(bootstrap);
+  return !injectedBootstrap && previewEnabled ? <><PreviewSwitcher />{runtime}</> : runtime;
 }
