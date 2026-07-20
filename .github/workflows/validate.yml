@@ -13,7 +13,7 @@ permissions:
 jobs:
   contracts-and-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -77,5 +77,30 @@ jobs:
         working-directory: frontend
         run: npm run build:preview
 
-      - name: Verify generated frontend sources are committed
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Rebuild local database from migrations
+        run: supabase db reset
+
+      - name: Run Supabase database tests
+        run: supabase test db
+
+      - name: Lint Supabase database
+        run: supabase db lint --local --level error
+
+      - name: Generate Supabase database types
+        run: supabase gen types typescript --local > supabase/database.types.ts
+
+      - name: Verify generated sources are committed
         run: git diff --exit-code
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
