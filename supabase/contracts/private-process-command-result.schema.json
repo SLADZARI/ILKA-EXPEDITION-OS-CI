@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-process-command-result.schema.json",
+  "title": "PrivateProcessCommandResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "outcome",
+    "replayed",
+    "persisted",
+    "receipt",
+    "projection_updates",
+    "expected_stream_position",
+    "current_stream_position"
+  ],
+  "properties": {
+    "outcome": {
+      "enum": ["accepted", "rejected", "conflict"]
+    },
+    "replayed": {
+      "type": "boolean"
+    },
+    "persisted": {
+      "type": "boolean"
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command_id",
+        "expedition_id",
+        "expedition_key",
+        "command_type",
+        "actor_auth_user_id",
+        "actor_profile_id",
+        "actor_membership_id",
+        "actor_participant_id",
+        "actor_role",
+        "request_hash",
+        "status",
+        "received_at",
+        "processed_at",
+        "event_ids",
+        "stream_position",
+        "projection_version",
+        "runtime_release_id",
+        "reducer_version",
+        "rejection_code",
+        "rejection_message",
+        "conflict_code"
+      ],
+      "properties": {
+        "command_id": {
+          "type": "string",
+          "pattern": "^cmd_[A-Za-z0-9_-]+$"
+        },
+        "expedition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expedition_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "command_type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "actor_auth_user_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "actor_profile_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "actor_membership_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "actor_participant_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "actor_role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "status": {
+          "enum": ["accepted", "rejected", "conflict"]
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "processed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^evt_[A-Za-z0-9_-]+$"
+          },
+          "uniqueItems": true
+        },
+        "stream_position": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "projection_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtime_release_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reducer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rejection_code": {
+          "type": ["string", "null"]
+        },
+        "rejection_message": {
+          "type": ["string", "null"]
+        },
+        "conflict_code": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "projection_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "projection_key",
+          "projection_version",
+          "source_stream_position"
+        ],
+        "properties": {
+          "projection_key": {
+            "type": "string"
+          },
+          "projection_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_stream_position": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "expected_stream_position": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "current_stream_position": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}
