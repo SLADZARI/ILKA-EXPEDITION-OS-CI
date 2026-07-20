@@ -46,9 +46,13 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Generate frontend sources
+      - name: Generate design-system sources
         working-directory: frontend
-        run: npm run generate
+        run: npm run generate:design
+
+      - name: Generate frontend contracts
+        working-directory: frontend
+        run: npm run generate:contracts
 
       - name: Validate frontend sources
         working-directory: frontend
