@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - chore/bootstrap-canonical-repository
 
 permissions:
   contents: read
@@ -14,7 +13,7 @@ permissions:
 jobs:
   contracts-and-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -35,3 +34,37 @@ jobs:
 
       - name: Run test suite
         run: pytest -q
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Generate design-system sources
+        working-directory: frontend
+        run: npm run generate:design
+
+      - name: Generate frontend contracts
+        working-directory: frontend
+        run: npm run generate:contracts
+
+      - name: Validate frontend sources
+        working-directory: frontend
+        run: npm run validate:sources
+
+      - name: Typecheck frontend
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Verify generated frontend sources are committed
+        run: git diff --exit-code
