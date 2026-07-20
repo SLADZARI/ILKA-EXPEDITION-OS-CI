@@ -70,6 +70,13 @@ def main() -> int:
         if expected not in test_sql:
             errors.append(f"foundation pgTAP test missing assertion for {expected}")
 
+    generated_types = (root / "supabase/database.types.ts").read_text(encoding="utf-8")
+    for schema_name in ("api", "ilka", "private"):
+        if f"  {schema_name}: {{" not in generated_types:
+            errors.append(f"generated database types missing {schema_name} schema")
+    if "  public: {" in generated_types:
+        errors.append("generated server database types must use explicit api, ilka and private schemas")
+
     if errors:
         return report(errors)
 
