@@ -43,7 +43,7 @@ engine/         state, command, event, permission and rotation rules
 frontend/       React/TypeScript PWA
 schemas/        canonical JSON Schemas
 stages/         product stages
-supabase/       migrations, tests and future Edge Functions
+supabase/       migrations, tests and Edge Functions
 tests/          validation and executable domain tests
 docs/           ADR, architecture and workflows
 design-system/  tokens and stable component IDs
@@ -129,7 +129,24 @@ Atomic Command Transaction is complete locally and deployed to development under
 - projection persistence failure rolls back receipt, events and both heads;
 - browser roles and direct `service_role` writes remain denied.
 
-The reviewed atomic transaction migration is deployed to development-only `VOYAGE` as remote migration `20260720185027` (`atomic_command_transaction`). Forced RLS is enabled on `projection_heads` and `projection_documents`; `anon` and `authenticated` cannot read internal projections or execute `private.process_command(jsonb)`; `service_role` can execute only the approved transaction entry point and SELECT internal projection state, with no direct INSERT, UPDATE or DELETE. The projection-head trigger is installed, and all identity, history and projection tables remain empty. Concrete `TodayView`, `CaptainDayView`, task/card/role read models, `command-gateway` and real frontend synchronization are still absent. The next gate is Command Gateway.
+The reviewed atomic transaction migration is deployed to development-only `VOYAGE` as remote migration `20260720185027` (`atomic_command_transaction`). Forced RLS is enabled on `projection_heads` and `projection_documents`; `anon` and `authenticated` cannot read internal projections or execute `private.process_command(jsonb)`; `service_role` can execute only the approved transaction entry point and SELECT internal projection state, with no direct INSERT, UPDATE or DELETE. The projection-head trigger is installed, and all identity, history and projection tables remain empty.
+
+Command Gateway is complete locally under accepted `ADR-014`:
+
+- `POST /functions/v1/command-gateway` is the only external domain-write transport;
+- platform JWT verification and code-level Supabase Auth verification are both required;
+- `private` remains outside the Data API;
+- the Edge Function connects through `SUPABASE_DB_URL` and executes parameterized transactions under `SET LOCAL ROLE service_role`;
+- canonical Command Schema validation and normalized SHA-256 request hashing run before execution;
+- exact replay requires the original authenticated actor but not current membership or runtime availability;
+- current Expedition membership and Participant identity determine authoritative actor attribution;
+- Product Captain is verified only by the pinned Engine runtime;
+- command actor metadata is generated from `engine/command-catalog.yaml`;
+- prepared events and private request/result contracts are validated before and after `private.process_command(jsonb)`;
+- CORS, body limits and stable public error envelopes are implemented;
+- Deno unit tests and direct local PostgreSQL integration are protected CI gates.
+
+Gate 5 intentionally registers no production reducer bundle. New valid commands return retryable `runtime_release_unavailable` without a receipt, event or projection write until Gate 6 adds the first exact pinned reducer and concrete read models. The function is not deployed remotely before PR review and protected CI completion. The next gate is the first vertical Engine runtime and read-model slice.
 
 ## Run the Day 1 prototype
 
@@ -161,22 +178,29 @@ The normal production build does not enable fixtures. It requires an authoritati
 From the repository root:
 
 ```bash
+python scripts/generate_supabase_command_gateway_contract.py
 python scripts/validate_repository.py .
 pytest -q
 cd frontend
 npm ci
 npm run check
 cd ..
+deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
+deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 supabase start
 supabase db reset
 supabase test db
 supabase db lint --local --level error
+SUPABASE_DB_URL="$(supabase status -o json | jq -r '.DB_URL')" deno test --frozen --config supabase/functions/command-gateway/deno.json --allow-env=SUPABASE_DB_URL --allow-net=127.0.0.1:54322 supabase/functions/command-gateway/tests/integration
 supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 python scripts/validate_supabase_foundation.py
 python scripts/validate_supabase_identity_membership.py
 python scripts/validate_supabase_immutable_history.py
 python scripts/validate_supabase_atomic_command_transaction.py
+python scripts/validate_supabase_command_gateway.py
 supabase stop
 ```
 
-Protected `contracts-and-tests` runs the same repository, frontend and local Supabase gates and rejects uncommitted generated-source drift.
+Protected `contracts-and-tests` runs the same repository, frontend, Deno and local Supabase gates and rejects uncommitted generated-source drift.
