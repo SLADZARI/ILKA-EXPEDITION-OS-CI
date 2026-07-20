@@ -1,1 +1,613 @@
-[{"event_id":"evt_0001","event_type":"expedition.created","occurred_at":"2026-07-18T05:00:00+03:00","recorded_at":"2026-07-18T05:00:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0001","idempotency_key":"cmd_0001","schema_version":2,"payload":{"name":"ILKA Demo Expedition","timezone":"Europe/Athens","duration_days":12,"day_boundary_local_time":"06:00"},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0002","event_type":"participant.added","occurred_at":"2026-07-18T05:01:00+03:00","recorded_at":"2026-07-18T05:01:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0002","idempotency_key":"cmd_0002","schema_version":2,"payload":{"participant_id":"participant_01","display_name":"Anna"},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0003","event_type":"participant.added","occurred_at":"2026-07-18T05:02:00+03:00","recorded_at":"2026-07-18T05:02:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0003","idempotency_key":"cmd_0003","schema_version":2,"payload":{"participant_id":"participant_02","display_name":"Boris"},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0004","event_type":"participant.added","occurred_at":"2026-07-18T05:03:00+03:00","recorded_at":"2026-07-18T05:03:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0004","idempotency_key":"cmd_0004","schema_version":2,"payload":{"participant_id":"participant_03","display_name":"Daria"},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0005","event_type":"participant.added","occurred_at":"2026-07-18T05:04:00+03:00","recorded_at":"2026-07-18T05:04:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0005","idempotency_key":"cmd_0005","schema_version":2,"payload":{"participant_id":"participant_04","display_name":"Ivan"},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0006","event_type":"participant.added","occurred_at":"2026-07-18T05:05:00+03:00","recorded_at":"2026-07-18T05:05:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0006","idempotency_key":"cmd_0006","schema_version":2,"payload":{"participant_id":"participant_05","display_name":"Maria"},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0007","event_type":"rotation.generated","occurred_at":"2026-07-18T05:10:00+03:00","recorded_at":"2026-07-18T05:10:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0007","idempotency_key":"cmd_0007","schema_version":2,"payload":{"rotation_id":"rotation_demo_2026_01","seed":"ilka_demo_2026_01:v2","rules_version":2,"assignments":[{"assignment_id":"asg_01","participant_id":"participant_01","product_role_id":"product_captain","onboard_role_id":"navigation"},{"assignment_id":"asg_02","participant_id":"participant_02","product_role_id":"product_support","onboard_role_id":"mooring"},{"assignment_id":"asg_03","participant_id":"participant_03","product_role_id":"product_support","onboard_role_id":"order"},{"assignment_id":"asg_04","participant_id":"participant_04","product_role_id":"product_support","onboard_role_id":"cook"},{"assignment_id":"asg_05","participant_id":"participant_05","product_role_id":"product_support","onboard_role_id":"product_focus"}]},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0008","event_type":"expedition.started","occurred_at":"2026-07-18T05:15:00+03:00","recorded_at":"2026-07-18T05:15:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0008","idempotency_key":"cmd_0008","schema_version":2,"payload":{},"device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0009","event_type":"stage.opened","occurred_at":"2026-07-18T05:15:01+03:00","recorded_at":"2026-07-18T05:15:01+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","command_id":"cmd_0008","idempotency_key":"cmd_0008","schema_version":2,"payload":{"stage_id":"onboarding"},"stage_id":"onboarding","device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0010","event_type":"day.started","occurred_at":"2026-07-18T06:00:00+03:00","recorded_at":"2026-07-18T06:00:00+03:00","actor_id":"system_clock","actor_role":"system_clock","expedition_id":"ilka_demo_2026_01","command_id":"cmd_day_boundary_ilka_demo_2026_01_2026_07_18","idempotency_key":"day_boundary:ilka_demo_2026_01:2026-07-18","schema_version":2,"payload":{"day_number":1,"calendar_date":"2026-07-18","stage_id":"onboarding","boundary_at":"2026-07-18T06:00:00+03:00"},"day_number":1,"stage_id":"onboarding","device_id":null,"sync_status":"synced","correction_of":null},{"event_id":"evt_0011","event_type":"role_assignments.activated","occurred_at":"2026-07-18T06:00:01+03:00","recorded_at":"2026-07-18T06:00:01+03:00","actor_id":"system_clock","actor_role":"system_clock","expedition_id":"ilka_demo_2026_01","command_id":"cmd_day_boundary_ilka_demo_2026_01_2026_07_18","idempotency_key":"day_boundary:ilka_demo_2026_01:2026-07-18","schema_version":2,"payload":{"day_number":1,"assignments":[{"assignment_id":"asg_01","participant_id":"participant_01","product_role_id":"product_captain","onboard_role_id":"navigation"},{"assignment_id":"asg_02","participant_id":"participant_02","product_role_id":"product_support","onboard_role_id":"mooring"},{"assignment_id":"asg_03","participant_id":"participant_03","product_role_id":"product_support","onboard_role_id":"order"},{"assignment_id":"asg_04","participant_id":"participant_04","product_role_id":"product_support","onboard_role_id":"cook"},{"assignment_id":"asg_05","participant_id":"participant_05","product_role_id":"product_support","onboard_role_id":"product_focus"}]},"day_number":1,"stage_id":"onboarding","device_id":null,"sync_status":"synced","correction_of":null}]
+[
+  {
+    "event_id": "evt_0001",
+    "event_type": "expedition.created",
+    "occurred_at": "2026-07-18T05:00:00+03:00",
+    "recorded_at": "2026-07-18T05:00:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0001",
+    "idempotency_key": "cmd_0001",
+    "schema_version": 2,
+    "payload": {
+      "name": "ILKA Demo Expedition",
+      "timezone": "Europe/Athens",
+      "duration_days": 12,
+      "day_boundary_local_time": "06:00"
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0002",
+    "event_type": "participant.added",
+    "occurred_at": "2026-07-18T05:01:00+03:00",
+    "recorded_at": "2026-07-18T05:01:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0002",
+    "idempotency_key": "cmd_0002",
+    "schema_version": 2,
+    "payload": {
+      "participant_id": "participant_01",
+      "display_name": "Anna"
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0003",
+    "event_type": "participant.added",
+    "occurred_at": "2026-07-18T05:02:00+03:00",
+    "recorded_at": "2026-07-18T05:02:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0003",
+    "idempotency_key": "cmd_0003",
+    "schema_version": 2,
+    "payload": {
+      "participant_id": "participant_02",
+      "display_name": "Boris"
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0004",
+    "event_type": "participant.added",
+    "occurred_at": "2026-07-18T05:03:00+03:00",
+    "recorded_at": "2026-07-18T05:03:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0004",
+    "idempotency_key": "cmd_0004",
+    "schema_version": 2,
+    "payload": {
+      "participant_id": "participant_03",
+      "display_name": "Daria"
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0005",
+    "event_type": "participant.added",
+    "occurred_at": "2026-07-18T05:04:00+03:00",
+    "recorded_at": "2026-07-18T05:04:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0005",
+    "idempotency_key": "cmd_0005",
+    "schema_version": 2,
+    "payload": {
+      "participant_id": "participant_04",
+      "display_name": "Ivan"
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0006",
+    "event_type": "participant.added",
+    "occurred_at": "2026-07-18T05:05:00+03:00",
+    "recorded_at": "2026-07-18T05:05:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0006",
+    "idempotency_key": "cmd_0006",
+    "schema_version": 2,
+    "payload": {
+      "participant_id": "participant_05",
+      "display_name": "Maria"
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0007",
+    "event_type": "rotation.generated",
+    "occurred_at": "2026-07-18T05:10:00+03:00",
+    "recorded_at": "2026-07-18T05:10:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0007",
+    "idempotency_key": "cmd_0007",
+    "schema_version": 2,
+    "payload": {
+      "rotation_id": "rotation_demo_2026_01",
+      "seed": "ilka_demo_2026_01:v2",
+      "rules_version": 2,
+      "assignments": [
+        {
+          "assignment_id": "asg_01",
+          "participant_id": "participant_01",
+          "product_role_id": "product_captain",
+          "onboard_role_id": "navigation"
+        },
+        {
+          "assignment_id": "asg_02",
+          "participant_id": "participant_02",
+          "product_role_id": "product_support",
+          "onboard_role_id": "mooring"
+        },
+        {
+          "assignment_id": "asg_03",
+          "participant_id": "participant_03",
+          "product_role_id": "product_support",
+          "onboard_role_id": "order"
+        },
+        {
+          "assignment_id": "asg_04",
+          "participant_id": "participant_04",
+          "product_role_id": "product_support",
+          "onboard_role_id": "cook"
+        },
+        {
+          "assignment_id": "asg_05",
+          "participant_id": "participant_05",
+          "product_role_id": "product_support",
+          "onboard_role_id": "product_focus"
+        }
+      ]
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0008",
+    "event_type": "expedition.started",
+    "occurred_at": "2026-07-18T05:15:00+03:00",
+    "recorded_at": "2026-07-18T05:15:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0008",
+    "idempotency_key": "cmd_0008",
+    "schema_version": 2,
+    "payload": {},
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0009",
+    "event_type": "stage.opened",
+    "occurred_at": "2026-07-18T05:15:01+03:00",
+    "recorded_at": "2026-07-18T05:15:01+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0008",
+    "idempotency_key": "cmd_0008",
+    "schema_version": 2,
+    "payload": {
+      "stage_id": "onboarding"
+    },
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0010",
+    "event_type": "day.started",
+    "occurred_at": "2026-07-18T06:00:00+03:00",
+    "recorded_at": "2026-07-18T06:00:00+03:00",
+    "actor_id": "system_clock",
+    "actor_role": "system_clock",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_day_boundary_ilka_demo_2026_01_2026_07_18",
+    "idempotency_key": "day_boundary:ilka_demo_2026_01:2026-07-18",
+    "schema_version": 2,
+    "payload": {
+      "day_number": 1,
+      "calendar_date": "2026-07-18",
+      "stage_id": "onboarding",
+      "boundary_at": "2026-07-18T06:00:00+03:00"
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0011",
+    "event_type": "role_assignments.activated",
+    "occurred_at": "2026-07-18T06:00:01+03:00",
+    "recorded_at": "2026-07-18T06:00:01+03:00",
+    "actor_id": "system_clock",
+    "actor_role": "system_clock",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_day_boundary_ilka_demo_2026_01_2026_07_18",
+    "idempotency_key": "day_boundary:ilka_demo_2026_01:2026-07-18",
+    "schema_version": 2,
+    "payload": {
+      "day_number": 1,
+      "assignments": [
+        {
+          "assignment_id": "asg_01",
+          "participant_id": "participant_01",
+          "product_role_id": "product_captain",
+          "onboard_role_id": "navigation"
+        },
+        {
+          "assignment_id": "asg_02",
+          "participant_id": "participant_02",
+          "product_role_id": "product_support",
+          "onboard_role_id": "mooring"
+        },
+        {
+          "assignment_id": "asg_03",
+          "participant_id": "participant_03",
+          "product_role_id": "product_support",
+          "onboard_role_id": "order"
+        },
+        {
+          "assignment_id": "asg_04",
+          "participant_id": "participant_04",
+          "product_role_id": "product_support",
+          "onboard_role_id": "cook"
+        },
+        {
+          "assignment_id": "asg_05",
+          "participant_id": "participant_05",
+          "product_role_id": "product_support",
+          "onboard_role_id": "product_focus"
+        }
+      ]
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0012",
+    "event_type": "card_bundles.published",
+    "occurred_at": "2026-07-18T06:00:02+03:00",
+    "recorded_at": "2026-07-18T06:00:02+03:00",
+    "actor_id": "system_clock",
+    "actor_role": "system_clock",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_day_boundary_ilka_demo_2026_01_2026_07_18",
+    "idempotency_key": "day_boundary:ilka_demo_2026_01:2026-07-18",
+    "schema_version": 2,
+    "payload": {
+      "day_number": 1,
+      "bundles": [
+        {
+          "bundle_id": "bundle_day_01_participant_01",
+          "participant_id": "participant_01",
+          "card_ids": [
+            "knowledge_expedition_rules",
+            "knowledge_day_01_flow",
+            "safety_captain_authority",
+            "task_team_agreement",
+            "role_product_captain_day_01",
+            "onboard_navigation_day_01"
+          ],
+          "task_ids": [
+            "task_team_agreement"
+          ]
+        },
+        {
+          "bundle_id": "bundle_day_01_participant_02",
+          "participant_id": "participant_02",
+          "card_ids": [
+            "knowledge_expedition_rules",
+            "knowledge_day_01_flow",
+            "safety_captain_authority",
+            "task_team_agreement",
+            "role_product_support_day_01",
+            "onboard_mooring_day_01"
+          ],
+          "task_ids": [
+            "task_team_agreement"
+          ]
+        },
+        {
+          "bundle_id": "bundle_day_01_participant_03",
+          "participant_id": "participant_03",
+          "card_ids": [
+            "knowledge_expedition_rules",
+            "knowledge_day_01_flow",
+            "safety_captain_authority",
+            "task_team_agreement",
+            "role_product_support_day_01",
+            "onboard_order_day_01"
+          ],
+          "task_ids": [
+            "task_team_agreement"
+          ]
+        },
+        {
+          "bundle_id": "bundle_day_01_participant_04",
+          "participant_id": "participant_04",
+          "card_ids": [
+            "knowledge_expedition_rules",
+            "knowledge_day_01_flow",
+            "safety_captain_authority",
+            "task_team_agreement",
+            "role_product_support_day_01",
+            "onboard_cook_day_01"
+          ],
+          "task_ids": [
+            "task_team_agreement"
+          ]
+        },
+        {
+          "bundle_id": "bundle_day_01_participant_05",
+          "participant_id": "participant_05",
+          "card_ids": [
+            "knowledge_expedition_rules",
+            "knowledge_day_01_flow",
+            "safety_captain_authority",
+            "task_team_agreement",
+            "role_product_support_day_01",
+            "onboard_product_focus_day_01"
+          ],
+          "task_ids": [
+            "task_team_agreement"
+          ]
+        }
+      ]
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0013",
+    "event_type": "card.acknowledged",
+    "occurred_at": "2026-07-18T09:20:00+03:00",
+    "recorded_at": "2026-07-18T09:20:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "participant",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0013",
+    "idempotency_key": "cmd_0013",
+    "schema_version": 2,
+    "payload": {
+      "card_id": "role_product_captain_day_01"
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0014",
+    "event_type": "task.started",
+    "occurred_at": "2026-07-18T18:00:00+03:00",
+    "recorded_at": "2026-07-18T18:00:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "participant",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0014",
+    "idempotency_key": "cmd_0014",
+    "schema_version": 2,
+    "payload": {
+      "task_id": "task_team_agreement"
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0015",
+    "event_type": "task.completed",
+    "occurred_at": "2026-07-18T20:30:00+03:00",
+    "recorded_at": "2026-07-18T20:30:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "participant",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0015",
+    "idempotency_key": "cmd_0015",
+    "schema_version": 2,
+    "payload": {
+      "task_id": "task_team_agreement",
+      "evidence_refs": [
+        "evidence_team_agreement_v1"
+      ]
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0016",
+    "event_type": "day.close_requested",
+    "occurred_at": "2026-07-18T20:45:00+03:00",
+    "recorded_at": "2026-07-18T20:45:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "product_captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0016",
+    "idempotency_key": "cmd_0016",
+    "schema_version": 2,
+    "payload": {
+      "day_number": 1
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0017",
+    "event_type": "day.closed",
+    "occurred_at": "2026-07-18T21:00:00+03:00",
+    "recorded_at": "2026-07-18T21:00:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0017",
+    "idempotency_key": "cmd_0017",
+    "schema_version": 2,
+    "payload": {
+      "day_number": 1,
+      "stage_id": "onboarding"
+    },
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "occurred_at": "2026-07-20T20:10:00+03:00",
+    "recorded_at": "2026-07-20T20:10:01+03:00",
+    "expedition_id": "ilka_demo_2026_01",
+    "schema_version": 3,
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null,
+    "event_id": "evt_stage_request_003",
+    "event_type": "stage.advance_requested",
+    "actor_id": "participant_01",
+    "actor_role": "product_captain",
+    "command_id": "cmd_stage_request_003",
+    "idempotency_key": "cmd_stage_request_003",
+    "day_number": 2,
+    "stage_id": "problem_discovery",
+    "payload": {
+      "from_stage_id": "problem_discovery",
+      "to_stage_id": "hypothesis",
+      "requested_for_day_number": 3
+    }
+  },
+  {
+    "occurred_at": "2026-07-20T20:30:00+03:00",
+    "recorded_at": "2026-07-20T20:30:01+03:00",
+    "expedition_id": "ilka_demo_2026_01",
+    "schema_version": 3,
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null,
+    "event_id": "evt_stage_completed_002",
+    "event_type": "stage.completed",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "command_id": "cmd_stage_advance_003",
+    "idempotency_key": "cmd_stage_advance_003",
+    "day_number": 2,
+    "stage_id": "problem_discovery",
+    "payload": {
+      "stage_id": "problem_discovery",
+      "next_stage_id": "hypothesis",
+      "completed_on_day_number": 2
+    }
+  },
+  {
+    "occurred_at": "2026-07-20T20:30:02+03:00",
+    "recorded_at": "2026-07-20T20:30:02+03:00",
+    "expedition_id": "ilka_demo_2026_01",
+    "schema_version": 3,
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null,
+    "event_id": "evt_stage_opened_003",
+    "event_type": "stage.opened",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "command_id": "cmd_stage_advance_003",
+    "idempotency_key": "cmd_stage_advance_003",
+    "day_number": 3,
+    "stage_id": "hypothesis",
+    "payload": {
+      "stage_id": "hypothesis",
+      "previous_stage_id": "problem_discovery",
+      "effective_from_day_number": 3
+    }
+  },
+  {
+    "expedition_id": "ilka_demo_2026_01",
+    "schema_version": 3,
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null,
+    "occurred_at": "2026-07-21T20:10:00+03:00",
+    "recorded_at": "2026-07-21T20:10:01+03:00",
+    "event_id": "evt_stage_request_004",
+    "event_type": "stage.advance_requested",
+    "actor_id": "participant_02",
+    "actor_role": "product_captain",
+    "command_id": "cmd_stage_request_004",
+    "idempotency_key": "cmd_stage_request_004",
+    "day_number": 3,
+    "stage_id": "hypothesis",
+    "payload": {
+      "from_stage_id": "hypothesis",
+      "to_stage_id": "validation",
+      "requested_for_day_number": 4
+    }
+  },
+  {
+    "expedition_id": "ilka_demo_2026_01",
+    "schema_version": 3,
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null,
+    "occurred_at": "2026-07-21T20:30:00+03:00",
+    "recorded_at": "2026-07-21T20:30:01+03:00",
+    "event_id": "evt_stage_completed_003",
+    "event_type": "stage.completed",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "command_id": "cmd_stage_advance_004",
+    "idempotency_key": "cmd_stage_advance_004",
+    "day_number": 3,
+    "stage_id": "hypothesis",
+    "payload": {
+      "stage_id": "hypothesis",
+      "next_stage_id": "validation",
+      "completed_on_day_number": 3
+    }
+  },
+  {
+    "expedition_id": "ilka_demo_2026_01",
+    "schema_version": 3,
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null,
+    "occurred_at": "2026-07-21T20:30:02+03:00",
+    "recorded_at": "2026-07-21T20:30:02+03:00",
+    "event_id": "evt_stage_opened_004",
+    "event_type": "stage.opened",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "command_id": "cmd_stage_advance_004",
+    "idempotency_key": "cmd_stage_advance_004",
+    "day_number": 4,
+    "stage_id": "validation",
+    "payload": {
+      "stage_id": "validation",
+      "previous_stage_id": "hypothesis",
+      "effective_from_day_number": 4
+    }
+  }
+]
