@@ -70,7 +70,17 @@ The Command Gateway gate adds:
 
 Gate 5 intentionally contains no production reducer bundle. New commands return retryable `runtime_release_unavailable` and write nothing until the first vertical Engine/read-model gate registers an exact pinned runtime.
 
-It does **not** contain concrete Participant/Captain read documents, public API read functions, a frontend network adapter, scheduler jobs or Storage buckets.
+Gate 6 adds the first executable Day 1 vertical:
+
+- accepted `ADR-015` for the `complete_task` reducer and authoritative read transport;
+- pure `day1_complete_task_v1` runtime producing `task.completed` or `task.completed_late`;
+- Product Captain resolution from the authoritative Day role assignment;
+- complete `TodayView` and `CaptainDayView` projection upserts in one atomic transaction;
+- projection JSON Schema validation in the gateway before persistence;
+- authenticated `api.get_today_view(...)`, Captain-only `api.get_captain_day_view(...)` and actor-owned `api.get_command_receipt(...)`;
+- 36 Deno unit tests, 246 pgTAP assertions and two direct PostgreSQL integration tests.
+
+The implementation PR intentionally keeps the production runtime registry empty until the protected reducer merge SHA exists. It does **not** include Expedition bootstrap, invitation acceptance, rotation, Day start, initial projection generation, additional reducers, frontend adapters, scheduler jobs, Realtime or Storage.
 
 ## Local verification
 
@@ -78,8 +88,8 @@ Docker must be running for database integration.
 
 ```bash
 python scripts/generate_supabase_command_gateway_contract.py
-deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
-deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
 deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 supabase start
@@ -93,6 +103,7 @@ python scripts/validate_supabase_identity_membership.py
 python scripts/validate_supabase_immutable_history.py
 python scripts/validate_supabase_atomic_command_transaction.py
 python scripts/validate_supabase_command_gateway.py
+python scripts/validate_supabase_day1_vertical.py
 ```
 
 Stop the local stack when finished:
@@ -136,7 +147,7 @@ supabase stop
 - Accepted and deterministic rejected results may persist immutable receipts.
 - One accepted command allocates consecutive event positions and at most one new Expedition projection version.
 - Projection documents store complete rebuildable JSON and final source stream position.
-- Concrete read-model semantics remain owned by `app/contracts/*.schema.json` and the later Read Models gate.
+- Concrete read-model semantics remain owned by `app/contracts/*.schema.json`; Gate 6 now exposes the first schema-valid TodayView and CaptainDayView read transport.
 
 ## Gateway boundary
 
@@ -161,4 +172,4 @@ The following reviewed migrations are deployed remotely:
 - `20260720175753 immutable_history`;
 - `20260720185027 atomic_command_transaction`.
 
-All identity, history and projection tables remain empty. The remote transaction boundary has forced RLS, no browser access, no direct `service_role` writes and only the approved `private.process_command(jsonb)` execution grant. `command-gateway` is not deployed remotely until its implementation PR and protected CI are green. No pilot or production data is authorized.
+All identity, history and projection tables remain empty. The remote transaction boundary has forced RLS, no browser access, no direct `service_role` writes and only the approved `private.process_command(jsonb)` execution grant. `command-gateway` is not deployed remotely because the required `SUPABASE_ACCESS_TOKEN` GitHub secret is not configured. The Gate 6 read-model migration and runtime release are also not deployed from the implementation feature branch. No pilot or production data is authorized.

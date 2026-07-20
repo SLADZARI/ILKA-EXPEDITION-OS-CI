@@ -148,6 +148,20 @@ Command Gateway is complete locally under accepted `ADR-014`:
 
 Gate 5 intentionally registers no production reducer bundle. New valid commands return retryable `runtime_release_unavailable` without a receipt, event or projection write until Gate 6 adds the first exact pinned reducer and concrete read models. The function is not deployed remotely before PR review and protected CI completion. The next gate is the first vertical Engine runtime and read-model slice.
 
+Gate 6 implementation is complete locally under accepted `ADR-015`:
+
+- `day1_complete_task_v1` is the first pure executable TypeScript Engine reducer;
+- `complete_task` produces canonical `task.completed` or `task.completed_late` events;
+- Participant and Product Captain ownership is resolved from authoritative `TodayView`; Product Captain is not a membership/JWT role;
+- Captain without an explicit Participant assignment target receives deterministic `task_target_ambiguous_for_captain`;
+- accepted commands atomically update both `today_view:<participant_key>` and `captain_day_view` documents;
+- every prepared event and projection is schema-validated before `private.process_command(jsonb)`;
+- `api.get_today_view(...)`, `api.get_captain_day_view(...)` and `api.get_command_receipt(...)` provide authenticated, isolated browser read transport;
+- exact replay creates no duplicate receipt, event or projection version;
+- protected diagnostics passed 36 Deno unit tests, 246 pgTAP assertions and two direct PostgreSQL integration tests.
+
+This implementation change deliberately keeps the production runtime registry empty. After the pure reducer source is merged to protected `main`, a separate registration PR will pin that merge SHA in `ilka.runtime_releases` and wire the exact bundle without changing reducer behavior. The read-model migration and runtime release are not applied remotely from this feature branch, no cloud fixture data is created, and the Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.
+
 ## Run the Day 1 prototype
 
 ```bash
@@ -185,8 +199,8 @@ cd frontend
 npm ci
 npm run check
 cd ..
-deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
-deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
 deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 supabase start
@@ -200,6 +214,7 @@ python scripts/validate_supabase_identity_membership.py
 python scripts/validate_supabase_immutable_history.py
 python scripts/validate_supabase_atomic_command_transaction.py
 python scripts/validate_supabase_command_gateway.py
+python scripts/validate_supabase_day1_vertical.py
 supabase stop
 ```
 
