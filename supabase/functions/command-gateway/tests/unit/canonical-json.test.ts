@@ -7,8 +7,8 @@ import {
   canonicalJson,
   commandRequestHash,
   normalizedCommandIntent,
-} from "../../_shared/command-gateway/canonical-json.ts";
-import type { CommandEnvelope } from "../../_shared/command-gateway/types.ts";
+} from "../../../_shared/command-gateway/canonical-json.ts";
+import type { CommandEnvelope } from "../../../_shared/command-gateway/types.ts";
 
 function command(overrides: Partial<CommandEnvelope> = {}): CommandEnvelope {
   return {
