@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-20 — Supabase Identity and Expedition Membership deployment
+
+- Applied the reviewed Identity and Expedition Membership migration to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`).
+- Recorded remote migration version `20260720162648` with migration name `identity_membership`.
+- Deployed `ilka.profiles`, `ilka.expeditions`, `ilka.expedition_members`, `ilka.participants` and `ilka.invitations` plus server-only actor-resolution helpers and Auth/Profile triggers.
+- Verified forced RLS on all five tables, no raw table access for `anon` or `authenticated`, no direct DELETE privilege for `service_role`, and no browser execution privilege on `private.resolve_actor_context(...)`.
+- Confirmed that all five identity tables remain empty and that no ILKA pilot data, command gateway, command receipts, event log, projections, Edge Functions, scheduler jobs or Storage buckets were introduced.
+
+This development deployment does not authorize production or pilot operation. The next persistence gate remains immutable history: stream heads, command receipts and append-only event log.
+
 ## 2026-07-20 — Supabase Identity and Expedition Membership
 
 - Added Auth-linked `ilka.profiles` while preserving Profile identity after Auth-user deletion.
@@ -13,7 +23,7 @@
 - Added forced RLS, explicit no-delete service grants and pgTAP coverage for Auth/Profile lifecycle, cross-Expedition isolation, bans, Captain uniqueness and invitation security.
 - Added a dedicated static contract validator and protected CI gate.
 
-This gate does not add invitation delivery or acceptance transport, command receipts, event log, projections, Edge Functions, scheduler jobs or Storage buckets. Remote application remains blocked until the PR and protected CI are green.
+At completion of the implementation PR, remote application remained blocked until protected CI was green. The later reviewed development deployment is recorded above.
 
 ## 2026-07-20 — Supabase Foundation deployment
 
