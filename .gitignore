@@ -7,6 +7,7 @@ __pycache__/
 
 # Builds
 frontend/dist/
+frontend/dist-preview/
 dist/
 build/
 coverage/
@@ -16,6 +17,7 @@ coverage/
 .env
 .env.*
 !.env.example
+!frontend/.env.preview
 *.pem
 *.key
 
