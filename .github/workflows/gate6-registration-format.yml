@@ -1,0 +1,44 @@
+name: Gate 6 runtime registration format
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/gate6-registration-format.yml"
+      - "supabase/functions/_shared/command-gateway/runtime-registry.ts"
+      - "supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts"
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout registration branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/register-day1-complete-task-runtime
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format registration sources
+        run: |
+          deno fmt --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/_shared/command-gateway/runtime-registry.ts \
+            supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts
+
+      - name: Commit formatting
+        run: |
+          git add supabase/functions/_shared/command-gateway/runtime-registry.ts \
+            supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "style(engine): format runtime registration"
+          git push origin HEAD:feat/register-day1-complete-task-runtime
