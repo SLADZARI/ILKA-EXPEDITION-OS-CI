@@ -31,3 +31,6 @@ enable_confirmations = false
 [storage]
 enabled = true
 file_size_limit = "25MiB"
+
+[functions.command-gateway]
+verify_jwt = true

@@ -1,6 +1,6 @@
 # Supabase runtime
 
-This directory implements the Supabase runtime accepted by `ADR-012` and `ADR-013`.
+This directory implements the Supabase runtime accepted by `ADR-012`, `ADR-013` and `ADR-014`.
 
 ## Current scope
 
@@ -50,22 +50,49 @@ The Atomic Command Transaction gate adds:
 - complete rollback on projection failure;
 - forced RLS and no direct projection writes.
 
-It does **not** contain the `command-gateway` Edge Function, TypeScript reducers, concrete Participant/Captain read documents, public API read functions, scheduler jobs or Storage buckets.
+The Command Gateway gate adds:
+
+- accepted `ADR-014` for authenticated transport and pinned runtime loading;
+- `POST /functions/v1/command-gateway` with platform JWT verification;
+- code-level Supabase Auth session verification;
+- direct PostgreSQL access through `SUPABASE_DB_URL` without exposing `private` through the Data API;
+- `SET LOCAL ROLE service_role` for short parameterized transactions;
+- canonical Command Schema validation and normalized SHA-256 request hashing;
+- exact replay restricted to the original authenticated actor;
+- authoritative membership/Participant actor resolution;
+- Product Captain verification delegated to the pinned runtime;
+- generated command actor metadata from `engine/command-catalog.yaml`;
+- exact immutable runtime-bundle matching;
+- canonical event and private request/result validation;
+- all writes routed through `private.process_command(jsonb)`;
+- CORS, request-size limits and stable response/error envelopes;
+- Deno unit tests and direct local PostgreSQL integration.
+
+Gate 5 intentionally contains no production reducer bundle. New commands return retryable `runtime_release_unavailable` and write nothing until the first vertical Engine/read-model gate registers an exact pinned runtime.
+
+It does **not** contain concrete Participant/Captain read documents, public API read functions, a frontend network adapter, scheduler jobs or Storage buckets.
 
 ## Local verification
 
-Docker must be running.
+Docker must be running for database integration.
 
 ```bash
+python scripts/generate_supabase_command_gateway_contract.py
+deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
+deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 supabase start
 supabase db reset
 supabase test db
 supabase db lint --local --level error
+SUPABASE_DB_URL="$(supabase status -o json | jq -r '.DB_URL')" deno test --frozen --config supabase/functions/command-gateway/deno.json --allow-env=SUPABASE_DB_URL --allow-net=127.0.0.1:54322 supabase/functions/command-gateway/tests/integration
 supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 python scripts/validate_supabase_foundation.py
 python scripts/validate_supabase_identity_membership.py
 python scripts/validate_supabase_immutable_history.py
 python scripts/validate_supabase_atomic_command_transaction.py
+python scripts/validate_supabase_command_gateway.py
 ```
 
 Stop the local stack when finished:
@@ -111,6 +138,18 @@ supabase stop
 - Projection documents store complete rebuildable JSON and final source stream position.
 - Concrete read-model semantics remain owned by `app/contracts/*.schema.json` and the later Read Models gate.
 
+## Gateway boundary
+
+- `command-gateway` is the only external domain-write path.
+- A valid Auth session is required before replay or new execution.
+- Client actor claims never define persisted attribution.
+- Exact replay is available only to the original authenticated actor.
+- A new command requires active Expedition membership and the exact pinned runtime bundle.
+- Human requests cannot claim `system` or `system_clock`.
+- Product Captain is verified by the runtime, not JWT metadata or membership.
+- The generated actor matrix is derived from canonical YAML and handles only role-level preflight.
+- SQL events, projections and receipts are never written separately by the handler.
+
 ## Remote safety
 
 The accepted development project is `VOYAGE` (`rehfxjlyfojkpascjtmb`).
@@ -122,4 +161,4 @@ The following reviewed migrations are deployed remotely:
 - `20260720175753 immutable_history`;
 - `20260720185027 atomic_command_transaction`.
 
-All identity, history and projection tables remain empty. The remote transaction boundary has forced RLS, no browser access, no direct `service_role` writes and only the approved `private.process_command(jsonb)` execution grant. The next migration must not be applied remotely from a feature branch; remote application is allowed only after its implementation PR and protected CI are green. No pilot or production data is authorized.
+All identity, history and projection tables remain empty. The remote transaction boundary has forced RLS, no browser access, no direct `service_role` writes and only the approved `private.process_command(jsonb)` execution grant. `command-gateway` is not deployed remotely until its implementation PR and protected CI are green. No pilot or production data is authorized.
