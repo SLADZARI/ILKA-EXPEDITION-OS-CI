@@ -162,7 +162,7 @@ def main() -> int:
         "rules_release === release.rules_release",
         "content_release === release.content_release",
         "reducer_version === release.reducer_version",
-        "new StaticRuntimeRegistry([])",
+        "new StaticRuntimeRegistry(",
     ), "runtime registry missing exact pin", errors)
 
     catalog = yaml.safe_load(
