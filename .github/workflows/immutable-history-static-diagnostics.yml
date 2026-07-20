@@ -1,0 +1,37 @@
+name: Immutable history static diagnostics
+
+on:
+  pull_request:
+    paths:
+      - "scripts/validate_supabase_immutable_history.py"
+      - "docs/architecture/supabase-immutable-history.md"
+      - "engine/event-catalog.yaml"
+      - "supabase/**"
+      - ".github/workflows/immutable-history-static-diagnostics.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run immutable history validator
+        shell: bash
+        run: |
+          set +e
+          python scripts/validate_supabase_immutable_history.py > /tmp/immutable-history-validator.log 2>&1
+          status=$?
+          cat /tmp/immutable-history-validator.log
+          exit $status
+      - name: Upload validator output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: immutable-history-validator-output
+          path: /tmp/immutable-history-validator.log
+          if-no-files-found: error
+          retention-days: 1
