@@ -8,6 +8,12 @@ import commandSchema from "../../../../schemas/command.schema.json" with {
 import eventSchema from "../../../../engine/event.schema.json" with {
   type: "json",
 };
+import todayViewSchema from "../../../../app/contracts/today-view.schema.json" with {
+  type: "json",
+};
+import captainDayViewSchema from "../../../../app/contracts/captain-day-view.schema.json" with {
+  type: "json",
+};
 import processRequestSchema from "../../../contracts/private-process-command-request.schema.json" with {
   type: "json",
 };
@@ -101,11 +107,22 @@ export function createSchemaValidator(): SchemaValidator {
 
   ajv.addSchema(commandSchema);
   ajv.addSchema(eventSchema);
+  ajv.addSchema(todayViewSchema);
+  ajv.addSchema(captainDayViewSchema);
 
   const command = ajv.getSchema(commandSchema.$id) ?? ajv.compile(commandSchema);
   const event = ajv.getSchema(eventSchema.$id) ?? ajv.compile(eventSchema);
+  const todayView = ajv.getSchema(todayViewSchema.$id) ??
+    ajv.compile(todayViewSchema);
+  const captainDayView = ajv.getSchema(captainDayViewSchema.$id) ??
+    ajv.compile(captainDayViewSchema);
   const processRequest = ajv.compile(normalizeContractRefs(processRequestSchema));
   const processResult = ajv.compile(normalizeContractRefs(processResultSchema));
+
+  const projectionValidators = new Map<string, ValidateFunction>([
+    [todayViewSchema.$id, todayView],
+    [captainDayViewSchema.$id, captainDayView],
+  ]);
 
   return {
     validateCommand(value: unknown): ValidationIssue[] {
@@ -113,6 +130,13 @@ export function createSchemaValidator(): SchemaValidator {
     },
     validatePreparedEvent(value: unknown): ValidationIssue[] {
       return validate(event, value);
+    },
+    validateProjection(schemaId: string, value: unknown): ValidationIssue[] {
+      const validator = projectionValidators.get(schemaId);
+      if (!validator) {
+        return [{ path: "/", message: `unsupported projection schema: ${schemaId}` }];
+      }
+      return validate(validator, value);
     },
     validateProcessRequest(value: unknown): ValidationIssue[] {
       return validate(processRequest, value);

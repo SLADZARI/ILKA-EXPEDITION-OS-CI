@@ -1,0 +1,41 @@
+version: 1
+kind: transport_projection
+source_of_truth:
+  participant_schema: ../contracts/today-view.schema.json
+  captain_schema: ../contracts/captain-day-view.schema.json
+  command_result_schema: ../../supabase/contracts/private-process-command-result.schema.json
+purpose: Browser read transport only. Projection content is produced by the pinned Engine runtime and is not recalculated in the API or UI.
+functions:
+  get_today_view:
+    sql_function: api.get_today_view
+    arguments:
+      p_expedition_key: string
+    auth: active_participant_membership
+    returns:
+      schema: ../contracts/today-view.schema.json
+      nullable_until_bootstrapped: true
+  get_captain_day_view:
+    sql_function: api.get_captain_day_view
+    arguments:
+      p_expedition_key: string
+    auth: active_captain_membership
+    returns:
+      schema: ../contracts/captain-day-view.schema.json
+      nullable_until_bootstrapped: true
+  get_command_receipt:
+    sql_function: api.get_command_receipt
+    arguments:
+      p_command_id: string
+    auth: original_authenticated_command_actor
+    returns:
+      schema: ../../supabase/contracts/private-process-command-result.schema.json
+      nullable_when_unknown_or_not_owner: true
+security:
+  data_api_schema: api
+  direct_internal_table_access: false
+  cross_expedition_access: false
+  receipt_enumeration: false
+offline:
+  receipt_polling: idempotent_by_command_id
+  projection_refresh_after_acceptance: required
+  realtime_role: invalidation_only

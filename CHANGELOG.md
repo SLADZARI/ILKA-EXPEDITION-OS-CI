@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-07-20 — Day 1 `complete_task` vertical
+
+- Accepted `ADR-015` for the first executable Day 1 reducer and authoritative read-model transport.
+- Added pure TypeScript runtime `day1_complete_task_v1` implementing only canonical `complete_task`.
+- Added deterministic `task.completed` and `task.completed_late` event generation with offline `occurred_at` and server `recorded_at` semantics.
+- Added assignment ownership, active Expedition/Day, terminal-task and Captain ambiguity guards.
+- Preserved Product Captain as an authoritative Day role assignment derived from `TodayView`, never membership or JWT metadata.
+- Added complete atomic upserts for Participant `TodayView` and `CaptainDayView` with one projection-version increment.
+- Added gateway validation for canonical Participant/Captain projection schemas before persistence.
+- Added authenticated `api.get_today_view(...)`, Captain-only `api.get_captain_day_view(...)` and actor-owned `api.get_command_receipt(...)`.
+- Preserved browser denial of raw identity, history and projection tables and prevented command-receipt enumeration.
+- Added 12 new reducer/projection unit scenarios within a 36-test Deno suite, 25 new pgTAP assertions for a total of 246, and a full gateway-to-PostgreSQL vertical integration test alongside the existing adapter integration.
+- Added generated database types and a protected Gate 6 static contract validator.
+
+The implementation PR intentionally keeps the production runtime registry empty until its protected merge SHA can be pinned in an immutable `runtime_releases` row. No remote migration, runtime release, Auth user, Expedition, command, event or projection is created from this feature branch. Expedition bootstrap, invitations, rotation, Day start, initial projection generation, additional command reducers and frontend Supabase adapters remain outside this gate.
+
 ## 2026-07-20 — Supabase Command Gateway
 
 - Accepted `ADR-014` for authenticated command transport, direct PostgreSQL access and exact pinned runtime loading.

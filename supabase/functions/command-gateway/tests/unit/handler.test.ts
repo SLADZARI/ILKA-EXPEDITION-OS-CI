@@ -107,6 +107,7 @@ function validators(overrides: Partial<SchemaValidator> = {}): SchemaValidator {
   return {
     validateCommand: () => [],
     validatePreparedEvent: () => [],
+    validateProjection: () => [],
     validateProcessRequest: () => [],
     validateProcessResult: () => [],
     ...overrides,
@@ -429,6 +430,58 @@ Deno.test("accepted runtime result is sent to the atomic transaction", async () 
   assertEquals(persistedCommand.actor_id, "participant_01");
   assertEquals(persistedCommand.actor_role, "participant");
   assertEquals((captured.request_hash as string).length, 64);
+});
+
+Deno.test("invalid prepared projection is never sent to persistence", async () => {
+  let persistenceCalled = false;
+  const invalidProjectionRuntime = runtime({
+    reduce: async (input) => ({
+      status: "accepted",
+      events: [{
+        event_id: "evt_gateway_projection_invalid_01",
+        event_type: "task.completed",
+        occurred_at: input.received_at,
+        recorded_at: input.received_at,
+        actor_id: input.actor_id,
+        actor_role: input.actor_role,
+        expedition_id: input.context.expedition_key,
+        command_id: input.command.command_id,
+        idempotency_key: input.command.command_id,
+        schema_version: 1,
+        payload: input.command.payload,
+      }],
+      projection_mutations: [{
+        operation: "upsert",
+        projection_key: "today_view:participant_01",
+        projection_type: "today_view",
+        subject_id: "participant_01",
+        schema_id: "https://ilka.local/schemas/today-view.schema.json",
+        schema_version: "1",
+        projection: { invalid: true },
+      }],
+      rejection: null,
+    }),
+  });
+  const handler = createCommandGatewayHandler(dependencies({
+    runtimes: new StaticRuntimeRegistry([invalidProjectionRuntime]),
+    schemas: validators({
+      validateProjection: () => [{ path: "/tasks", message: "invalid" }],
+    }),
+    database: database({
+      processCommand: async () => {
+        persistenceCalled = true;
+        return result();
+      },
+    }),
+  }));
+  const response = await handler(post(command()));
+  assertEquals(response.status, 500);
+  assertEquals(persistenceCalled, false);
+  const body = await json(response);
+  assertEquals(
+    (body.error as Record<string, unknown>).code,
+    "runtime_contract_invalid",
+  );
 });
 
 Deno.test("stream conflict maps to HTTP 409", async () => {

@@ -15,7 +15,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_captain_day_view: {
+        Args: { p_expedition_key: string }
+        Returns: Json
+      }
+      get_command_receipt: { Args: { p_command_id: string }; Returns: Json }
+      get_today_view: { Args: { p_expedition_key: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

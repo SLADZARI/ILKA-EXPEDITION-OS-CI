@@ -171,6 +171,7 @@ export interface AuthVerifier {
 export interface SchemaValidator {
   validateCommand(value: unknown): ValidationIssue[];
   validatePreparedEvent(value: unknown): ValidationIssue[];
+  validateProjection(schemaId: string, value: unknown): ValidationIssue[];
   validateProcessRequest(value: unknown): ValidationIssue[];
   validateProcessResult(value: unknown): ValidationIssue[];
 }
