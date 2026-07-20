@@ -1,6 +1,17 @@
 import { assertEquals, assertGreater } from "jsr:@std/assert@1.0.19";
 
+import todayFixture from "../../../../../frontend/src/dev/today-view.day1.fixture.json" with {
+  type: "json",
+};
+import captainFixture from "../../../../../frontend/src/dev/captain-day-view.day1.fixture.json" with {
+  type: "json",
+};
+
 import { createSchemaValidator } from "../../../_shared/command-gateway/schema-validation.ts";
+import {
+  CAPTAIN_DAY_VIEW_SCHEMA_ID,
+  TODAY_VIEW_SCHEMA_ID,
+} from "../../../_shared/engine-runtime/day1-complete-task-v1.ts";
 
 const schemas = createSchemaValidator();
 
@@ -34,6 +45,27 @@ Deno.test("canonical command schema rejects an incomplete payload", () => {
     }).length,
     0,
   );
+});
+
+Deno.test("gateway validates canonical Participant and Captain projections", () => {
+  assertEquals(schemas.validateProjection(TODAY_VIEW_SCHEMA_ID, todayFixture), []);
+  assertEquals(
+    schemas.validateProjection(CAPTAIN_DAY_VIEW_SCHEMA_ID, captainFixture),
+    [],
+  );
+});
+
+Deno.test("gateway rejects an unknown projection schema", () => {
+  const issues = schemas.validateProjection("https://ilka.local/schemas/unknown.json", {});
+  assertEquals(issues.length, 1);
+  assertEquals(issues[0].path, "/");
+});
+
+Deno.test("gateway rejects an invalid TodayView projection", () => {
+  const issues = schemas.validateProjection(TODAY_VIEW_SCHEMA_ID, {
+    expedition_id: "schema_test",
+  });
+  assertGreater(issues.length, 0);
 });
 
 Deno.test("private persistence request schema accepts a deterministic rejection", () => {
