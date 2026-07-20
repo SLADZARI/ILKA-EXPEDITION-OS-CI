@@ -1,9 +1,6 @@
 import Ajv2020Module from "npm:ajv@8.20.0/dist/2020.js";
 import addFormatsModule from "npm:ajv-formats@3.0.1";
-import type {
-  ErrorObject,
-  ValidateFunction,
-} from "npm:ajv@8.20.0";
+import type { ErrorObject, ValidateFunction } from "npm:ajv@8.20.0";
 
 import commandSchema from "../../../../schemas/command.schema.json" with {
   type: "json",
@@ -18,10 +15,7 @@ import processResultSchema from "../../../contracts/private-process-command-resu
   type: "json",
 };
 
-import type {
-  SchemaValidator,
-  ValidationIssue,
-} from "./types.ts";
+import type { SchemaValidator, ValidationIssue } from "./types.ts";
 
 interface AjvLike {
   addSchema(schema: unknown): AjvLike;

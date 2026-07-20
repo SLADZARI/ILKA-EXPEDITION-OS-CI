@@ -1,8 +1,4 @@
-import type {
-  RuntimeBundle,
-  RuntimeRegistry,
-  RuntimeRelease,
-} from "./types.ts";
+import type { RuntimeBundle, RuntimeRegistry, RuntimeRelease } from "./types.ts";
 
 function matches(bundle: RuntimeBundle, release: RuntimeRelease): boolean {
   return bundle.release_key === release.release_key &&

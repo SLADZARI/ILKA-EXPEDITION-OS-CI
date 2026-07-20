@@ -1,7 +1,4 @@
-import {
-  Pool,
-  type PoolClient,
-} from "jsr:@db/postgres@0.19.5";
+import { Pool, type PoolClient } from "jsr:@db/postgres@0.19.5";
 
 import type {
   ExistingReceiptLookup,

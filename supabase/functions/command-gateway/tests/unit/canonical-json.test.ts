@@ -1,7 +1,4 @@
-import {
-  assertEquals,
-  assertNotEquals,
-} from "jsr:@std/assert@1.0.19";
+import { assertEquals, assertNotEquals } from "jsr:@std/assert@1.0.19";
 
 import {
   canonicalJson,

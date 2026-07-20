@@ -1,10 +1,5 @@
-import {
-  Pool,
-} from "jsr:@db/postgres@0.19.5";
-import {
-  assertEquals,
-  assertExists,
-} from "jsr:@std/assert@1.0.19";
+import { Pool } from "jsr:@db/postgres@0.19.5";
+import { assertEquals, assertExists } from "jsr:@std/assert@1.0.19";
 
 import { PostgresGatewayDatabase } from "../../../_shared/command-gateway/database.ts";
 import type { JsonValue } from "../../../_shared/command-gateway/types.ts";

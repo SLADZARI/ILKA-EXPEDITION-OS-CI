@@ -1,7 +1,4 @@
-import {
-  assertEquals,
-  assertExists,
-} from "jsr:@std/assert@1.0.19";
+import { assertEquals, assertExists } from "jsr:@std/assert@1.0.19";
 
 import { AuthServiceError } from "../../../_shared/command-gateway/auth.ts";
 import { commandRequestHash } from "../../../_shared/command-gateway/canonical-json.ts";
@@ -192,10 +189,12 @@ async function json(response: Response): Promise<Record<string, unknown>> {
 
 Deno.test("gateway answers an allowed CORS preflight", async () => {
   const handler = createCommandGatewayHandler(dependencies());
-  const response = await handler(new Request(
-    "http://localhost/functions/v1/command-gateway",
-    { method: "OPTIONS", headers: { origin: "http://localhost:5173" } },
-  ));
+  const response = await handler(
+    new Request(
+      "http://localhost/functions/v1/command-gateway",
+      { method: "OPTIONS", headers: { origin: "http://localhost:5173" } },
+    ),
+  );
   assertEquals(response.status, 204);
   assertEquals(
     response.headers.get("access-control-allow-origin"),
@@ -237,9 +236,11 @@ Deno.test("gateway requires a valid authenticated session", async () => {
 
 Deno.test("gateway maps authentication service failures to retryable 503", async () => {
   const handler = createCommandGatewayHandler(dependencies({
-    auth: { verify: async () => {
-      throw new AuthServiceError();
-    } },
+    auth: {
+      verify: async () => {
+        throw new AuthServiceError();
+      },
+    },
   }));
   const response = await handler(post(command()));
   assertEquals(response.status, 503);
@@ -274,7 +275,7 @@ Deno.test("exact replay returns the original receipt before membership/runtime c
   assertEquals(response.status, 200);
   const body = await json(response);
   assertEquals(
-    ((body.data as Record<string, unknown>).replayed),
+    (body.data as Record<string, unknown>).replayed,
     true,
   );
 });
@@ -385,16 +386,17 @@ Deno.test("generated command actor matrix rejects unsupported membership roles",
   const shoreActorId = `member_${shoreMembership.replaceAll("-", "")}`;
   const handler = createCommandGatewayHandler(dependencies({
     database: database({
-      loadContext: async () => context({
-        actor: {
-          auth_user_id: AUTH_USER_ID,
-          profile_id: PROFILE_ID,
-          membership_id: shoreMembership,
-          participant_id: null,
-          participant_key: null,
-          membership_role: "shore_operator",
-        },
-      }),
+      loadContext: async () =>
+        context({
+          actor: {
+            auth_user_id: AUTH_USER_ID,
+            profile_id: PROFILE_ID,
+            membership_id: shoreMembership,
+            participant_id: null,
+            participant_key: null,
+            membership_role: "shore_operator",
+          },
+        }),
     }),
   }));
   const response = await handler(post(command({
@@ -410,18 +412,19 @@ Deno.test("generated command actor matrix rejects unsupported membership roles",
 });
 
 Deno.test("accepted runtime result is sent to the atomic transaction", async () => {
-  let captured: Record<string, unknown> | null = null;
+  const capture: { value?: Record<string, unknown> } = {};
   const handler = createCommandGatewayHandler(dependencies({
     database: database({
       processCommand: async (request) => {
-        captured = request;
+        capture.value = request;
         return result();
       },
     }),
   }));
   const response = await handler(post(command()));
   assertEquals(response.status, 200);
-  assertExists(captured);
+  assertExists(capture.value);
+  const captured = capture.value;
   const persistedCommand = captured.command as Record<string, unknown>;
   assertEquals(persistedCommand.actor_id, "participant_01");
   assertEquals(persistedCommand.actor_role, "participant");

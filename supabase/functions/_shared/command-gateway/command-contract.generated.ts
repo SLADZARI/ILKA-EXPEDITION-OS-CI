@@ -1,243 +1,241 @@
 /* GENERATED from engine/command-catalog.yaml. Do not edit. */
-export const COMMAND_CONTRACTS = 
-{
+export const COMMAND_CONTRACTS = {
   "acknowledge_card": {
     "allowedActors": [
       "participant",
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "activate_recovery_day": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "add_participant": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "adjust_role_xp": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "advance_stage": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "ban_participant": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "block_task": {
     "allowedActors": [
       "participant",
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "close_day": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "close_expedition": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "complete_task": {
     "allowedActors": [
       "participant",
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "confirm_output": {
     "allowedActors": [
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "create_decision_draft": {
     "allowedActors": [
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "create_expedition": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "create_vote": {
     "allowedActors": [
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "finalize_product_decision": {
     "allowedActors": [
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "force_day_transition": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "generate_rotation": {
     "allowedActors": [
       "captain",
-      "system"
+      "system",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "override_day_close": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "override_product_decision": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "override_role_assignment": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "override_stage_advance": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "process_day_boundary": {
     "allowedActors": [
-      "system_clock"
+      "system_clock",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "publish_rating_snapshot": {
     "allowedActors": [
-      "system"
+      "system",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "recover_day_transition": {
     "allowedActors": [
       "captain",
-      "system"
+      "system",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "request_day_close": {
     "allowedActors": [
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "request_stage_advance": {
     "allowedActors": [
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "resume_program": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "rewind_day": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "start_evening_session": {
     "allowedActors": [
       "captain",
-      "product_captain"
+      "product_captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "start_expedition": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "start_task": {
     "allowedActors": [
       "participant",
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "suspend_program": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "unban_participant": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "verify_role_assignment": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
+    "offlineAllowed": false,
   },
   "vote": {
     "allowedActors": [
       "participant",
       "product_captain",
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": true
+    "offlineAllowed": true,
   },
   "waive_task": {
     "allowedActors": [
-      "captain"
+      "captain",
     ],
-    "offlineAllowed": false
-  }
-}
- as const;
+    "offlineAllowed": false,
+  },
+} as const;
 
 export type GatewayCommandType = keyof typeof COMMAND_CONTRACTS;
 export type GatewayActorRole =
