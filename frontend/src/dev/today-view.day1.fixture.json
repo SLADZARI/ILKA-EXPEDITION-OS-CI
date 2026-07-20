@@ -1,0 +1,111 @@
+{
+  "expedition_id": "ilka_demo_2026_01",
+  "participant_id": "participant_01",
+  "local_date": "2026-07-18",
+  "day": {
+    "number": 1,
+    "status": "active",
+    "boundary_sync_state": "authoritative"
+  },
+  "stage": {
+    "stage_id": "onboarding",
+    "title": "Onboarding and Team Contract",
+    "status": "active",
+    "next_stage_id": "problem_discovery",
+    "advance_request_status": "none",
+    "pending_target_stage_id": null
+  },
+  "product_role": {
+    "assignment_id": "asg_01",
+    "role_id": "product_captain",
+    "title": "Product Captain",
+    "state": "active"
+  },
+  "onboard_role": {
+    "assignment_id": "asg_01_navigation",
+    "role_id": "navigation",
+    "title": "Navigation",
+    "state": "active"
+  },
+  "cards": [
+    {
+      "card_id": "knowledge_expedition_rules",
+      "title": "Expedition Rules",
+      "required": true,
+      "acknowledged": false,
+      "pending_sync": false
+    },
+    {
+      "card_id": "knowledge_day_01_flow",
+      "title": "Day 1 Flow",
+      "required": true,
+      "acknowledged": false,
+      "pending_sync": false
+    },
+    {
+      "card_id": "safety_captain_authority",
+      "title": "Captain Authority and Safety",
+      "required": true,
+      "acknowledged": false,
+      "pending_sync": false
+    },
+    {
+      "card_id": "task_team_agreement",
+      "title": "Create the Team Agreement",
+      "required": true,
+      "acknowledged": false,
+      "pending_sync": false
+    },
+    {
+      "card_id": "role_product_captain_day_01",
+      "title": "Product Captain · Day 1",
+      "required": true,
+      "acknowledged": false,
+      "pending_sync": false
+    },
+    {
+      "card_id": "onboard_navigation_day_01",
+      "title": "Navigation · Day 1",
+      "required": true,
+      "acknowledged": false,
+      "pending_sync": false
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "task_team_agreement",
+      "title": "Create and confirm the Team Agreement",
+      "status": "available",
+      "due_day_number": 1,
+      "pending_sync": false
+    }
+  ],
+  "sync_status": "synced",
+  "outputs": [
+    {
+      "output_id": "team_agreement",
+      "title": "Team Agreement",
+      "required": true,
+      "confirmed": false,
+      "pending_sync": false
+    },
+    {
+      "output_id": "safety_acknowledgements",
+      "title": "Safety Acknowledgements",
+      "required": true,
+      "confirmed": false,
+      "pending_sync": false
+    },
+    {
+      "output_id": "participant_profiles",
+      "title": "Participant Profiles",
+      "required": true,
+      "confirmed": false,
+      "pending_sync": false
+    }
+  ],
+  "decision_vote": null,
+  "gamification": null,
+  "expedition_status": "active",
+  "expedition_completion": null
+}

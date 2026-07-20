@@ -77,9 +77,12 @@ def main() -> int:
     fixtures = [
         ("app/contracts/today-view.schema.json", "src/dev/today-view.fixture.json", "TodayView active"),
         ("app/contracts/today-view.schema.json", "src/dev/today-view.completed.fixture.json", "TodayView completed"),
+        ("app/contracts/today-view.schema.json", "src/dev/today-view.day1.fixture.json", "TodayView Day 1"),
         ("app/contracts/captain-day-view.schema.json", "src/dev/captain-day-view.fixture.json", "CaptainDayView active"),
         ("app/contracts/captain-day-view.schema.json", "src/dev/captain-day-view.completion-ready.fixture.json", "CaptainDayView ready"),
         ("app/contracts/captain-day-view.schema.json", "src/dev/captain-day-view.completed.fixture.json", "CaptainDayView completed"),
+        ("app/contracts/captain-day-view.schema.json", "src/dev/captain-day-view.day1.fixture.json", "CaptainDayView Day 1"),
+        ("app/contracts/captain-day-view.schema.json", "src/dev/captain-day-view.day1-progress.fixture.json", "CaptainDayView Day 1 after sync"),
         ("schemas/gamification.schema.json", "src/dev/gamification-view.fixture.json", "GamificationView"),
     ]
     checker = FormatChecker()
@@ -93,6 +96,41 @@ def main() -> int:
         for error in Draft202012Validator(schema, format_checker=checker).iter_errors(fixture):
             errors.append(f"{label}: {'/'.join(map(str, error.path))}: {error.message}")
 
+    onboarding = load_yaml("stages/01_onboarding.yaml")
+    day1_today = json.loads((FRONTEND / "src/dev/today-view.day1.fixture.json").read_text(encoding="utf-8"))
+    if day1_today["day"]["number"] != 1 or day1_today["stage"]["stage_id"] != onboarding["stage_id"]:
+        errors.append("Day 1 Participant fixture does not target canonical onboarding")
+    product_role_id = day1_today["product_role"]["role_id"]
+    onboard_role_id = day1_today["onboard_role"]["role_id"]
+    expected_cards = set(onboarding["card_refs"]["shared"])
+    expected_cards.update(onboarding["card_refs"]["by_product_role"][product_role_id])
+    expected_cards.update(onboarding["card_refs"]["by_onboard_role"][onboard_role_id])
+    actual_cards = {card["card_id"] for card in day1_today["cards"]}
+    if actual_cards != expected_cards:
+        errors.append(f"Day 1 Participant cards mismatch stage refs expected={sorted(expected_cards)} actual={sorted(actual_cards)}")
+    expected_outputs = {output["id"] for output in onboarding["required_outputs"]}
+    actual_outputs = {output["output_id"] for output in day1_today["outputs"]}
+    if actual_outputs != expected_outputs:
+        errors.append(f"Day 1 Participant outputs mismatch stage refs expected={sorted(expected_outputs)} actual={sorted(actual_outputs)}")
+
+    sample_events = load_json("examples/sample-events.json")
+    activation_events = [event for event in sample_events if event["event_type"] == "role_assignments.activated" and event.get("day_number") == 1]
+    if not activation_events:
+        errors.append("sample event stream lacks Day 1 role_assignments.activated")
+    else:
+        expected_assignments = {
+            item["participant_id"]: (item["product_role_id"], item["onboard_role_id"])
+            for item in activation_events[-1]["payload"]["assignments"]
+        }
+        for fixture_name in ("captain-day-view.day1.fixture.json", "captain-day-view.day1-progress.fixture.json"):
+            captain_day1 = json.loads((FRONTEND / "src/dev" / fixture_name).read_text(encoding="utf-8"))
+            actual_assignments = {
+                item["participant_id"]: (item["product_role_id"], item["onboard_role_id"])
+                for item in captain_day1["participants"]
+            }
+            if actual_assignments != expected_assignments:
+                errors.append(f"{fixture_name} assignments mismatch sample event stream")
+
     captain_schema = load_json("app/contracts/captain-day-view.schema.json")
     if not {"expedition_status", "expedition_completion", "completion_readiness"} <= set(captain_schema["required"]):
         errors.append("CaptainDayView completion projection fields must be required")
@@ -104,6 +142,9 @@ def main() -> int:
         "src/application/commands/closeExpedition.ts",
         "src/application/commands/CommandDispatcher.ts",
         "src/application/offline/OfflineCommandQueue.ts",
+        "src/application/projections/participant-command-overlay.ts",
+        "src/dev/preview-bootstrap.ts",
+        "src/dev/PreviewLauncher.tsx",
         "src/screens/captain/DayOverviewScreen.tsx",
         "src/screens/captain/StageControlScreen.tsx",
         "src/screens/captain/RecoveryDayScreen.tsx",

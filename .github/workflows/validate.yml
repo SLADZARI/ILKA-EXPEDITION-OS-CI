@@ -66,9 +66,13 @@ jobs:
         working-directory: frontend
         run: npm run typecheck
 
-      - name: Build frontend
+      - name: Build production frontend
         working-directory: frontend
         run: npm run build
+
+      - name: Build static Day 1 preview
+        working-directory: frontend
+        run: npm run build:preview
 
       - name: Verify generated frontend sources are committed
         run: git diff --exit-code
