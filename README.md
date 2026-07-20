@@ -160,7 +160,7 @@ Gate 6 implementation is complete locally under accepted `ADR-015`:
 - exact replay creates no duplicate receipt, event or projection version;
 - protected diagnostics passed 36 Deno unit tests, 246 pgTAP assertions and two direct PostgreSQL integration tests.
 
-The exact `day1_complete_task_v1` runtime bundle is registered locally against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. The registration changes metadata and registry wiring only; reducer behavior is unchanged. The read-model and runtime-release migrations are not yet applied remotely, no cloud fixture data exists, and Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.
+The exact `day1_complete_task_v1` runtime bundle is registered against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Development `VOYAGE` now contains remote migrations `20260720223150 day1_read_model_api` and `20260720223210 day1_complete_task_runtime_release`. The three authenticated read functions and immutable runtime metadata are deployed, while all identity/history/projection tables remain empty. Cloud command execution is still blocked because `command-gateway` is not deployed without the `SUPABASE_ACCESS_TOKEN` GitHub secret.
 
 ## Run the Day 1 prototype
 

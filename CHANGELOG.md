@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-20 — Gate 6 development deployment
+
+- Applied reviewed read-model API migration `20260720223150 day1_read_model_api` to development-only `VOYAGE`.
+- Applied immutable runtime registration migration `20260720223210 day1_complete_task_runtime_release`.
+- Verified authenticated execution and anonymous denial for `api.get_today_view(...)`, `api.get_captain_day_view(...)` and `api.get_command_receipt(...)`.
+- Verified no raw authenticated SELECT access to internal projections or command receipts.
+- Verified exact runtime metadata pinned to protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`.
+- Confirmed zero Profiles, Expeditions, memberships, Participants, invitations, stream heads, receipts, events and projection documents.
+- Reviewed Supabase advisors: intentional deny-by-default RLS and authenticated `SECURITY DEFINER` read functions are accepted by ADR-015; informational index/FK notices are deferred to deployment readiness.
+
+`command-gateway` remains undeployed because `SUPABASE_ACCESS_TOKEN` is not configured, so the cloud database is ready for Gate 6 but cannot yet receive real commands. No pilot or production data was created.
+
 ## 2026-07-20 — Day 1 runtime release registration
 
 - Registered `day1_complete_task_v1` in the exact-match Engine runtime registry.

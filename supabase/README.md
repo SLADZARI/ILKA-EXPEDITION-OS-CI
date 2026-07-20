@@ -170,6 +170,8 @@ The following reviewed migrations are deployed remotely:
 - `20260720142526 foundation`;
 - `20260720162648 identity_membership`;
 - `20260720175753 immutable_history`;
-- `20260720185027 atomic_command_transaction`.
+- `20260720185027 atomic_command_transaction`;
+- `20260720223150 day1_read_model_api`;
+- `20260720223210 day1_complete_task_runtime_release`.
 
-All identity, history and projection tables remain empty. The remote transaction boundary has forced RLS, no browser access, no direct `service_role` writes and only the approved `private.process_command(jsonb)` execution grant. `command-gateway` is not deployed remotely because the required `SUPABASE_ACCESS_TOKEN` GitHub secret is not configured. The Gate 6 read-model migration and runtime release are also not deployed from the implementation feature branch. No pilot or production data is authorized.
+All identity, history and projection tables remain empty. `ilka.runtime_releases` contains only the immutable `day1_complete_task_v1` metadata row pinned to protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Authenticated users may execute the three isolated `api` read functions, while `anon` and raw internal table access remain denied. `command-gateway` is still undeployed because the required `SUPABASE_ACCESS_TOKEN` GitHub secret is not configured, so cloud `complete_task` execution is not yet active. No pilot or production data is authorized.
