@@ -241,38 +241,44 @@ Deno.test({
     };
 
     try {
-      const response = await handler(new Request(
-        "http://localhost/functions/v1/command-gateway",
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            authorization: "Bearer integration-session",
-            origin: "http://localhost:5173",
+      const response = await handler(
+        new Request(
+          "http://localhost/functions/v1/command-gateway",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              authorization: "Bearer integration-session",
+              origin: "http://localhost:5173",
+            },
+            body: JSON.stringify(command),
           },
-          body: JSON.stringify(command),
-        },
-      ));
+        ),
+      );
       assertEquals(response.status, 200);
       const body = await response.json();
       assertEquals(body.data.outcome, "accepted");
       assertEquals(body.data.replayed, false);
       assertEquals(body.data.receipt.stream_position, 1);
       assertEquals(body.data.receipt.projection_version, 2);
-      assertEquals(body.data.receipt.event_ids, ["evt_day1_integration_complete_01_01"]);
+      assertEquals(body.data.receipt.event_ids, [
+        "evt_day1_integration_complete_01_01",
+      ]);
 
-      const replay = await handler(new Request(
-        "http://localhost/functions/v1/command-gateway",
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            authorization: "Bearer integration-session",
-            origin: "http://localhost:5173",
+      const replay = await handler(
+        new Request(
+          "http://localhost/functions/v1/command-gateway",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              authorization: "Bearer integration-session",
+              origin: "http://localhost:5173",
+            },
+            body: JSON.stringify(command),
           },
-          body: JSON.stringify(command),
-        },
-      ));
+        ),
+      );
       assertEquals(replay.status, 200);
       const replayBody = await replay.json();
       assertEquals(replayBody.data.replayed, true);
@@ -315,7 +321,9 @@ Deno.test({
         const today = await verify.queryObject<{ projection: Record<string, unknown> }>`
           select api.get_today_view('day1_complete_task_integration') as projection
         `;
-        const todayTasks = today.rows[0].projection.tasks as Array<Record<string, unknown>>;
+        const todayTasks = today.rows[0].projection.tasks as Array<
+          Record<string, unknown>
+        >;
         assertEquals(todayTasks[0].status, "completed");
 
         const receipt = await verify.queryObject<{ result: Record<string, unknown> }>`
@@ -327,10 +335,14 @@ Deno.test({
         await verify.queryArray`
           select set_config('request.jwt.claim.sub', ${captainAuthUserId}, false)
         `;
-        const captain = await verify.queryObject<{ projection: Record<string, unknown> }>`
+        const captain = await verify.queryObject<
+          { projection: Record<string, unknown> }
+        >`
           select api.get_captain_day_view('day1_complete_task_integration') as projection
         `;
-        const participants = captain.rows[0].projection.participants as Array<Record<string, unknown>>;
+        const participants = captain.rows[0].projection.participants as Array<
+          Record<string, unknown>
+        >;
         assertEquals(participants[0].required_tasks_terminal, true);
         assertEquals(
           (captain.rows[0].projection.day as Record<string, unknown>).revision,
