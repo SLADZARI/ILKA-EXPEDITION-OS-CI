@@ -1,0 +1,98 @@
+name: Gate 6 runtime registration patch
+
+on:
+  push:
+    branches:
+      - feat/register-day1-complete-task-runtime
+    paths:
+      - ".github/workflows/gate6-registration-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout registration branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/register-day1-complete-task-runtime
+
+      - name: Update inherited validators
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          gate5 = Path('scripts/validate_supabase_command_gateway.py')
+          text = gate5.read_text(encoding='utf-8')
+          text = text.replace(
+              '        "new StaticRuntimeRegistry([])",\n',
+              '        "new StaticRuntimeRegistry(",\n',
+          )
+          gate5.write_text(text, encoding='utf-8')
+
+          gate6 = Path('scripts/validate_supabase_day1_vertical.py')
+          text = gate6.read_text(encoding='utf-8')
+          text = text.replace(
+              'MIGRATION = ROOT / "supabase/migrations/20260720210000_day1_read_model_api.sql"\n',
+              'MIGRATION = ROOT / "supabase/migrations/20260720210000_day1_read_model_api.sql"\nREGISTRATION_MIGRATION = ROOT / "supabase/migrations/20260720213000_day1_complete_task_runtime_release.sql"\n',
+          )
+          text = text.replace(
+              '    MIGRATION,\n    PGTAP,',
+              '    MIGRATION,\n    REGISTRATION_MIGRATION,\n    PGTAP,',
+          )
+          old = '''    registry = REGISTRY.read_text(encoding="utf-8")
+            if "new StaticRuntimeRegistry([])" not in registry:
+                errors.append("implementation PR must keep production runtime registry empty")
+            if "day1_complete_task_v1" in registry:
+                errors.append("implementation PR must not register the runtime before protected merge SHA exists")
+          '''
+          new = '''    registry = REGISTRY.read_text(encoding="utf-8")
+            require(
+                registry,
+                (
+                    "createDay1CompleteTaskRuntime",
+                    "day1CompleteTaskV1",
+                    'release_key: "day1_complete_task_v1"',
+                    'git_commit_sha: "edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617"',
+                    'rules_release: "engine_v8_permissions_v7_onboarding_v3"',
+                    'content_release: "day1_content_v1"',
+                    'reducer_version: "day1_complete_task_v1"',
+                    "new StaticRuntimeRegistry([",
+                ),
+                "runtime registry missing exact Day 1 release",
+                errors,
+            )
+
+            registration_sql = REGISTRATION_MIGRATION.read_text(encoding="utf-8")
+            require(
+                registration_sql,
+                (
+                    "insert into ilka.runtime_releases",
+                    "day1_complete_task_v1",
+                    "edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617",
+                    "engine_v8_permissions_v7_onboarding_v3",
+                    "day1_content_v1",
+                ),
+                "runtime release migration missing exact metadata",
+                errors,
+            )
+          '''
+          if old not in text:
+              raise SystemExit('Gate 6 empty-registry validator block not found')
+          text = text.replace(old, new, 1)
+          gate6.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit validator updates
+        run: |
+          git add scripts/validate_supabase_command_gateway.py scripts/validate_supabase_day1_vertical.py
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test(gate6): validate exact registered runtime release"
+          git push origin HEAD:feat/register-day1-complete-task-runtime
