@@ -370,8 +370,8 @@ select lives_ok(
   'ordered canonical events and a correcting event append successfully'
 );
 
-set constraints command_receipts_event_set_complete immediate;
-set constraints command_receipts_event_set_complete deferred;
+set constraints all immediate;
+set constraints all deferred;
 
 select results_eq(
   $$
@@ -658,7 +658,7 @@ select throws_ok(
       '21000000-0000-0000-0000-000000000001',
       'reducer-history-test'
     );
-    set constraints command_receipts_event_set_complete immediate
+    set constraints all immediate
   $$,
   '23514',
   'accepted_receipt_event_set_incomplete',
