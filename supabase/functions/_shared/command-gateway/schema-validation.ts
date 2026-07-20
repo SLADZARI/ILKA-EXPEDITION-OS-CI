@@ -42,6 +42,25 @@ function commonJsDefault(value: unknown): unknown {
   return value;
 }
 
+function normalizeContractRefs(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(normalizeContractRefs);
+  }
+  if (value === null || typeof value !== "object") return value;
+
+  const normalized: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (key === "$ref" && item === "../../schemas/command.schema.json") {
+      normalized[key] = commandSchema.$id;
+    } else if (key === "$ref" && item === "../../engine/event.schema.json") {
+      normalized[key] = eventSchema.$id;
+    } else {
+      normalized[key] = normalizeContractRefs(item);
+    }
+  }
+  return normalized;
+}
+
 const Ajv2020 = commonJsDefault(Ajv2020Module) as AjvConstructor;
 const addFormats = commonJsDefault(addFormatsModule) as (
   ajv: AjvLike,
@@ -74,8 +93,8 @@ export function createSchemaValidator(): SchemaValidator {
 
   const command = ajv.getSchema(commandSchema.$id) ?? ajv.compile(commandSchema);
   const event = ajv.getSchema(eventSchema.$id) ?? ajv.compile(eventSchema);
-  const processRequest = ajv.compile(processRequestSchema);
-  const processResult = ajv.compile(processResultSchema);
+  const processRequest = ajv.compile(normalizeContractRefs(processRequestSchema));
+  const processResult = ajv.compile(normalizeContractRefs(processResultSchema));
 
   return {
     validateCommand(value: unknown): ValidationIssue[] {
