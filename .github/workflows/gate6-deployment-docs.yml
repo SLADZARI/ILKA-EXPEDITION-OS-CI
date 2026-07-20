@@ -1,0 +1,83 @@
+name: Gate 6 deployment docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/gate6-deployment-docs.yml"
+      - "README.md"
+      - "supabase/README.md"
+      - "CHANGELOG.md"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout deployment docs branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/day1-gate6-deployment
+
+      - name: Record remote Gate 6 deployment
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          before = 'The exact `day1_complete_task_v1` runtime bundle is registered locally against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. The registration changes metadata and registry wiring only; reducer behavior is unchanged. The read-model and runtime-release migrations are not yet applied remotely, no cloud fixture data exists, and Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.'
+          after = 'The exact `day1_complete_task_v1` runtime bundle is registered against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Development `VOYAGE` now contains remote migrations `20260720223150 day1_read_model_api` and `20260720223210 day1_complete_task_runtime_release`. The three authenticated read functions and immutable runtime metadata are deployed, while all identity/history/projection tables remain empty. Cloud command execution is still blocked because `command-gateway` is not deployed without the `SUPABASE_ACCESS_TOKEN` GitHub secret.'
+          if before not in text:
+              raise SystemExit('README Gate 6 deployment marker not found')
+          readme.write_text(text.replace(before, after, 1), encoding='utf-8')
+
+          supabase_readme = Path('supabase/README.md')
+          text = supabase_readme.read_text(encoding='utf-8')
+          old_list = '''- `20260720185027 atomic_command_transaction`.
+
+          All identity, history and projection tables remain empty. The remote transaction boundary has forced RLS, no browser access, no direct `service_role` writes and only the approved `private.process_command(jsonb)` execution grant. `command-gateway` is not deployed remotely because the required `SUPABASE_ACCESS_TOKEN` GitHub secret is not configured. The Gate 6 read-model migration and runtime release are also not deployed from the implementation feature branch. No pilot or production data is authorized.
+          '''
+          new_list = '''- `20260720185027 atomic_command_transaction`;
+          - `20260720223150 day1_read_model_api`;
+          - `20260720223210 day1_complete_task_runtime_release`.
+
+          All identity, history and projection tables remain empty. `ilka.runtime_releases` contains only the immutable `day1_complete_task_v1` metadata row pinned to protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Authenticated users may execute the three isolated `api` read functions, while `anon` and raw internal table access remain denied. `command-gateway` is still undeployed because the required `SUPABASE_ACCESS_TOKEN` GitHub secret is not configured, so cloud `complete_task` execution is not yet active. No pilot or production data is authorized.
+          '''
+          if old_list not in text:
+              raise SystemExit('Supabase README remote migration marker not found')
+          supabase_readme.write_text(text.replace(old_list, new_list, 1), encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text(encoding='utf-8')
+          heading = '## 2026-07-20 — Gate 6 development deployment\n'
+          section = '''## 2026-07-20 — Gate 6 development deployment
+
+          - Applied reviewed read-model API migration `20260720223150 day1_read_model_api` to development-only `VOYAGE`.
+          - Applied immutable runtime registration migration `20260720223210 day1_complete_task_runtime_release`.
+          - Verified authenticated execution and anonymous denial for `api.get_today_view(...)`, `api.get_captain_day_view(...)` and `api.get_command_receipt(...)`.
+          - Verified no raw authenticated SELECT access to internal projections or command receipts.
+          - Verified exact runtime metadata pinned to protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`.
+          - Confirmed zero Profiles, Expeditions, memberships, Participants, invitations, stream heads, receipts, events and projection documents.
+          - Reviewed Supabase advisors: intentional deny-by-default RLS and authenticated `SECURITY DEFINER` read functions are accepted by ADR-015; informational index/FK notices are deferred to deployment readiness.
+
+          `command-gateway` remains undeployed because `SUPABASE_ACCESS_TOKEN` is not configured, so the cloud database is ready for Gate 6 but cannot yet receive real commands. No pilot or production data was created.
+
+          '''
+          if heading not in text:
+              text = text.replace('# Changelog\n\n', '# Changelog\n\n' + section, 1)
+          changelog.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit deployment documentation
+        run: |
+          git add README.md supabase/README.md CHANGELOG.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs(gate6): record development database deployment"
+          git push origin HEAD:docs/day1-gate6-deployment
