@@ -31,7 +31,7 @@ jobs:
         run: supabase start
 
       - name: Generate database types
-        run: supabase gen types typescript --local > supabase/database.types.ts
+        run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 
       - name: Commit generated types
         run: |
