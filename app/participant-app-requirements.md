@@ -2,60 +2,90 @@
 
 ## User scenario
 
-A Participant joins an Expedition, receives today's product and onboard assignments, reads required cards, acknowledges obligations, completes tasks, attaches evidence and sees sync state while offline or online.
+Participant opens the installed PWA at sea and sees the current Calendar Day, active Product Stage, product role, onboard role, required cards and tasks. Cached content remains readable offline. User actions are written to a local command queue and later receive `pending`, `synced`, `conflict`, or `rejected` state.
+
+## Day boundary behavior
+
+- Participant never presses `Start Day`.
+- Normal day transition is created by `system_clock` through `process_day_boundary`.
+- At the configured local boundary, an offline device must stop presenting yesterday's assignments as active.
+- Until authoritative synchronization, old assignments are shown as `expired_pending_sync` and new bundles as `awaiting_bundle_sync`.
+- Calendar Day and Product Stage are displayed separately.
 
 ## Today screen
 
-The screen must show:
+The first vertical must show:
 
-- Expedition name and current status;
-- Calendar Day and Product Stage as separate values;
-- current product role and onboard role;
-- active Card Bundle;
-- required acknowledgements;
-- task states;
-- output confirmations;
-- sync state for every local action;
-- Captain safety messages;
-- Role XP and rating projection when enabled.
+- local calendar date and `day_number`;
+- current `stage_id` and stage title;
+- authoritative product role from the active Card Bundle;
+- one onboard role;
+- required Card Bundle;
+- tasks grouped as Current and Overdue;
+- sync state for every queued action;
+- Captain safety message/hold when present.
 
-## Offline behavior
+## Participant commands
 
-The app must remain usable without a network connection.
+Offline queueable:
 
-- cache the latest authoritative TodayView;
-- cache Card Bundle content;
-- store queueable commands in IndexedDB;
-- use one stable `command_id` for retries;
-- show `pending`, `synced`, `conflict` and `rejected`;
-- never represent a local optimistic mutation as an authoritative server event;
-- refresh the projection after conflict or Realtime invalidation.
+- `acknowledge_card`;
+- `start_task`;
+- `block_task` with a reason;
+- `complete_task` with evidence references.
 
-At the local Calendar Day boundary, an offline device may show prior assignments as `expired_pending_sync`, but it must not activate new roles or Card Bundles until authoritative events synchronize.
+Not permitted:
 
-## Permissions
+- `process_day_boundary`;
+- Captain overrides;
+- role reassignment;
+- Recovery Day activation;
+- closing Expedition;
+- safety decisions.
 
-Participant may:
+## Task timing
 
-- acknowledge cards;
-- start, block and complete assigned tasks;
-- attach allowed evidence;
-- confirm permitted outputs;
-- vote when eligible;
-- inspect their own role XP and allowed rating views.
+Task states exposed by the UI:
 
-Participant may not:
+- `available`;
+- `in_progress`;
+- `blocked`;
+- `completed`;
+- `overdue`;
+- `completed_late`;
+- `waived`.
 
-- change Calendar Day or Product Stage;
-- assign roles;
-- close Day or Expedition;
-- edit events;
-- set XP or rank;
-- issue Captain or system commands.
+Late completion must not make a previous day look completed on time.
 
-## Participant ban
+## Architecture boundaries
 
-After `participant.banned`, active Expedition access is revoked, queued commands issued at or after `effective_at` are rejected and the active projection is cleared after synchronization. Historical authorship remains in the team event log.
+- `engine/` owns commands, guards, transitions, permissions and emitted events.
+- `stages/` and `cards/` own methodology and content.
+- `app/` renders projections and submits commands.
+- UI does not infer completion, role compatibility, Product Stage progression or Captain authority.
+
+## MVP exclusions
+
+No chat, public cross-Expedition leaderboard, purchasable XP, arbitrary event editing, visual schedule builder or peer-to-peer mesh sync.
+
+
+## Product Stage handover
+
+- Product Captain may create `request_stage_advance` after the Stage Definition of Done is satisfied.
+- The request may be queued offline and displays `pending`, `synced`, `conflict` or `rejected`.
+- A request never changes the active Product Stage and never grants Captain authority.
+- After Captain advances the Stage, Participants continue to see the current authoritative bundle until the next `day.started` publishes the new Stage bundles.
+
+## Banned Participant state
+
+After authoritative `participant.banned` synchronization:
+
+- Expedition access is revoked;
+- new commands and pending commands issued at or after `effective_at` are rejected;
+- active roles and tasks are no longer actionable;
+- the app shows an access-revoked screen instead of TodayView;
+- cached Expedition projections are cleared or locked;
+- historical authorship remains in the team event log.
 
 A device that is fully offline may temporarily show stale cached data. This data is marked non-authoritative and no queued action is accepted by the server after the ban effective time.
 
@@ -69,6 +99,7 @@ After `participant.unbanned`, the Participant regains access but does not regain
 - The UI shows whether the actor is eligible and their own current choice, but does not infer the winner locally.
 - Ballots from banned actors, closed rounds or stale day revisions are rejected.
 
+
 ## Role XP and ratings
 
 - Participant sees XP separately for each product and onboard role.
@@ -79,6 +110,7 @@ After `participant.unbanned`, the Participant regains access but does not regain
 - Ties share rank. Cook and low-load roles are normalized against their expected assignment opportunity.
 - Recovery Day, waived work, safety override and offline delay produce no negative XP.
 
+
 ## Prototype Stage
 
 - Stage 07 displays the confirmed `mvp_scope`, `out_of_scope` and `acceptance_criteria` beside the assigned Prototype cards.
@@ -86,6 +118,7 @@ After `participant.unbanned`, the Participant regains access but does not regain
 - Product Captain may queue `confirm_output` and `request_stage_advance` under the existing permission rules.
 - Local drafts may be shown as `pending`, but outputs remain non-authoritative until `output.confirmed` is synchronized.
 - UI does not infer Prototype completion, acceptance-criteria coverage or eligibility for Stage advance.
+
 
 ## Build Stage
 
@@ -95,6 +128,7 @@ After `participant.unbanned`, the Participant regains access but does not regain
 - Local Build evidence may be shown as `pending`, but outputs remain non-authoritative until `output.confirmed` is synchronized.
 - UI does not infer Build readiness, acceptance-criteria coverage, limitation severity or eligibility for Stage advance.
 
+
 ## Launch Stage
 
 - Stage 09 displays confirmed `working_increment`, `build_log`, `known_limitations`, `mvp_scope`, `out_of_scope` and `acceptance_criteria` beside the assigned Launch cards.
@@ -102,6 +136,7 @@ After `participant.unbanned`, the Participant regains access but does not regain
 - Product Captain may queue `confirm_output` for `launch_package`, `distribution_log` and `launch_metrics`, then create `request_stage_advance` under the existing permission rules.
 - Local distribution records and metric drafts may be shown as `pending`, but outputs remain non-authoritative until `output.confirmed` is synchronized.
 - UI does not infer Launch success, audience consent, metric validity, blocker severity or eligibility for Stage advance.
+
 
 ## User Feedback Stage
 
@@ -111,6 +146,7 @@ After `participant.unbanned`, the Participant regains access but does not regain
 - Product Captain may queue `confirm_output` for `feedback_log`, `signal_summary` and `priority_issues`, then create `request_stage_advance` under the existing permission rules.
 - UI does not infer signal validity, consent, frequency, severity, priority, Iteration solution or eligibility for Stage advance.
 
+
 ## Iteration Stage
 
 - Stage 11 displays confirmed `working_increment`, `launch_package`, `launch_metrics`, `known_limitations`, `feedback_log`, `signal_summary`, `priority_issues`, `mvp_scope`, `out_of_scope` and `acceptance_criteria` beside the assigned Iteration cards.
@@ -118,6 +154,7 @@ After `participant.unbanned`, the Participant regains access but does not regain
 - Product Captain may queue `confirm_output` for `iteration_decision`, `updated_increment` and `change_log`, then create `request_stage_advance` under the existing permission rules.
 - Local decision, change-log and verification drafts may be shown as `pending`, but outputs remain non-authoritative until `output.confirmed` is synchronized.
 - UI does not infer issue selection, scope compliance, acceptance-check success, regression safety, Demo Day readiness or eligibility for Stage advance.
+
 
 ## Demo Day Stage
 
