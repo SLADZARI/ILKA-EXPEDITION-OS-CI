@@ -342,3 +342,19 @@ event_log_is_append_only
 - changing prior canonical events;
 - production or pilot data;
 - remote deployment before reviewed PR and green CI.
+
+## Development deployment record
+
+The reviewed Immutable History gate was merged through PR `#17` at commit `8937b746fbbb53007a36f63dd99a115ffefb3307` after protected run `29765160272` passed. It was then applied to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`) as remote migration version `20260720175753` with migration name `immutable_history`.
+
+Remote verification confirmed:
+
+- `ilka.stream_heads`, `ilka.command_receipts` and `ilka.event_log` exist;
+- all three tables have enabled and forced RLS;
+- `anon` and `authenticated` have no raw SELECT access;
+- `service_role` has internal SELECT access but no direct INSERT, UPDATE or DELETE privilege;
+- `service_role` can execute `private.check_command_idempotency(...)` and `private.assert_expected_stream_position(...)`;
+- `authenticated` cannot execute those private helpers;
+- Profiles, Expeditions, memberships, Participants, invitations, stream heads, command receipts and events all contain zero rows.
+
+The deployment does not add `private.process_command(...)`, advisory command locking, projections, API read functions, Edge Functions, command transport, scheduler jobs, Storage buckets, pilot data or production data. The next backend gate remains the atomic command transaction.
