@@ -1,5 +1,6 @@
 name: Validate repository
 
+# CI retrigger after GitHub Actions startup failure on 2026-07-20.
 on:
   pull_request:
   push:
