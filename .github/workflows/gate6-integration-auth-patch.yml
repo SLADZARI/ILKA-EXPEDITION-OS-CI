@@ -1,0 +1,48 @@
+name: Gate 6 integration auth patch
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/command-gateway/tests/integration/day1-complete-task.test.ts"
+      - ".github/workflows/gate6-integration-auth-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Gate 6 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/day1-complete-task-read-models
+
+      - name: Keep JWT test claim for the connection session
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('supabase/functions/command-gateway/tests/integration/day1-complete-task.test.ts')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              "select set_config('request.jwt.claim.sub', ${participantAuthUserId}, true)",
+              "select set_config('request.jwt.claim.sub', ${participantAuthUserId}, false)",
+          )
+          text = text.replace(
+              "select set_config('request.jwt.claim.sub', ${captainAuthUserId}, true)",
+              "select set_config('request.jwt.claim.sub', ${captainAuthUserId}, false)",
+          )
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit patch
+        run: |
+          git add supabase/functions/command-gateway/tests/integration/day1-complete-task.test.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test(gate6): keep JWT claim for read API assertions"
+          git push origin HEAD:feat/day1-complete-task-read-models
