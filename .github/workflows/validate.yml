@@ -85,6 +85,9 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Format generated command gateway contract
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
+
       - name: Check command gateway formatting
         run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
 
@@ -155,4 +158,4 @@ jobs:
 
       - name: Stop local Supabase
         if: always()
-        run: supabase stop --no-backup
+        run: supabase stop --no-backup || true
