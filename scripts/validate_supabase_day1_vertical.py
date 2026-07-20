@@ -259,7 +259,7 @@ def main() -> int:
         workflow,
         (
             "supabase/functions/_shared/engine-runtime",
-            "Run command gateway unit tests",
+            "Run command gateway and Engine runtime unit tests",
             "Run command gateway database integration",
             "Validate Supabase Day 1 vertical contract",
         ),
