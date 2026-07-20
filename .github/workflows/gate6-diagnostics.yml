@@ -1,0 +1,191 @@
+name: Gate 6 diagnostics
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - "app/api/read-models.yaml"
+      - "scripts/validate_supabase_day1_vertical.py"
+      - ".github/workflows/gate6-diagnostics.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  vertical-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/day1-complete-task-read-models
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Generate command metadata
+        run: python scripts/generate_supabase_command_gateway_contract.py
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run Deno diagnostics
+        shell: bash
+        run: |
+          set +e
+          status=0
+          {
+            echo '=== FORMAT ==='
+            deno fmt --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway \
+              supabase/functions/_shared/command-gateway \
+              supabase/functions/_shared/engine-runtime
+            fmt_status=$?
+            if [[ $fmt_status -ne 0 ]]; then status=$fmt_status; fi
+
+            echo '=== CACHE ==='
+            deno cache --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway/index.ts \
+              supabase/functions/command-gateway/tests/unit/*.ts \
+              supabase/functions/command-gateway/tests/integration/*.ts \
+              supabase/functions/_shared/engine-runtime/*.ts
+            cache_status=$?
+            if [[ $status -eq 0 && $cache_status -ne 0 ]]; then status=$cache_status; fi
+
+            echo '=== LINT ==='
+            deno lint --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway \
+              supabase/functions/_shared/command-gateway \
+              supabase/functions/_shared/engine-runtime
+            lint_status=$?
+            if [[ $status -eq 0 && $lint_status -ne 0 ]]; then status=$lint_status; fi
+
+            echo '=== CHECK ==='
+            deno check --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway/index.ts \
+              supabase/functions/command-gateway/tests/unit/*.ts \
+              supabase/functions/command-gateway/tests/integration/*.ts \
+              supabase/functions/_shared/engine-runtime/*.ts
+            check_status=$?
+            if [[ $status -eq 0 && $check_status -ne 0 ]]; then status=$check_status; fi
+
+            echo '=== UNIT TESTS ==='
+            deno test --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway/tests/unit
+            test_status=$?
+            if [[ $status -eq 0 && $test_status -ne 0 ]]; then status=$test_status; fi
+          } > /tmp/gate6-deno.log 2>&1
+          cat /tmp/gate6-deno.log
+          exit $status
+
+      - name: Set up Supabase CLI
+        if: success()
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Run PostgreSQL diagnostics
+        if: success()
+        shell: bash
+        run: |
+          set +e
+          status=0
+          {
+            echo '=== START ==='
+            supabase start
+            start_status=$?
+            if [[ $start_status -ne 0 ]]; then status=$start_status; fi
+
+            if [[ $status -eq 0 ]]; then
+              echo '=== RESET ==='
+              supabase db reset
+              reset_status=$?
+              if [[ $reset_status -ne 0 ]]; then status=$reset_status; fi
+            fi
+
+            if [[ $status -eq 0 ]]; then
+              echo '=== PGTAP ==='
+              supabase test db
+              test_status=$?
+              if [[ $test_status -ne 0 ]]; then status=$test_status; fi
+            fi
+
+            if [[ $status -eq 0 ]]; then
+              echo '=== DB LINT ==='
+              supabase db lint --local --level error
+              lint_status=$?
+              if [[ $lint_status -ne 0 ]]; then status=$lint_status; fi
+            fi
+
+            if [[ $status -eq 0 ]]; then
+              echo '=== INTEGRATION ==='
+              db_url="$(supabase status -o json | jq -r '.DB_URL')"
+              SUPABASE_DB_URL="$db_url" deno test \
+                --config supabase/functions/command-gateway/deno.json \
+                --allow-env=SUPABASE_DB_URL \
+                --allow-net=127.0.0.1:54322 \
+                supabase/functions/command-gateway/tests/integration
+              integration_status=$?
+              if [[ $integration_status -ne 0 ]]; then status=$integration_status; fi
+            fi
+
+            if [[ $status -eq 0 ]]; then
+              echo '=== TYPES ==='
+              supabase gen types typescript --local --schema api,ilka,private \
+                > supabase/database.types.ts
+              types_status=$?
+              if [[ $types_status -ne 0 ]]; then status=$types_status; fi
+            fi
+
+            if [[ $status -eq 0 ]]; then
+              echo '=== STATIC CONTRACT ==='
+              python scripts/validate_supabase_day1_vertical.py
+              contract_status=$?
+              if [[ $contract_status -ne 0 ]]; then status=$contract_status; fi
+            fi
+          } > /tmp/gate6-postgres.log 2>&1
+          cat /tmp/gate6-postgres.log
+          exit $status
+
+      - name: Commit exact generated sources
+        if: success()
+        shell: bash
+        run: |
+          git add deno.lock supabase/database.types.ts \
+            supabase/functions/command-gateway \
+            supabase/functions/_shared/command-gateway \
+            supabase/functions/_shared/engine-runtime
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(gate6): format runtime and refresh database types"
+          git push origin HEAD:feat/day1-complete-task-read-models
+
+      - name: Upload Gate 6 diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate6-diagnostics
+          path: |
+            /tmp/gate6-deno.log
+            /tmp/gate6-postgres.log
+            deno.lock
+            supabase/database.types.ts
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup >/dev/null 2>&1 || true
