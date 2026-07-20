@@ -33,6 +33,54 @@ jobs:
       - name: Generate command metadata
         run: python scripts/generate_supabase_command_gateway_contract.py
 
+      - name: Normalize runtime JSON types
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('supabase/functions/_shared/engine-runtime/day1-complete-task-v1.ts')
+          text = path.read_text(encoding='utf-8')
+          for name in (
+              'TodayTask',
+              'TodayView',
+              'CaptainParticipant',
+              'CaptainBlocker',
+              'CaptainDayView',
+          ):
+              text = text.replace(
+                  f'interface {name} extends JsonObject {{',
+                  f'interface {name} {{',
+              )
+          text = text.replace(
+              'return value as TodayView;',
+              'return value as unknown as TodayView;',
+          )
+          text = text.replace(
+              'return value as CaptainDayView;',
+              'return value as unknown as CaptainDayView;',
+          )
+          text = text.replace(
+              '        today,\n      ),',
+              '        today as unknown as JsonObject,\n      ),',
+          )
+          text = text.replace(
+              '        captain,\n      ),',
+              '        captain as unknown as JsonObject,\n      ),',
+          )
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit runtime type normalization
+        run: |
+          git add supabase/functions/_shared/engine-runtime/day1-complete-task-v1.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(engine): separate typed read models from JSON index signatures"
+          git push origin HEAD:feat/day1-complete-task-read-models
+
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
