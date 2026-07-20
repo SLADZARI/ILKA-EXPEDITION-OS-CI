@@ -8,7 +8,7 @@ on:
       - ".github/workflows/immutable-history-diagnostics.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   database-diagnostics:
@@ -16,8 +16,10 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Checkout
+      - name: Checkout source branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
@@ -48,10 +50,25 @@ jobs:
           tail -n 240 /tmp/supabase-test.log > /tmp/immutable-history-test.log
 
           if [[ $test_status -eq 0 ]]; then
-            supabase gen types typescript --local --schema api,ilka,private > /tmp/database.types.ts
+            supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
           fi
 
           exit $test_status
+
+      - name: Commit exact generated database types
+        if: success()
+        shell: bash
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: |
+          git add supabase/database.types.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(supabase): refresh immutable history database types"
+          git push origin "HEAD:${BRANCH_NAME}"
 
       - name: Upload immutable history diagnostics
         if: always()
@@ -60,7 +77,7 @@ jobs:
           name: immutable-history-diagnostics
           path: |
             /tmp/immutable-history-test.log
-            /tmp/database.types.ts
+            supabase/database.types.ts
           if-no-files-found: warn
           retention-days: 1
 
