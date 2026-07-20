@@ -88,8 +88,9 @@ def main() -> int:
         "event_stream_position_out_of_sequence",
         "accepted_receipt_event_set_incomplete",
         "correction_target_cross_expedition",
-        "event_log_is_append_only",
-        "command_receipts_is_append_only",
+        "message = tg_table_name || '_is_append_only'",
+        "create trigger command_receipts_immutable_row",
+        "create trigger event_log_immutable_row",
         "create constraint trigger command_receipts_event_set_complete",
         "before truncate on ilka.event_log",
         "grant execute on function private.check_command_idempotency(text, bytea) to service_role",
@@ -126,14 +127,15 @@ def main() -> int:
             errors.append(f"immutable-history pgTAP test missing scenario: {expected}")
 
     docs = (root / DOC_PATH).read_text(encoding="utf-8")
+    docs_lower = docs.lower()
     for expected in (
         "stream_position` remains database persistence metadata",
         "event_json.expedition_id",
-        "The original event remains unchanged and replayable",
-        "Gate 4 must compose these primitives",
-        "remote deployment before reviewed PR and green CI",
+        "the original event remains unchanged and replayable",
+        "gate 4 must compose these primitives",
+        "remote deployment before reviewed pr and green ci",
     ):
-        if expected not in docs:
+        if expected not in docs_lower:
             errors.append(f"immutable-history architecture contract missing boundary: {expected}")
 
     event_catalog = (root / EVENT_CATALOG_PATH).read_text(encoding="utf-8")
