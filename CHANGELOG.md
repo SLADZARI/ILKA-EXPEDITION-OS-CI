@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-20 — Day 1 runtime release registration
+
+- Registered `day1_complete_task_v1` in the exact-match Engine runtime registry.
+- Pinned the runtime to protected reducer implementation commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`.
+- Pinned rules release `engine_v8_permissions_v7_onboarding_v3`, content release `day1_content_v1` and reducer version `day1_complete_task_v1`.
+- Added immutable `ilka.runtime_releases` migration metadata without changing reducer behavior.
+- Added exact registry-match/mismatch tests and database release immutability tests.
+
+This registration creates no Auth user, Expedition, membership, Participant, command, event or projection. Remote migration application and Edge Function deployment remain separate reviewed operations.
+
 ## 2026-07-20 — Day 1 `complete_task` vertical
 
 - Accepted `ADR-015` for the first executable Day 1 reducer and authoritative read-model transport.

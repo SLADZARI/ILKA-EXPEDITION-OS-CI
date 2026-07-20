@@ -68,7 +68,7 @@ The Command Gateway gate adds:
 - CORS, request-size limits and stable response/error envelopes;
 - Deno unit tests and direct local PostgreSQL integration.
 
-Gate 5 intentionally contains no production reducer bundle. New commands return retryable `runtime_release_unavailable` and write nothing until the first vertical Engine/read-model gate registers an exact pinned runtime.
+Gate 5 originally contained no production reducer bundle. Gate 6 now registers the first exact pinned runtime release for `complete_task`.
 
 Gate 6 adds the first executable Day 1 vertical:
 
@@ -80,7 +80,7 @@ Gate 6 adds the first executable Day 1 vertical:
 - authenticated `api.get_today_view(...)`, Captain-only `api.get_captain_day_view(...)` and actor-owned `api.get_command_receipt(...)`;
 - 36 Deno unit tests, 246 pgTAP assertions and two direct PostgreSQL integration tests.
 
-The implementation PR intentionally keeps the production runtime registry empty until the protected reducer merge SHA exists. It does **not** include Expedition bootstrap, invitation acceptance, rotation, Day start, initial projection generation, additional reducers, frontend adapters, scheduler jobs, Realtime or Storage.
+The runtime registry now contains only `day1_complete_task_v1`, pinned to protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Registration changes no reducer behavior. Gate 6 still does **not** include Expedition bootstrap, invitation acceptance, rotation, Day start, initial projection generation, additional reducers, frontend adapters, scheduler jobs, Realtime or Storage.
 
 ## Local verification
 
@@ -88,8 +88,8 @@ Docker must be running for database integration.
 
 ```bash
 python scripts/generate_supabase_command_gateway_contract.py
-deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime supabase/functions/_shared/engine-runtime
-deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime supabase/functions/_shared/engine-runtime
+deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
 deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 supabase start
