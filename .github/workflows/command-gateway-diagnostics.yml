@@ -35,17 +35,56 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Resolve dependencies and generate lockfile
+      - name: Run Deno diagnostics
+        id: diagnostics
+        shell: bash
         run: |
-          deno cache --config supabase/functions/command-gateway/deno.json \
-            supabase/functions/command-gateway/index.ts \
-            supabase/functions/command-gateway/tests/unit/*.ts \
-            supabase/functions/command-gateway/tests/integration/*.ts
+          set +e
+          status=0
+          {
+            echo '=== DENO VERSION ==='
+            deno --version
+            echo '=== CACHE / LOCK ==='
+            deno cache --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway/index.ts \
+              supabase/functions/command-gateway/tests/unit/*.ts \
+              supabase/functions/command-gateway/tests/integration/*.ts
+            cache_status=$?
+            if [[ $cache_status -ne 0 ]]; then status=$cache_status; fi
 
-      - name: Format command gateway
-        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+            echo '=== FORMAT ==='
+            deno fmt --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway \
+              supabase/functions/_shared/command-gateway
+            fmt_status=$?
+            if [[ $status -eq 0 && $fmt_status -ne 0 ]]; then status=$fmt_status; fi
+
+            echo '=== LINT ==='
+            deno lint --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway \
+              supabase/functions/_shared/command-gateway
+            lint_status=$?
+            if [[ $status -eq 0 && $lint_status -ne 0 ]]; then status=$lint_status; fi
+
+            echo '=== CHECK ==='
+            deno check --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway/index.ts \
+              supabase/functions/command-gateway/tests/unit/*.ts \
+              supabase/functions/command-gateway/tests/integration/*.ts
+            check_status=$?
+            if [[ $status -eq 0 && $check_status -ne 0 ]]; then status=$check_status; fi
+
+            echo '=== UNIT TESTS ==='
+            deno test --config supabase/functions/command-gateway/deno.json \
+              supabase/functions/command-gateway/tests/unit
+            test_status=$?
+            if [[ $status -eq 0 && $test_status -ne 0 ]]; then status=$test_status; fi
+          } > /tmp/command-gateway-diagnostics.log 2>&1
+          cat /tmp/command-gateway-diagnostics.log
+          exit $status
 
       - name: Commit deterministic generated files
+        if: success()
         shell: bash
         run: |
           git add deno.lock supabase/functions/command-gateway supabase/functions/_shared/command-gateway
@@ -57,11 +96,13 @@ jobs:
           git commit -m "chore(supabase): format and lock command gateway"
           git push origin HEAD:feat/supabase-command-gateway
 
-      - name: Lint command gateway
-        run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
-
-      - name: Typecheck command gateway
-        run: deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
-
-      - name: Run command gateway unit tests
-        run: deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
+      - name: Upload Deno diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: command-gateway-diagnostics
+          path: |
+            /tmp/command-gateway-diagnostics.log
+            deno.lock
+          if-no-files-found: warn
+          retention-days: 1
