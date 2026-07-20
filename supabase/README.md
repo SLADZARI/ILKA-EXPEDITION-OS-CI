@@ -24,7 +24,8 @@ supabase start
 supabase db reset
 supabase test db
 supabase db lint --local --level error
-supabase gen types typescript --local > supabase/database.types.ts
+supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+python scripts/validate_supabase_foundation.py
 ```
 
 Stop the local stack when finished:
@@ -33,10 +34,15 @@ Stop the local stack when finished:
 supabase stop
 ```
 
+## Schema boundaries
+
+- The Data API exposes only `api`.
+- Generated server types explicitly include `api`, `ilka` and `private`.
+- Browser code must not query `ilka` or `private` directly.
+- `public` is not an ILKA application schema.
+
 ## Remote safety
 
 The accepted development project is `VOYAGE` (`rehfxjlyfojkpascjtmb`).
 
 Do not run `supabase db push`, `supabase db reset --linked` or deploy functions from a feature branch. Remote migration application is a separate reviewed step after the local Foundation gate is green.
-
-The Data API exposes only the `api` schema. `ilka` and `private` are internal and are not direct browser surfaces.
