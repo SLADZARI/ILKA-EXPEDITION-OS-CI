@@ -1,5 +1,3 @@
-import "jsr:@supabase/functions-js@2.4.4/edge-runtime.d.ts";
-
 import { createSupabaseAuthVerifier } from "../_shared/command-gateway/auth.ts";
 import { PostgresGatewayDatabase } from "../_shared/command-gateway/database.ts";
 import { createCommandGatewayHandler } from "../_shared/command-gateway/handler.ts";
