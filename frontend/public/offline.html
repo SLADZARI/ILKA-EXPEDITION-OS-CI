@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#082554" />
+    <title>ILKA Expedition OS · Offline</title>
+    <style>
+      :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; color: #10213d; background: #f5f7fb; }
+      main { width: min(100%, 440px); display: grid; gap: 18px; padding: 28px; border: 1px solid #dce3ee; border-radius: 24px; background: white; box-shadow: 0 22px 60px rgba(8,37,84,.12); }
+      img { width: 72px; height: 72px; border-radius: 18px; }
+      h1 { margin: 0; font-size: 28px; line-height: 1.15; }
+      p { margin: 0; color: #56657a; line-height: 1.55; }
+      button { min-height: 48px; border: 0; border-radius: 14px; color: white; background: #082554; font: inherit; font-weight: 800; cursor: pointer; }
+      small { color: #748197; line-height: 1.45; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="./ilka-icon.svg" alt="" />
+      <h1>Нет соединения</h1>
+      <p>ILKA не использует кэшированную проекцию как новый источник истины. Уже созданные offline-команды остаются в локальной очереди IndexedDB.</p>
+      <button type="button" onclick="window.location.reload()">Проверить соединение</button>
+      <small>После восстановления связи приложение загрузит актуальную проекцию и продолжит синхронизацию.</small>
+    </main>
+  </body>
+</html>
