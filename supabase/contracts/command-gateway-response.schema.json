@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/command-gateway-response.schema.json",
+  "title": "CommandGatewayResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "data"],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "data": {
+      "$ref": "private-process-command-result.schema.json"
+    }
+  }
+}
