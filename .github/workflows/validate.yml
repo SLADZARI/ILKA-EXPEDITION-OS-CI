@@ -167,8 +167,7 @@ jobs:
         run: |
           status="$(git status --porcelain --untracked-files=all)"
           if [[ -n "$status" ]]; then
-            printf '%s
-' "$status"
+            printf '%s\n' "$status"
             git diff --exit-code || true
             exit 1
           fi
