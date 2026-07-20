@@ -1,0 +1,168 @@
+{
+  "expedition_id": "ilka_demo_2026_01",
+  "local_date": "2026-07-18",
+  "day": {
+    "number": 1,
+    "stage_id": "onboarding",
+    "status": "active",
+    "boundary_at": "2026-07-18T06:00:00+03:00",
+    "revision": 2,
+    "superseded_day_numbers": [],
+    "transition_mode": "automatic"
+  },
+  "participants": [
+    {
+      "participant_id": "participant_01",
+      "product_role_id": "product_captain",
+      "onboard_role_id": "navigation",
+      "required_cards_acknowledged": true,
+      "required_tasks_terminal": true,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_02",
+      "product_role_id": "product_support",
+      "onboard_role_id": "mooring",
+      "required_cards_acknowledged": false,
+      "required_tasks_terminal": false,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_03",
+      "product_role_id": "product_support",
+      "onboard_role_id": "order",
+      "required_cards_acknowledged": false,
+      "required_tasks_terminal": false,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_04",
+      "product_role_id": "product_support",
+      "onboard_role_id": "cook",
+      "required_cards_acknowledged": false,
+      "required_tasks_terminal": false,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    },
+    {
+      "participant_id": "participant_05",
+      "product_role_id": "product_support",
+      "onboard_role_id": "product_focus",
+      "required_cards_acknowledged": false,
+      "required_tasks_terminal": false,
+      "overdue_task_count": 0,
+      "sync_status": "synced",
+      "status": "active",
+      "access_revoked": false
+    }
+  ],
+  "blockers": [
+    {
+      "code": "required_output_unconfirmed",
+      "message": "Team Agreement output is not confirmed",
+      "entity_id": "team_agreement"
+    },
+    {
+      "code": "required_output_unconfirmed",
+      "message": "Safety acknowledgements are not confirmed",
+      "entity_id": "safety_acknowledgements"
+    },
+    {
+      "code": "required_output_unconfirmed",
+      "message": "Participant profiles are not confirmed",
+      "entity_id": "participant_profiles"
+    }
+  ],
+  "can_close_day": false,
+  "controls": {
+    "override_day_close": true,
+    "recover_day_transition": true,
+    "activate_recovery_day": true,
+    "override_role_assignment": true,
+    "normal_start_day": false,
+    "request_stage_advance": true,
+    "advance_stage": false,
+    "override_stage_advance": true,
+    "force_day_transition": true,
+    "rewind_day": true,
+    "ban_participant": true,
+    "unban_participant": true,
+    "create_decision_draft": false,
+    "create_vote": false,
+    "finalize_product_decision": false,
+    "override_product_decision": false,
+    "close_expedition": false
+  },
+  "sync_status": "synced",
+  "outputs": [
+    {
+      "output_id": "team_agreement",
+      "required": true,
+      "confirmed": false,
+      "evidence_refs": [],
+      "confirmed_by": null,
+      "pending_sync": false
+    },
+    {
+      "output_id": "safety_acknowledgements",
+      "required": true,
+      "confirmed": false,
+      "evidence_refs": [],
+      "confirmed_by": null,
+      "pending_sync": false
+    },
+    {
+      "output_id": "participant_profiles",
+      "required": true,
+      "confirmed": false,
+      "evidence_refs": [],
+      "confirmed_by": null,
+      "pending_sync": false
+    }
+  ],
+  "stage": {
+    "stage_id": "onboarding",
+    "status": "active",
+    "next_stage_id": "problem_discovery",
+    "advance_request_status": "none",
+    "requested_by": null,
+    "can_advance": false,
+    "advance_blockers": [
+      {
+        "code": "definition_of_done_incomplete",
+        "message": "Onboarding required outputs are incomplete"
+      }
+    ]
+  },
+  "super_admin": {
+    "enabled": true,
+    "scope": "expedition",
+    "server_confirmation_required": true,
+    "can_delete_events": false,
+    "can_impersonate_system_clock": false
+  },
+  "decision": null,
+  "gamification_summary": null,
+  "expedition_status": "active",
+  "expedition_completion": null,
+  "completion_readiness": {
+    "state": "unavailable",
+    "can_close_expedition": false,
+    "final_stage_id": null,
+    "final_day_number": null,
+    "shore_package_ref": null,
+    "expected_projection_version": 2,
+    "blockers": []
+  }
+}
