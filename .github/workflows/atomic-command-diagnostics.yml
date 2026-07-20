@@ -1,0 +1,92 @@
+name: Atomic command diagnostics
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - "scripts/validate_supabase_atomic_command_transaction.py"
+      - ".github/workflows/atomic-command-diagnostics.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  database-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Run database diagnostics
+        shell: bash
+        run: |
+          set +e
+          supabase start >/tmp/supabase-start.log 2>&1
+          start_status=$?
+          if [[ $start_status -ne 0 ]]; then
+            tail -n 300 /tmp/supabase-start.log > /tmp/atomic-command-diagnostics.log
+            exit $start_status
+          fi
+
+          supabase db reset >/tmp/supabase-reset.log 2>&1
+          reset_status=$?
+          if [[ $reset_status -ne 0 ]]; then
+            tail -n 300 /tmp/supabase-reset.log > /tmp/atomic-command-diagnostics.log
+            exit $reset_status
+          fi
+
+          supabase test db >/tmp/supabase-test.log 2>&1
+          test_status=$?
+          tail -n 400 /tmp/supabase-test.log > /tmp/atomic-command-diagnostics.log
+
+          if [[ $test_status -eq 0 ]]; then
+            supabase db lint --local --level error >> /tmp/atomic-command-diagnostics.log 2>&1
+            lint_status=$?
+            if [[ $lint_status -ne 0 ]]; then
+              exit $lint_status
+            fi
+            supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+          fi
+
+          exit $test_status
+
+      - name: Commit exact generated database types
+        if: success()
+        shell: bash
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: |
+          git add supabase/database.types.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(supabase): refresh atomic transaction database types"
+          git push origin "HEAD:${BRANCH_NAME}"
+
+      - name: Upload database diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atomic-command-diagnostics
+          path: |
+            /tmp/atomic-command-diagnostics.log
+            supabase/database.types.ts
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup >/dev/null 2>&1 || true
