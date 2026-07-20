@@ -96,7 +96,7 @@ jobs:
         run: supabase db lint --local --level error
 
       - name: Generate Supabase database types
-        run: supabase gen types typescript --local > supabase/database.types.ts
+        run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 
       - name: Validate Supabase Foundation contract
         run: python scripts/validate_supabase_foundation.py
