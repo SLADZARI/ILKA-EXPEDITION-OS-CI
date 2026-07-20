@@ -66,4 +66,9 @@ supabase stop
 
 The accepted development project is `VOYAGE` (`rehfxjlyfojkpascjtmb`).
 
-The reviewed Foundation migration is deployed remotely. Identity and membership changes must not be applied remotely from a feature branch. Remote migration application is a separate reviewed step after the identity gate PR and protected CI are green.
+The following reviewed migrations are deployed remotely:
+
+- `20260720142526 foundation`;
+- `20260720162648 identity_membership`.
+
+Identity tables remain empty. No command/event/projection runtime, Edge Functions, scheduler, Storage or pilot data exists. Further migrations must not be applied from a feature branch; immutable history is the next reviewed gate.

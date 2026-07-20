@@ -89,7 +89,7 @@ Supabase Foundation is complete locally:
 
 The reviewed Foundation has also been deployed to the development-only cloud Supabase project `VOYAGE` (`rehfxjlyfojkpascjtmb`) under remote migration version `20260720142526` (`foundation`). The Data API remains limited to `api`; `ilka` and `private` stay internal.
 
-Identity and Expedition Membership are implemented as the next local gate:
+Identity and Expedition Membership are complete locally and deployed to development:
 
 - Auth-linked Profiles preserve domain attribution independently from `auth.users` lifecycle;
 - Expeditions pin one immutable runtime release;
@@ -100,7 +100,7 @@ Identity and Expedition Membership are implemented as the next local gate:
 - banned and cross-Expedition actors resolve no active context;
 - browser roles receive no direct access to identity tables or private helpers.
 
-The identity migration is not applied remotely until its reviewed PR and protected CI gate are green. The project still contains no ILKA pilot data, command gateway, command receipts, domain event stream, projections, Edge Functions, scheduler jobs or Storage buckets.
+The reviewed identity migration is deployed to development-only `VOYAGE` as remote migration `20260720162648` (`identity_membership`). All five identity tables use forced RLS, `anon` and `authenticated` have no raw table access, `service_role` has no direct DELETE privilege, and the actor resolver is unavailable to browser roles. The tables remain empty: no ILKA profiles, Expeditions, memberships, Participants or invitations were created.
 
 Production authentication UI, invitation delivery/acceptance transport, remote projection loading, server command transport and multi-device synchronization are not yet implemented. The next persistence gate is immutable history: stream heads, command receipts and append-only event log.
 
