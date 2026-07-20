@@ -56,7 +56,7 @@ def main() -> int:
         "correcting history creates a new canonical correcting event",
         "same `command_id` plus the same normalized `request_hash` returns the original receipt",
         "Each Expedition owns one ordered event stream",
-        "(expedition_id, stream_position) is unique and gap-free",
+        "`(expedition_id, stream_position)` is unique and gap-free",
         "command receipts, stream heads and append-only event log",
     ):
         if expected not in adr:
