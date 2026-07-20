@@ -107,6 +107,9 @@ jobs:
       - name: Validate Supabase immutable history contract
         run: python scripts/validate_supabase_immutable_history.py
 
+      - name: Validate Supabase atomic command transaction contract
+        run: python scripts/validate_supabase_atomic_command_transaction.py
+
       - name: Verify generated sources are committed
         shell: bash
         run: |
