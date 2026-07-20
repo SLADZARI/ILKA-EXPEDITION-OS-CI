@@ -310,7 +310,7 @@ Deno.test({
         assertEquals(event.rows[0].participant_id, "participant_01");
 
         await verify.queryArray`
-          select set_config('request.jwt.claim.sub', ${participantAuthUserId}, true)
+          select set_config('request.jwt.claim.sub', ${participantAuthUserId}, false)
         `;
         const today = await verify.queryObject<{ projection: Record<string, unknown> }>`
           select api.get_today_view('day1_complete_task_integration') as projection
@@ -325,7 +325,7 @@ Deno.test({
         assertEquals(receipt.rows[0].result.replayed, true);
 
         await verify.queryArray`
-          select set_config('request.jwt.claim.sub', ${captainAuthUserId}, true)
+          select set_config('request.jwt.claim.sub', ${captainAuthUserId}, false)
         `;
         const captain = await verify.queryObject<{ projection: Record<string, unknown> }>`
           select api.get_captain_day_view('day1_complete_task_integration') as projection
