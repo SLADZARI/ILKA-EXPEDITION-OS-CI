@@ -18,6 +18,7 @@ SCHEMAS = ROOT / "supabase/functions/_shared/command-gateway/schema-validation.t
 TYPES = ROOT / "supabase/functions/_shared/command-gateway/types.ts"
 REGISTRY = ROOT / "supabase/functions/_shared/command-gateway/runtime-registry.ts"
 MIGRATION = ROOT / "supabase/migrations/20260720210000_day1_read_model_api.sql"
+REGISTRATION_MIGRATION = ROOT / "supabase/migrations/20260720213000_day1_complete_task_runtime_release.sql"
 PGTAP = ROOT / "supabase/tests/day1_read_model_api.test.sql"
 UNIT = ROOT / "supabase/functions/command-gateway/tests/unit/day1-complete-task-runtime.test.ts"
 INTEGRATION = ROOT / "supabase/functions/command-gateway/tests/integration/day1-complete-task.test.ts"
@@ -34,6 +35,7 @@ REQUIRED = (
     TYPES,
     REGISTRY,
     MIGRATION,
+    REGISTRATION_MIGRATION,
     PGTAP,
     UNIT,
     INTEGRATION,
@@ -152,10 +154,35 @@ def main() -> int:
         errors.append("projection validation must occur before persistence")
 
     registry = REGISTRY.read_text(encoding="utf-8")
-    if "new StaticRuntimeRegistry([])" not in registry:
-        errors.append("implementation PR must keep production runtime registry empty")
-    if "day1_complete_task_v1" in registry:
-        errors.append("implementation PR must not register the runtime before protected merge SHA exists")
+    require(
+        registry,
+        (
+            "createDay1CompleteTaskRuntime",
+            "day1CompleteTaskV1",
+            'release_key: "day1_complete_task_v1"',
+            'git_commit_sha: "edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617"',
+            'rules_release: "engine_v8_permissions_v7_onboarding_v3"',
+            'content_release: "day1_content_v1"',
+            'reducer_version: "day1_complete_task_v1"',
+            "new StaticRuntimeRegistry([",
+        ),
+        "runtime registry missing exact Day 1 release",
+        errors,
+    )
+
+    registration_sql = REGISTRATION_MIGRATION.read_text(encoding="utf-8")
+    require(
+        registration_sql,
+        (
+            "insert into ilka.runtime_releases",
+            "day1_complete_task_v1",
+            "edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617",
+            "engine_v8_permissions_v7_onboarding_v3",
+            "day1_content_v1",
+        ),
+        "runtime release migration missing exact metadata",
+        errors,
+    )
 
     sql = MIGRATION.read_text(encoding="utf-8").lower()
     require(

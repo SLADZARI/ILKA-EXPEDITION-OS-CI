@@ -1,3 +1,4 @@
+import { createDay1CompleteTaskRuntime } from "../engine-runtime/day1-complete-task-v1.ts";
 import type { RuntimeBundle, RuntimeRegistry, RuntimeRelease } from "./types.ts";
 
 function matches(bundle: RuntimeBundle, release: RuntimeRelease): boolean {
@@ -20,6 +21,14 @@ export class StaticRuntimeRegistry implements RuntimeRegistry {
   }
 }
 
-// Gate 5 intentionally contains no production reducer bundle. Gate 6 registers
-// the first exact pinned runtime together with its read-model contracts.
-export const commandGatewayRuntimeRegistry = new StaticRuntimeRegistry([]);
+export const day1CompleteTaskV1 = createDay1CompleteTaskRuntime({
+  release_key: "day1_complete_task_v1",
+  git_commit_sha: "edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617",
+  rules_release: "engine_v8_permissions_v7_onboarding_v3",
+  content_release: "day1_content_v1",
+  reducer_version: "day1_complete_task_v1",
+});
+
+export const commandGatewayRuntimeRegistry = new StaticRuntimeRegistry([
+  day1CompleteTaskV1,
+]);

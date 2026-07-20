@@ -146,7 +146,7 @@ Command Gateway is complete locally under accepted `ADR-014`:
 - CORS, body limits and stable public error envelopes are implemented;
 - Deno unit tests and direct local PostgreSQL integration are protected CI gates.
 
-Gate 5 intentionally registers no production reducer bundle. New valid commands return retryable `runtime_release_unavailable` without a receipt, event or projection write until Gate 6 adds the first exact pinned reducer and concrete read models. The function is not deployed remotely before PR review and protected CI completion. The next gate is the first vertical Engine runtime and read-model slice.
+Gate 5 originally shipped with an empty runtime registry. Gate 6 now supplies the first exact pinned runtime bundle; cloud execution still requires the reviewed read-model/runtime migrations and deployment of `command-gateway`.
 
 Gate 6 implementation is complete locally under accepted `ADR-015`:
 
@@ -160,7 +160,7 @@ Gate 6 implementation is complete locally under accepted `ADR-015`:
 - exact replay creates no duplicate receipt, event or projection version;
 - protected diagnostics passed 36 Deno unit tests, 246 pgTAP assertions and two direct PostgreSQL integration tests.
 
-This implementation change deliberately keeps the production runtime registry empty. After the pure reducer source is merged to protected `main`, a separate registration PR will pin that merge SHA in `ilka.runtime_releases` and wire the exact bundle without changing reducer behavior. The read-model migration and runtime release are not applied remotely from this feature branch, no cloud fixture data is created, and the Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.
+The exact `day1_complete_task_v1` runtime bundle is registered locally against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. The registration changes metadata and registry wiring only; reducer behavior is unchanged. The read-model and runtime-release migrations are not yet applied remotely, no cloud fixture data exists, and Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.
 
 ## Run the Day 1 prototype
 
@@ -199,8 +199,8 @@ cd frontend
 npm ci
 npm run check
 cd ..
-deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime supabase/functions/_shared/engine-runtime
-deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime supabase/functions/_shared/engine-runtime
+deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
 deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 supabase start
