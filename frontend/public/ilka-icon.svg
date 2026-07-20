@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">ILKA Expedition OS</title>
+  <desc id="description">A white expedition sail and compass mark on a navy background.</desc>
+  <rect width="512" height="512" rx="112" fill="#082554"/>
+  <circle cx="256" cy="256" r="154" fill="none" stroke="#8eb9e8" stroke-width="20" opacity=".7"/>
+  <path d="M256 90v54M256 368v54M90 256h54M368 256h54" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+  <path d="M256 126 350 344H162L256 126Z" fill="#ffffff"/>
+  <path d="M256 166v142H196L256 166Z" fill="#8eb9e8"/>
+  <path d="M178 364h156" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+</svg>
