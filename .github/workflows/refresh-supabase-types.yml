@@ -1,9 +1,7 @@
 name: Refresh Supabase types
 
 on:
-  push:
-    branches:
-      - feat/supabase-foundation
+  pull_request:
     paths:
       - .github/workflows/refresh-supabase-types.yml
 
@@ -33,8 +31,7 @@ jobs:
         run: supabase db reset
 
       - name: Generate database types
-        run: |
-          supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+        run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 
       - name: Commit generated types
         run: |
