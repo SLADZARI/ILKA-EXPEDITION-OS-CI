@@ -115,7 +115,7 @@ def main() -> int:
     require(architecture, (
         "one postgresql transaction kernel",
         "fixed advisory lock order",
-        "stale expected stream position returns conflict and writes nothing",
+        "stale expected position returns conflict and writes nothing",
         "gate 6 owns their schema-valid content",
         "engine permissions are not duplicated in sql",
         "projection failure rolls back receipt, events and both heads",
