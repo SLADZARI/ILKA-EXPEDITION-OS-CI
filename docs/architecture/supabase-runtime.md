@@ -435,3 +435,16 @@ No production project, production data or pilot operation is authorized by this 
 - multi-device sync before the first server-backed command works;
 - recordings/transcription;
 - applying the full 12-day domain in the foundation migration.
+
+## Development deployment record
+
+The Supabase Foundation implementation was merged through PR `#13` after the protected local database gate passed. The same reviewed Foundation boundary was then applied to the development-only cloud project `VOYAGE` (`rehfxjlyfojkpascjtmb`) as remote migration version `20260720142526` with migration name `foundation`.
+
+The deployed boundary contains only:
+
+- schemas `api`, `ilka` and `private`;
+- explicit schema, object and default privileges;
+- Data API exposure limited to `api`;
+- immutable `ilka.runtime_releases`.
+
+The deployment does not add Auth profiles, Expedition memberships, invitations, command receipts, event log, projections, `private.process_command(...)`, Edge Functions, Cron jobs, Storage buckets, ILKA pilot data or production data. It does not authorize production or pilot operation. The next implementation gate remains identity and Expedition membership.
