@@ -8,8 +8,7 @@ import type {
   RuntimeInput,
 } from "../command-gateway/types.ts";
 
-export const TODAY_VIEW_SCHEMA_ID =
-  "https://ilka.local/schemas/today-view.schema.json";
+export const TODAY_VIEW_SCHEMA_ID = "https://ilka.local/schemas/today-view.schema.json";
 export const CAPTAIN_DAY_VIEW_SCHEMA_ID =
   "https://ilka.local/schemas/captain-day-view.schema.json";
 export const READ_MODEL_SCHEMA_VERSION = "1";

@@ -56,7 +56,10 @@ Deno.test("gateway validates canonical Participant and Captain projections", () 
 });
 
 Deno.test("gateway rejects an unknown projection schema", () => {
-  const issues = schemas.validateProjection("https://ilka.local/schemas/unknown.json", {});
+  const issues = schemas.validateProjection(
+    "https://ilka.local/schemas/unknown.json",
+    {},
+  );
   assertEquals(issues.length, 1);
   assertEquals(issues[0].path, "/");
 });

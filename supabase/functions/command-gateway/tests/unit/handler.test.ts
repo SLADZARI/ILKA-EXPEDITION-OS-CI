@@ -107,6 +107,7 @@ function validators(overrides: Partial<SchemaValidator> = {}): SchemaValidator {
   return {
     validateCommand: () => [],
     validatePreparedEvent: () => [],
+    validateProjection: () => [],
     validateProcessRequest: () => [],
     validateProcessResult: () => [],
     ...overrides,
@@ -429,6 +430,29 @@ Deno.test("accepted runtime result is sent to the atomic transaction", async () 
   assertEquals(persistedCommand.actor_id, "participant_01");
   assertEquals(persistedCommand.actor_role, "participant");
   assertEquals((captured.request_hash as string).length, 64);
+});
+
+Deno.test("invalid prepared projection is never sent to persistence", async () => {
+  let persistenceCalled = false;
+  const handler = createCommandGatewayHandler(dependencies({
+    schemas: validators({
+      validateProjection: () => [{ path: "/tasks", message: "invalid" }],
+    }),
+    database: database({
+      processCommand: async () => {
+        persistenceCalled = true;
+        return result();
+      },
+    }),
+  }));
+  const response = await handler(post(command()));
+  assertEquals(response.status, 500);
+  assertEquals(persistenceCalled, false);
+  const body = await json(response);
+  assertEquals(
+    (body.error as Record<string, unknown>).code,
+    "runtime_contract_invalid",
+  );
 });
 
 Deno.test("stream conflict maps to HTTP 409", async () => {

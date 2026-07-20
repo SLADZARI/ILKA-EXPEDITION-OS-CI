@@ -1,7 +1,4 @@
-import {
-  assertEquals,
-  assertExists,
-} from "jsr:@std/assert@1.0.19";
+import { assertEquals, assertExists } from "jsr:@std/assert@1.0.19";
 
 import todayFixture from "../../../../../frontend/src/dev/today-view.day1.fixture.json" with {
   type: "json",
@@ -38,7 +35,9 @@ function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
-function context(overrides: Partial<GatewayExecutionContext> = {}): GatewayExecutionContext {
+function context(
+  overrides: Partial<GatewayExecutionContext> = {},
+): GatewayExecutionContext {
   const today = clone(todayFixture) as unknown as Record<string, JsonValue>;
   const captain = clone(captainFixture) as unknown as Record<string, JsonValue>;
   return {
@@ -148,10 +147,15 @@ Deno.test("Day 1 runtime accepts an assigned on-time task completion", async () 
 
   const tasks = today.projection.tasks as Array<Record<string, JsonValue>>;
   assertEquals(tasks[0].status, "completed");
-  const participants = captain.projection.participants as Array<Record<string, JsonValue>>;
+  const participants = captain.projection.participants as Array<
+    Record<string, JsonValue>
+  >;
   assertEquals(participants[0].required_tasks_terminal, true);
   const blockers = captain.projection.blockers as Array<Record<string, JsonValue>>;
-  assertEquals(blockers.some((blocker) => blocker.code === "required_task_incomplete"), false);
+  assertEquals(
+    blockers.some((blocker) => blocker.code === "required_task_incomplete"),
+    false,
+  );
   assertEquals((captain.projection.day as Record<string, JsonValue>).revision, 2);
   assertEquals(
     (captain.projection.completion_readiness as Record<string, JsonValue>)
@@ -186,7 +190,9 @@ Deno.test("Day 1 runtime emits task.completed_late after the due day", async () 
 
 Deno.test("Day 1 runtime persists a deterministic rejection for a terminal task", async () => {
   const terminal = context();
-  const tasks = terminal.projections[0].projection.tasks as Array<Record<string, JsonValue>>;
+  const tasks = terminal.projections[0].projection.tasks as Array<
+    Record<string, JsonValue>
+  >;
   tasks[0].status = "completed";
   const prepared = await runtime.reduce(input({}, terminal));
   assertEquals(prepared.status, "rejected");
