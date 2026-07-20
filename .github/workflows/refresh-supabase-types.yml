@@ -1,0 +1,53 @@
+name: Refresh Supabase types
+
+on:
+  push:
+    branches:
+      - feat/supabase-foundation
+    paths:
+      - .github/workflows/refresh-supabase-types.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/supabase-foundation
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Rebuild database
+        run: supabase db reset
+
+      - name: Generate database types
+        run: |
+          supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+
+      - name: Commit generated types
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/database.types.ts
+          if git diff --cached --quiet; then
+            echo "Generated types already current"
+          else
+            git commit -m "chore(supabase): refresh generated database types"
+            git push origin HEAD:feat/supabase-foundation
+          fi
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
