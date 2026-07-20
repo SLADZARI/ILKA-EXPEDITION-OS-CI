@@ -34,7 +34,7 @@ Configuration-driven, offline-first role-card system for a 12-day team product e
 7. frontend implementation
 8. Supabase runtime implementation
 
-## Target repository structure
+## Repository structure
 
 ```text
 app/            UI requirements and read-model contracts
@@ -61,4 +61,55 @@ design-system/  tokens and stable component IDs
 
 ## Current implementation status
 
-Canonical domain contracts and the frontend/design-system boundary are defined on Google Drive. This GitHub repository is being populated through a controlled bootstrap Pull Request. Supabase schema migrations must not be applied until ADR-012 is accepted.
+The canonical baseline is protected on `main` and published as `v0.1.0-canonical-baseline`.
+
+Frontend Foundation is complete:
+
+- deterministic `npm ci` through a committed lockfile;
+- generated design-system and TypeScript contracts checked against canonical sources;
+- protected CI runs repository validation, Python tests, frontend tests, strict TypeScript and both production/preview builds;
+- IndexedDB is the primary offline command queue with idempotent enqueue and in-memory fallback;
+- Participant UI renders `pending`, `synced`, `conflict`, `rejected` and `offline` delivery state without calculating authoritative outcomes;
+- schema-valid Day 1 Participant and Captain preview scenarios are tied to canonical stage, output and assignment sources;
+- installable PWA metadata and a projection-safe service worker are present.
+
+Production authentication, remote projection loading, server command transport and multi-device synchronization are not implemented. Supabase migrations must not be applied until ADR-012 is accepted.
+
+## Run the Day 1 prototype
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Vite development mode opens the scenario launcher. The available canonical scenarios are:
+
+```text
+?scenario=day1&mode=participant
+?scenario=day1&mode=captain
+?scenario=day1&mode=captain&state=after_sync
+```
+
+Build and serve the explicit static preview:
+
+```bash
+npm run build:preview
+npm run preview:static
+```
+
+The normal production build does not enable fixtures. It requires an authoritative `window.__ILKA_BOOTSTRAP__` injection from the application composition root.
+
+## Validation
+
+From the repository root:
+
+```bash
+python scripts/validate_repository.py .
+pytest -q
+cd frontend
+npm ci
+npm run check
+```
+
+`npm run check` generates canonical frontend sources, validates source parity, runs frontend tests, performs strict TypeScript checking and builds both production and static preview outputs.
