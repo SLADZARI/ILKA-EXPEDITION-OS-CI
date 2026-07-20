@@ -19,63 +19,39 @@ jobs:
         with:
           ref: feat/day1-complete-task-read-models
 
-      - name: Patch gateway projection validation
+      - name: Normalize gateway projection validation
         run: |
           python - <<'PY'
           from pathlib import Path
 
           handler = Path('supabase/functions/_shared/command-gateway/handler.ts')
           text = handler.read_text(encoding='utf-8')
-          marker = '''    const processedAt = dependencies.now().toISOString();
-          '''
-          block = '''    const projectionIssues = prepared.projection_mutations.flatMap(
-              (mutation, index) =>
-                dependencies.schemas
-                  .validateProjection(mutation.schema_id, mutation.projection)
-                  .map((issue) => ({
-                    path: `/projection_mutations/${index}/projection${
-                      issue.path === "/" ? "" : issue.path
-                    }`,
-                    message: issue.message,
-                  })),
-            );
-            if (projectionIssues.length) {
-              return errorResponse(
-                500,
-                requestId,
-                "runtime_contract_invalid",
-                "The pinned runtime produced an invalid authoritative projection.",
-                false,
-                origin,
-                true,
-                projectionIssues,
-              );
-            }
-
-          '''
-          if block not in text:
-              if marker not in text:
-                  raise SystemExit('handler insertion marker not found')
-              text = text.replace(marker, block + marker, 1)
+          first = text.find('    const projectionIssues = prepared.projection_mutations.flatMap(')
+          if first < 0:
+              raise SystemExit('projection validation block missing')
+          second = text.find('    const projectionIssues = prepared.projection_mutations.flatMap(', first + 1)
+          if second >= 0:
+              processed = text.find('    const processedAt = dependencies.now().toISOString();', second)
+              if processed < 0:
+                  raise SystemExit('processedAt marker missing after duplicate block')
+              text = text[:second] + text[processed:]
               handler.write_text(text, encoding='utf-8')
 
           tests = Path('supabase/functions/command-gateway/tests/unit/handler.test.ts')
           text = tests.read_text(encoding='utf-8')
-          before = '''    validatePreparedEvent: () => [],
-              validateProcessRequest: () => [],
-          '''
-          after = '''    validatePreparedEvent: () => [],
-              validateProjection: () => [],
-              validateProcessRequest: () => [],
-          '''
           if 'validateProjection: () => [],' not in text:
-              if before not in text:
+              marker = '    validatePreparedEvent: () => [],\n'
+              if marker not in text:
                   raise SystemExit('handler test validator marker not found')
-              text = text.replace(before, after, 1)
+              text = text.replace(
+                  marker,
+                  marker + '    validateProjection: () => [],\n',
+                  1,
+              )
 
-          test_marker = '''Deno.test("stream conflict maps to HTTP 409", async () => {
-          '''
-          test_block = '''Deno.test("invalid prepared projection is never sent to persistence", async () => {
+          if 'invalid prepared projection is never sent to persistence' not in text:
+              marker = 'Deno.test("stream conflict maps to HTTP 409", async () => {\n'
+              block = '''Deno.test("invalid prepared projection is never sent to persistence", async () => {
             let persistenceCalled = false;
             const handler = createCommandGatewayHandler(dependencies({
               schemas: validators({
@@ -99,10 +75,9 @@ jobs:
           });
 
           '''
-          if test_block not in text:
-              if test_marker not in text:
+              if marker not in text:
                   raise SystemExit('handler test insertion marker not found')
-              text = text.replace(test_marker, test_block + test_marker, 1)
+              text = text.replace(marker, block + marker, 1)
           tests.write_text(text, encoding='utf-8')
           PY
 
@@ -126,5 +101,5 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "feat(gateway): validate prepared read-model projections"
+          git commit -m "fix(gateway): keep one projection validation pass"
           git push origin HEAD:feat/day1-complete-task-read-models
