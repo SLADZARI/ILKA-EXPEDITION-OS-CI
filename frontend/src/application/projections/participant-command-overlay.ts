@@ -31,25 +31,25 @@ export function applyParticipantCommandOverlay(
   connectivity: ConnectivityState = 'unknown',
 ): TodayView {
   const relevant = queue.filter((item) => appliesToToday(authoritative, item));
-  const pending = relevant.filter((item) => item.status === 'pending');
+  const pendingCardIds = new Set<string>();
+  const pendingTaskIds = new Set<string>();
 
-  const pendingCardIds = new Set(
-    pending
-      .filter((item) => item.command.command_type === 'acknowledge_card')
-      .map((item) => item.command.payload.card_id),
-  );
-  const pendingTaskIds = new Set(
-    pending
-      .filter((item) => ['start_task', 'block_task', 'complete_task'].includes(item.command.command_type))
-      .map((item) => {
-        const command = item.command;
-        if (command.command_type === 'start_task' || command.command_type === 'block_task' || command.command_type === 'complete_task') {
-          return command.payload.task_id;
-        }
-        return null;
-      })
-      .filter((taskId): taskId is string => Boolean(taskId)),
-  );
+  for (const item of relevant) {
+    if (item.status !== 'pending') continue;
+    const command = item.command;
+    switch (command.command_type) {
+      case 'acknowledge_card':
+        pendingCardIds.add(command.payload.card_id);
+        break;
+      case 'start_task':
+      case 'block_task':
+      case 'complete_task':
+        pendingTaskIds.add(command.payload.task_id);
+        break;
+      default:
+        break;
+    }
+  }
 
   return {
     ...authoritative,
