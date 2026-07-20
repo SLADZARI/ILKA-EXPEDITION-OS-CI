@@ -220,7 +220,7 @@ Future create, invite, accept, ban, unban and revoke operations must append cano
 - projections and Realtime;
 - Product Captain assignment;
 - production or pilot data;
-- unreviewed or feature-branch remote deployment.
+- remote deployment before reviewed PR and green CI.
 
 ## Development deployment record
 
