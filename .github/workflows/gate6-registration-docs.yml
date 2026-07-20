@@ -1,0 +1,89 @@
+name: Gate 6 runtime registration docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/gate6-registration-docs.yml"
+      - "README.md"
+      - "supabase/README.md"
+      - "CHANGELOG.md"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout registration branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/register-day1-complete-task-runtime
+
+      - name: Record registered runtime state
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          text = text.replace(
+              'Gate 5 intentionally registers no production reducer bundle. New valid commands return retryable `runtime_release_unavailable` without a receipt, event or projection write until Gate 6 adds the first exact pinned reducer and concrete read models. The function is not deployed remotely before PR review and protected CI completion. The next gate is the first vertical Engine runtime and read-model slice.',
+              'Gate 5 originally shipped with an empty runtime registry. Gate 6 now supplies the first exact pinned runtime bundle; cloud execution still requires the reviewed read-model/runtime migrations and deployment of `command-gateway`.',
+          )
+          text = text.replace(
+              'This implementation change deliberately keeps the production runtime registry empty. After the pure reducer source is merged to protected `main`, a separate registration PR will pin that merge SHA in `ilka.runtime_releases` and wire the exact bundle without changing reducer behavior. The read-model migration and runtime release are not applied remotely from this feature branch, no cloud fixture data is created, and the Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.',
+              'The exact `day1_complete_task_v1` runtime bundle is registered locally against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. The registration changes metadata and registry wiring only; reducer behavior is unchanged. The read-model and runtime-release migrations are not yet applied remotely, no cloud fixture data exists, and Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.',
+          )
+          text = text.replace(
+              'supabase/functions/_shared/engine-runtime supabase/functions/_shared/engine-runtime',
+              'supabase/functions/_shared/engine-runtime',
+          )
+          readme.write_text(text, encoding='utf-8')
+
+          supabase_readme = Path('supabase/README.md')
+          text = supabase_readme.read_text(encoding='utf-8')
+          text = text.replace(
+              'Gate 5 intentionally contains no production reducer bundle. New commands return retryable `runtime_release_unavailable` and write nothing until the first vertical Engine/read-model gate registers an exact pinned runtime.',
+              'Gate 5 originally contained no production reducer bundle. Gate 6 now registers the first exact pinned runtime release for `complete_task`.',
+          )
+          text = text.replace(
+              'The implementation PR intentionally keeps the production runtime registry empty until the protected reducer merge SHA exists. It does **not** include Expedition bootstrap, invitation acceptance, rotation, Day start, initial projection generation, additional reducers, frontend adapters, scheduler jobs, Realtime or Storage.',
+              'The runtime registry now contains only `day1_complete_task_v1`, pinned to protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Registration changes no reducer behavior. Gate 6 still does **not** include Expedition bootstrap, invitation acceptance, rotation, Day start, initial projection generation, additional reducers, frontend adapters, scheduler jobs, Realtime or Storage.',
+          )
+          text = text.replace(
+              'supabase/functions/_shared/engine-runtime supabase/functions/_shared/engine-runtime',
+              'supabase/functions/_shared/engine-runtime',
+          )
+          supabase_readme.write_text(text, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text(encoding='utf-8')
+          heading = '## 2026-07-20 — Day 1 runtime release registration\n'
+          section = '''## 2026-07-20 — Day 1 runtime release registration
+
+          - Registered `day1_complete_task_v1` in the exact-match Engine runtime registry.
+          - Pinned the runtime to protected reducer implementation commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`.
+          - Pinned rules release `engine_v8_permissions_v7_onboarding_v3`, content release `day1_content_v1` and reducer version `day1_complete_task_v1`.
+          - Added immutable `ilka.runtime_releases` migration metadata without changing reducer behavior.
+          - Added exact registry-match/mismatch tests and database release immutability tests.
+
+          This registration creates no Auth user, Expedition, membership, Participant, command, event or projection. Remote migration application and Edge Function deployment remain separate reviewed operations.
+
+          '''
+          if heading not in text:
+              text = text.replace('# Changelog\n\n', '# Changelog\n\n' + section, 1)
+          changelog.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit status docs
+        run: |
+          git add README.md supabase/README.md CHANGELOG.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs(gate6): record pinned runtime registration"
+          git push origin HEAD:feat/register-day1-complete-task-runtime
