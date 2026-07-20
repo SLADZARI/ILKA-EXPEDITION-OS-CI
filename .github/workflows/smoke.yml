@@ -11,4 +11,4 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Runner started
-        run: echo "GitHub Actions runner started"
+        run: echo "GitHub Actions runner started after reset"
