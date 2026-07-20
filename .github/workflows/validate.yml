@@ -98,6 +98,9 @@ jobs:
       - name: Generate Supabase database types
         run: supabase gen types typescript --local > supabase/database.types.ts
 
+      - name: Validate Supabase Foundation contract
+        run: python scripts/validate_supabase_foundation.py
+
       - name: Verify generated sources are committed
         run: git diff --exit-code
 
