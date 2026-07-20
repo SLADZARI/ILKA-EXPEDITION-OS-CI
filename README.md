@@ -87,7 +87,7 @@ Supabase Foundation is complete locally:
 - pgTAP database tests and database linting in protected CI;
 - generated TypeScript types for `api`, `ilka` and `private` checked for deterministic parity.
 
-The cloud Supabase project `VOYAGE` remains development-only. Foundation migrations have **not** been applied remotely, and the project still contains no ILKA pilot data, command gateway or domain event stream.
+The reviewed Foundation has also been deployed to the development-only cloud Supabase project `VOYAGE` (`rehfxjlyfojkpascjtmb`) under remote migration version `20260720142526` (`foundation`). The Data API remains limited to `api`; `ilka` and `private` stay internal. The project still contains no ILKA pilot data, Auth membership model, command gateway, command receipts, domain event stream, projections, Edge Functions, scheduler jobs or Storage buckets.
 
 Production authentication, remote projection loading, server command transport and multi-device synchronization are not yet implemented. The next backend gate is identity and Expedition membership.
 
