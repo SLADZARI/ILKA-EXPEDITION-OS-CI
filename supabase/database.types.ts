@@ -26,6 +26,293 @@ export type Database = {
   }
   ilka: {
     Tables: {
+      expedition_members: {
+        Row: {
+          ban_reason: string | null
+          banned_at: string | null
+          created_at: string
+          expedition_id: string
+          id: string
+          joined_at: string
+          profile_id: string
+          revoke_reason: string | null
+          revoked_at: string | null
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ban_reason?: string | null
+          banned_at?: string | null
+          created_at?: string
+          expedition_id: string
+          id?: string
+          joined_at?: string
+          profile_id: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          role: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ban_reason?: string | null
+          banned_at?: string | null
+          created_at?: string
+          expedition_id?: string
+          id?: string
+          joined_at?: string
+          profile_id?: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expedition_members_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expedition_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expeditions: {
+        Row: {
+          created_at: string
+          created_by_profile_id: string
+          day_boundary_local_time: string
+          duration_days: number
+          expedition_key: string
+          id: string
+          name: string
+          recovery_days_available: number
+          runtime_release_id: string
+          status: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_profile_id: string
+          day_boundary_local_time?: string
+          duration_days?: number
+          expedition_key: string
+          id?: string
+          name: string
+          recovery_days_available?: number
+          runtime_release_id: string
+          status?: string
+          timezone: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_profile_id?: string
+          day_boundary_local_time?: string
+          duration_days?: number
+          expedition_key?: string
+          id?: string
+          name?: string
+          recovery_days_available?: number
+          runtime_release_id?: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expeditions_created_by_profile_id_fkey"
+            columns: ["created_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expeditions_runtime_release_id_fkey"
+            columns: ["runtime_release_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_profile_id: string | null
+          created_at: string
+          email_normalized: string
+          expedition_id: string
+          expires_at: string
+          id: string
+          invited_by_membership_id: string
+          revocation_reason: string | null
+          revoked_at: string | null
+          revoked_by_profile_id: string | null
+          role: string
+          status: string
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_profile_id?: string | null
+          created_at?: string
+          email_normalized: string
+          expedition_id: string
+          expires_at: string
+          id?: string
+          invited_by_membership_id: string
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by_profile_id?: string | null
+          role: string
+          status?: string
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_profile_id?: string | null
+          created_at?: string
+          email_normalized?: string
+          expedition_id?: string
+          expires_at?: string
+          id?: string
+          invited_by_membership_id?: string
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by_profile_id?: string | null
+          role?: string
+          status?: string
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_accepted_by_profile_id_fkey"
+            columns: ["accepted_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_inviter_expedition_fk"
+            columns: ["invited_by_membership_id", "expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expedition_members"
+            referencedColumns: ["id", "expedition_id"]
+          },
+          {
+            foreignKeyName: "invitations_revoked_by_profile_id_fkey"
+            columns: ["revoked_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          ban_reason: string | null
+          banned_at: string | null
+          created_at: string
+          display_name: string
+          expedition_id: string
+          expedition_member_id: string
+          id: string
+          participant_key: string
+          participant_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ban_reason?: string | null
+          banned_at?: string | null
+          created_at?: string
+          display_name: string
+          expedition_id: string
+          expedition_member_id: string
+          id?: string
+          participant_key: string
+          participant_order: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ban_reason?: string | null
+          banned_at?: string | null
+          created_at?: string
+          display_name?: string
+          expedition_id?: string
+          expedition_member_id?: string
+          id?: string
+          participant_key?: string
+          participant_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_member_expedition_fk"
+            columns: ["expedition_member_id", "expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expedition_members"
+            referencedColumns: ["id", "expedition_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          auth_user_id: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       runtime_releases: {
         Row: {
           content_release: string
@@ -78,7 +365,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      resolve_actor_context: {
+        Args: { p_auth_user_id: string; p_expedition_id: string }
+        Returns: {
+          expedition_member_id: string
+          membership_role: string
+          participant_id: string
+          profile_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

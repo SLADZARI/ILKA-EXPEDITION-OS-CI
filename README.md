@@ -87,9 +87,22 @@ Supabase Foundation is complete locally:
 - pgTAP database tests and database linting in protected CI;
 - generated TypeScript types for `api`, `ilka` and `private` checked for deterministic parity.
 
-The reviewed Foundation has also been deployed to the development-only cloud Supabase project `VOYAGE` (`rehfxjlyfojkpascjtmb`) under remote migration version `20260720142526` (`foundation`). The Data API remains limited to `api`; `ilka` and `private` stay internal. The project still contains no ILKA pilot data, Auth membership model, command gateway, command receipts, domain event stream, projections, Edge Functions, scheduler jobs or Storage buckets.
+The reviewed Foundation has also been deployed to the development-only cloud Supabase project `VOYAGE` (`rehfxjlyfojkpascjtmb`) under remote migration version `20260720142526` (`foundation`). The Data API remains limited to `api`; `ilka` and `private` stay internal.
 
-Production authentication, remote projection loading, server command transport and multi-device synchronization are not yet implemented. The next backend gate is identity and Expedition membership.
+Identity and Expedition Membership are implemented as the next local gate:
+
+- Auth-linked Profiles preserve domain attribution independently from `auth.users` lifecycle;
+- Expeditions pin one immutable runtime release;
+- membership roles are Expedition-scoped `captain`, `participant` and `shore_operator`;
+- domain Participants remain separate from Profiles and memberships;
+- invitation tokens are stored only as expiring SHA-256 hashes;
+- trusted server code resolves active actor context through `private.resolve_actor_context(...)`;
+- banned and cross-Expedition actors resolve no active context;
+- browser roles receive no direct access to identity tables or private helpers.
+
+The identity migration is not applied remotely until its reviewed PR and protected CI gate are green. The project still contains no ILKA pilot data, command gateway, command receipts, domain event stream, projections, Edge Functions, scheduler jobs or Storage buckets.
+
+Production authentication UI, invitation delivery/acceptance transport, remote projection loading, server command transport and multi-device synchronization are not yet implemented. The next persistence gate is immutable history: stream heads, command receipts and append-only event log.
 
 ## Run the Day 1 prototype
 
@@ -133,6 +146,7 @@ supabase test db
 supabase db lint --local --level error
 supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 python scripts/validate_supabase_foundation.py
+python scripts/validate_supabase_identity_membership.py
 supabase stop
 ```
 
