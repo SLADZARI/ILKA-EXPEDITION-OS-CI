@@ -54,9 +54,11 @@ design-system/  tokens and stable component IDs
 - Frontend hosting: Vercel
 - Backend: Supabase
 - Offline data: IndexedDB + service worker
-- Domain writes: Supabase `command-gateway`
-- Runtime history: append-only `event_log`
+- Domain writes: authenticated Supabase `command-gateway`
+- Atomic persistence: server-only `private.process_command(...)`
+- Runtime history: append-only Expedition-scoped `event_log`
 - Reads: schema-valid Participant and Captain projections
+- Realtime: invalidation and refetch only
 - Cloudflare: not required for the MVP
 
 ## Current implementation status
@@ -73,7 +75,11 @@ Frontend Foundation is complete:
 - schema-valid Day 1 Participant and Captain preview scenarios are tied to canonical stage, output and assignment sources;
 - installable PWA metadata and a projection-safe service worker are present.
 
-Production authentication, remote projection loading, server command transport and multi-device synchronization are not implemented. Supabase migrations must not be applied until ADR-012 is accepted.
+`ADR-012` is accepted. The backend runtime is fixed as an event-sourced hybrid with immutable events, rebuildable projections, email OTP identity, Expedition-scoped membership, one authenticated command gateway and one atomic PostgreSQL transaction boundary.
+
+The Supabase `VOYAGE` project remains development-only and contains no ILKA domain migrations or pilot data. The next implementation gate is Supabase Foundation: local config, `ilka` / `api` / `private` schemas, explicit grants, runtime release registry and database reset/tests.
+
+Production authentication, remote projection loading, server command transport and multi-device synchronization are not yet implemented.
 
 ## Run the Day 1 prototype
 
@@ -113,3 +119,5 @@ npm run check
 ```
 
 `npm run check` generates canonical frontend sources, validates source parity, runs frontend tests, performs strict TypeScript checking and builds both production and static preview outputs.
+
+The Supabase Foundation PR must add a reproducible local database reset and protected SQL/RLS validation before any server-backed feature is merged.
