@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-20 — Supabase runtime architecture
+
+- Audited the development-only Supabase `VOYAGE` project and confirmed that no ILKA application schemas, domain tables, migrations, Edge Functions, Storage buckets or scheduled jobs have been applied.
+- Accepted `ADR-012` for the event-sourced hybrid Supabase runtime.
+- Fixed `command-gateway` as the only external domain write path.
+- Fixed `private.process_command(...)` as the single atomic PostgreSQL persistence boundary.
+- Assigned canonical reducer execution to a versioned server TypeScript Engine runtime rather than SQL business triggers.
+- Formalized Expedition stream ordering, command receipts, request-hash idempotency, conflict behavior and immutable runtime release pinning.
+- Selected email OTP as the MVP authentication flow.
+- Formalized schema-valid Participant/Captain projection transport, Realtime invalidation-only behavior and private versioned evidence storage.
+- Added `docs/architecture/supabase-runtime.md` with the implementation sequence and Supabase Foundation gate.
+
+No Supabase migrations have been applied. `VOYAGE` remains development-only and contains no pilot or production data.
+
 ## 2026-07-20 — Frontend Foundation
 
 - Added the Frontend Foundation audit and acceptance gate.
@@ -13,7 +27,7 @@
 - Added an installable PWA manifest, projection-safe service worker and offline fallback.
 - Completed the Frontend Foundation gate on protected `main`.
 
-No Supabase migrations have been applied. ADR-012 remains Proposed.
+No Supabase migrations have been applied. ADR-012 was Proposed at completion of this gate.
 
 ## 2026-07-20 — Canonical baseline
 
@@ -26,7 +40,7 @@ No Supabase migrations have been applied. ADR-012 remains Proposed.
 
 Canonical baseline commit before this changelog entry: `98a545b36fe62d5f08b0c00b3042cc3d87e4ba1a`.
 
-No Supabase migrations have been applied. ADR-012 remains Proposed.
+No Supabase migrations had been applied. ADR-012 was Proposed at completion of this gate.
 
 ## 2026-07-19
 
@@ -36,4 +50,4 @@ No Supabase migrations have been applied. ADR-012 remains Proposed.
 - Added the canonical pipeline, permissions and role-rotation rules.
 - Started controlled migration from the canonical Google Drive project folder.
 
-No Supabase migrations have been applied. ADR-012 remains Proposed.
+No Supabase migrations had been applied. ADR-012 was Proposed.
