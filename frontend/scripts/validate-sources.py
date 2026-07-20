@@ -145,6 +145,7 @@ def main() -> int:
         "src/application/projections/participant-command-overlay.ts",
         "src/dev/preview-bootstrap.ts",
         "src/dev/PreviewLauncher.tsx",
+        "src/pwa/register-service-worker.ts",
         "src/screens/captain/DayOverviewScreen.tsx",
         "src/screens/captain/StageControlScreen.tsx",
         "src/screens/captain/RecoveryDayScreen.tsx",
@@ -152,10 +153,59 @@ def main() -> int:
         "src/contracts/generated/offline-command.ts",
         "src/contracts/generated/today-view.ts",
         "src/contracts/generated/captain-day-view.ts",
+        "public/manifest.webmanifest",
+        "public/offline.html",
+        "public/ilka-icon.svg",
+        "public/sw.js",
     ]
     for relative in required_runtime_files:
         if not (FRONTEND / relative).exists():
             errors.append(f"missing runtime target: {relative}")
+
+    manifest_path = FRONTEND / "public/manifest.webmanifest"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for field in ("name", "short_name", "start_url", "scope", "display", "theme_color", "background_color", "icons"):
+            if not manifest.get(field):
+                errors.append(f"PWA manifest missing {field}")
+        if manifest.get("display") != "standalone":
+            errors.append("PWA manifest display must be standalone")
+        for icon in manifest.get("icons", []):
+            source = icon.get("src", "").removeprefix("./")
+            if not source or not (FRONTEND / "public" / source).exists():
+                errors.append(f"PWA manifest icon missing: {icon.get('src')}")
+
+    index_source = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    if "%BASE_URL%manifest.webmanifest" not in index_source:
+        errors.append("index.html does not link the base-aware PWA manifest")
+    if "apple-mobile-web-app-capable" not in index_source:
+        errors.append("index.html lacks mobile standalone metadata")
+
+    service_worker_source = (FRONTEND / "public/sw.js").read_text(encoding="utf-8")
+    required_service_worker_guards = [
+        "request.mode === 'navigate'",
+        "fetch(request).catch(() => caches.match(OFFLINE_FALLBACK))",
+        "CACHEABLE_DESTINATIONS",
+        "application/json",
+        "/api/",
+        "/commands/",
+        "/events/",
+        "/projections/",
+        "/sync/",
+    ]
+    for guard in required_service_worker_guards:
+        if guard not in service_worker_source:
+            errors.append(f"service worker safety guard missing: {guard}")
+    navigation_section = service_worker_source.split("if (request.mode === 'navigate')", 1)[-1].split("if (CACHEABLE_DESTINATIONS", 1)[0]
+    if "cache.put" in navigation_section:
+        errors.append("service worker must not cache navigation/projection documents")
+
+    registration_source = (FRONTEND / "src/pwa/register-service-worker.ts").read_text(encoding="utf-8")
+    if "import.meta.env.PROD" not in registration_source or "import.meta.env.BASE_URL" not in registration_source:
+        errors.append("PWA registration must be production-only and base-aware")
+    offline_source = (FRONTEND / "public/offline.html").read_text(encoding="utf-8")
+    if "IndexedDB" not in offline_source or "__ILKA_BOOTSTRAP__" in offline_source:
+        errors.append("offline fallback must explain queue persistence without embedding a projection")
 
     if (REPO / "docs/decisions/ADR-010-frontend-root-and-generated-contracts.md").exists():
         errors.append("conflicting frontend ADR-010 remains canonical")
