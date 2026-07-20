@@ -3,7 +3,7 @@ import type { AppBootstrap } from '../application/projections/bootstrap';
 import { participantPreviewBootstrap } from '../dev/preview-bootstrap';
 import { AppShell } from '../layout/AppShell';
 import type { NavigationItem } from '../navigation/BottomNavigation';
-import { LocalStorageCommandQueue } from '../application/offline/OfflineCommandQueue';
+import { IndexedDbCommandQueue } from '../application/offline/OfflineCommandQueue';
 import { CommandDispatcher } from '../application/commands/CommandDispatcher';
 import { createAcknowledgeCardCommand, createCompleteTaskCommand, createStartTaskCommand } from '../application/commands/task';
 import { createCloseExpeditionCommand } from '../application/commands/closeExpedition';
@@ -18,7 +18,7 @@ import { RecoveryDayScreen } from '../screens/captain/RecoveryDayScreen';
 import { stagePathFixture } from '../dev/stage-path.fixture';
 import { EmptyState } from '../components/system/EmptyState';
 
-const queue = new LocalStorageCommandQueue();
+const queue = new IndexedDbCommandQueue();
 const participantDispatcher = new CommandDispatcher(queue);
 
 function ParticipantApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode: 'participant' }> }) {
