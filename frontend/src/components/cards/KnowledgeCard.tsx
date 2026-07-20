@@ -7,8 +7,9 @@ import { CardShell } from './CardShell';
 
 type Card = TodayView['cards'][number];
 export function KnowledgeCard({ card, onAcknowledge }: { card: Card; onAcknowledge?: () => void }) {
+  const state = card.pending_sync ? 'sync_pending' : card.acknowledged ? 'acknowledged' : 'available';
   return (
-    <CardShell id={COMPONENT_IDS.knowledge_card} className="ilka-knowledge-card" state={card.acknowledged ? 'acknowledged' : 'available'}>
+    <CardShell id={COMPONENT_IDS.knowledge_card} className="ilka-knowledge-card" state={state}>
       <div className="ilka-card-icon"><Icon name="book" /></div>
       <p className="ilka-eyebrow">KNOWLEDGE CARD</p>
       <h3>{card.title}</h3>
@@ -17,7 +18,8 @@ export function KnowledgeCard({ card, onAcknowledge }: { card: Card; onAcknowled
           tone={card.acknowledged ? 'success' : card.required ? 'warning' : 'neutral'} />
         {card.pending_sync && <StatusBadge label="Pending sync" tone="sync_pending" icon="clock" />}
       </div>
-      {!card.acknowledged && onAcknowledge && <Button variant="secondary" onClick={onAcknowledge}>Подтвердить прочтение</Button>}
+      {!card.acknowledged && !card.pending_sync && onAcknowledge
+        && <Button variant="secondary" onClick={onAcknowledge}>Подтвердить прочтение</Button>}
     </CardShell>
   );
 }

@@ -1,13 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AppBootstrap } from '../application/projections/bootstrap';
+import {
+  applyParticipantCommandOverlay,
+  type ConnectivityState,
+} from '../application/projections/participant-command-overlay';
 import { participantPreviewBootstrap } from '../dev/preview-bootstrap';
 import { AppShell } from '../layout/AppShell';
 import type { NavigationItem } from '../navigation/BottomNavigation';
-import { IndexedDbCommandQueue } from '../application/offline/OfflineCommandQueue';
+import {
+  IndexedDbCommandQueue,
+  type OfflineQueueableCommand,
+  type QueuedCommand,
+} from '../application/offline/OfflineCommandQueue';
 import { CommandDispatcher } from '../application/commands/CommandDispatcher';
 import { createAcknowledgeCardCommand, createCompleteTaskCommand, createStartTaskCommand } from '../application/commands/task';
 import { createCloseExpeditionCommand } from '../application/commands/closeExpedition';
-import type { OfflineQueueableCommand } from '../application/offline/OfflineCommandQueue';
 import { TodayScreen } from '../screens/participant/TodayScreen';
 import { ProductRoleDetailScreen } from '../screens/participant/ProductRoleDetailScreen';
 import { ProductDecisionVoteScreen } from '../screens/participant/ProductDecisionVoteScreen';
@@ -21,8 +28,44 @@ import { EmptyState } from '../components/system/EmptyState';
 const queue = new IndexedDbCommandQueue();
 const participantDispatcher = new CommandDispatcher(queue);
 
+function currentConnectivity(): ConnectivityState {
+  if (typeof navigator === 'undefined') return 'unknown';
+  return navigator.onLine ? 'online' : 'offline';
+}
+
+function upsertQueuedCommand(items: QueuedCommand[], queued: QueuedCommand): QueuedCommand[] {
+  const index = items.findIndex((item) => item.local_id === queued.local_id);
+  if (index < 0) return [...items, queued];
+  return items.map((item, itemIndex) => itemIndex === index ? queued : item);
+}
+
 function ParticipantApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode: 'participant' }> }) {
-  const data = bootstrap.today;
+  const authoritative = bootstrap.today;
+  const [queuedCommands, setQueuedCommands] = useState<QueuedCommand[]>([]);
+  const [connectivity, setConnectivity] = useState<ConnectivityState>(currentConnectivity);
+
+  useEffect(() => {
+    let active = true;
+    void queue.list().then((items) => {
+      if (active) setQueuedCommands(items);
+    });
+    return () => { active = false; };
+  }, [authoritative.day.number, authoritative.expedition_id, authoritative.stage.stage_id, bootstrap.actor_id]);
+
+  useEffect(() => {
+    const update = () => setConnectivity(currentConnectivity());
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }, []);
+
+  const data = useMemo(
+    () => applyParticipantCommandOverlay(authoritative, queuedCommands, connectivity),
+    [authoritative, connectivity, queuedCommands],
+  );
   const navigation = useMemo<NavigationItem[]>(() => [
     { id: 'today', label: 'Сегодня', icon: 'cards' },
     { id: 'role', label: 'Роль', icon: 'compass', hidden: !data.product_role },
@@ -32,7 +75,11 @@ function ParticipantApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode
   const [route, setRoute] = useState(navigation.find((item) => !item.hidden)?.id ?? 'today');
   const context = { actor_id: bootstrap.actor_id, actor_role: 'participant' as const, expedition_id: data.expedition_id,
     day_number: data.day.number, stage_id: data.stage.stage_id };
-  const dispatch = (command: OfflineQueueableCommand) => { void participantDispatcher.dispatch(command); };
+  const dispatch = (command: OfflineQueueableCommand) => {
+    void participantDispatcher.dispatch(command).then((result) => {
+      setQueuedCommands((items) => upsertQueuedCommand(items, result.queued));
+    });
+  };
   let content;
   if (route === 'role') content = <ProductRoleDetailScreen data={data} />;
   else if (route === 'vote') content = <ProductDecisionVoteScreen data={data} dispatcher={participantDispatcher} context={context} />;
