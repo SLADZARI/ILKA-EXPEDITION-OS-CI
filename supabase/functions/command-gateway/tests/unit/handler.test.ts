@@ -434,7 +434,36 @@ Deno.test("accepted runtime result is sent to the atomic transaction", async () 
 
 Deno.test("invalid prepared projection is never sent to persistence", async () => {
   let persistenceCalled = false;
+  const invalidProjectionRuntime = runtime({
+    reduce: async (input) => ({
+      status: "accepted",
+      events: [{
+        event_id: "evt_gateway_projection_invalid_01",
+        event_type: "task.completed",
+        occurred_at: input.received_at,
+        recorded_at: input.received_at,
+        actor_id: input.actor_id,
+        actor_role: input.actor_role,
+        expedition_id: input.context.expedition_key,
+        command_id: input.command.command_id,
+        idempotency_key: input.command.command_id,
+        schema_version: 1,
+        payload: input.command.payload,
+      }],
+      projection_mutations: [{
+        operation: "upsert",
+        projection_key: "today_view:participant_01",
+        projection_type: "today_view",
+        subject_id: "participant_01",
+        schema_id: "https://ilka.local/schemas/today-view.schema.json",
+        schema_version: "1",
+        projection: { invalid: true },
+      }],
+      rejection: null,
+    }),
+  });
   const handler = createCommandGatewayHandler(dependencies({
+    runtimes: new StaticRuntimeRegistry([invalidProjectionRuntime]),
     schemas: validators({
       validateProjection: () => [{ path: "/tasks", message: "invalid" }],
     }),
