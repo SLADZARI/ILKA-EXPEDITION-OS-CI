@@ -102,7 +102,7 @@ Identity and Expedition Membership are complete locally and deployed to developm
 
 The reviewed identity migration is deployed to development-only `VOYAGE` as remote migration `20260720162648` (`identity_membership`). All five identity tables use forced RLS, `anon` and `authenticated` have no raw table access, `service_role` has no direct DELETE privilege, and the actor resolver is unavailable to browser roles. The tables remain empty: no ILKA profiles, Expeditions, memberships, Participants or invitations were created.
 
-Immutable History is implemented as the next local gate:
+Immutable History is complete locally and deployed to development:
 
 - each Expedition receives a stream head at position `0`;
 - accepted command receipts declare ordered canonical event IDs and resulting stream position;
@@ -114,7 +114,7 @@ Immutable History is implemented as the next local gate:
 - persisted replay order is authoritative by `stream_position`, not by timestamps;
 - browser roles and direct `service_role` history writes remain denied.
 
-The immutable-history migration is not applied remotely until its reviewed PR and protected CI gate are green. `private.process_command(...)`, projections, command transport and real frontend synchronization are still absent. The next backend gate is the atomic command transaction.
+The reviewed history migration is deployed to development-only `VOYAGE` as remote migration `20260720175753` (`immutable_history`). Forced RLS is enabled on `stream_heads`, `command_receipts` and `event_log`; `anon` and `authenticated` have no raw access; `service_role` has SELECT but no direct INSERT, UPDATE or DELETE; only trusted private idempotency and stream-position helpers are executable by `service_role`. Identity and history tables remain empty. `private.process_command(...)`, projections, command transport and real frontend synchronization are still absent. The next backend gate is the atomic command transaction.
 
 ## Run the Day 1 prototype
 
