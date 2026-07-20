@@ -27,20 +27,26 @@ def main() -> int:
             "offlineAllowed": bool(command.get("offline_allowed", False)),
         }
 
-    lines = [
-        "/* GENERATED from engine/command-catalog.yaml. Do not edit. */",
-        "export const COMMAND_CONTRACTS = ",
-        json.dumps(contracts, indent=2, ensure_ascii=False, sort_keys=True),
-        " as const;",
-        "",
-        "export type GatewayCommandType = keyof typeof COMMAND_CONTRACTS;",
-        "export type GatewayActorRole =",
-        "  (typeof COMMAND_CONTRACTS)[GatewayCommandType][\"allowedActors\"][number];",
-        "",
-    ]
+    object_literal = json.dumps(
+        contracts,
+        indent=2,
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    content = "\n".join(
+        [
+            "/* GENERATED from engine/command-catalog.yaml. Do not edit. */",
+            f"export const COMMAND_CONTRACTS = {object_literal} as const;",
+            "",
+            "export type GatewayCommandType = keyof typeof COMMAND_CONTRACTS;",
+            "export type GatewayActorRole =",
+            '  (typeof COMMAND_CONTRACTS)[GatewayCommandType]["allowedActors"][number];',
+            "",
+        ]
+    )
 
     TARGET.parent.mkdir(parents=True, exist_ok=True)
-    TARGET.write_text("\n".join(lines), encoding="utf-8")
+    TARGET.write_text(content, encoding="utf-8")
     return 0
 
 
