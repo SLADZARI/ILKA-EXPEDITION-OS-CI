@@ -6,6 +6,11 @@ on:
       - feat/register-day1-complete-task-runtime
     paths:
       - ".github/workflows/gate6-registration-patch.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/gate6-registration-patch.yml"
+      - "supabase/functions/_shared/command-gateway/runtime-registry.ts"
+      - "supabase/migrations/20260720213000_day1_complete_task_runtime_release.sql"
 
 permissions:
   contents: write
@@ -80,9 +85,10 @@ jobs:
                 errors,
             )
           '''
-          if old not in text:
-              raise SystemExit('Gate 6 empty-registry validator block not found')
-          text = text.replace(old, new, 1)
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'runtime registry missing exact Day 1 release' not in text:
+              raise SystemExit('Gate 6 registry validator block not found')
           gate6.write_text(text, encoding='utf-8')
           PY
 
