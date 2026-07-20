@@ -1,0 +1,44 @@
+name: Gate 6 validated cast patch
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/_shared/engine-runtime/day1-complete-task-v1.ts"
+      - ".github/workflows/gate6-cast-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Gate 6 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/day1-complete-task-read-models
+
+      - name: Normalize validated task cast
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('supabase/functions/_shared/engine-runtime/day1-complete-task-v1.ts')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              'tasks.push(task as TodayTask);',
+              'tasks.push(task as unknown as TodayTask);',
+          )
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit patch
+        run: |
+          git add supabase/functions/_shared/engine-runtime/day1-complete-task-v1.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(engine): cast validated task through unknown"
+          git push origin HEAD:feat/day1-complete-task-read-models
