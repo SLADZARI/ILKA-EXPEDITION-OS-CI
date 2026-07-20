@@ -1,0 +1,69 @@
+name: Immutable history diagnostics
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/immutable-history-diagnostics.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  database-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Run database diagnostics
+        shell: bash
+        run: |
+          set +e
+          supabase start >/tmp/supabase-start.log 2>&1
+          start_status=$?
+          if [[ $start_status -ne 0 ]]; then
+            tail -n 240 /tmp/supabase-start.log > /tmp/immutable-history-test.log
+            exit $start_status
+          fi
+
+          supabase db reset >/tmp/supabase-reset.log 2>&1
+          reset_status=$?
+          if [[ $reset_status -ne 0 ]]; then
+            tail -n 240 /tmp/supabase-reset.log > /tmp/immutable-history-test.log
+            exit $reset_status
+          fi
+
+          supabase test db >/tmp/supabase-test.log 2>&1
+          test_status=$?
+          tail -n 240 /tmp/supabase-test.log > /tmp/immutable-history-test.log
+
+          if [[ $test_status -eq 0 ]]; then
+            supabase gen types typescript --local --schema api,ilka,private > /tmp/database.types.ts
+          fi
+
+          exit $test_status
+
+      - name: Upload immutable history diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: immutable-history-diagnostics
+          path: |
+            /tmp/immutable-history-test.log
+            /tmp/database.types.ts
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup >/dev/null 2>&1 || true
