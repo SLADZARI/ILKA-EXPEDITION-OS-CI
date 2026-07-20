@@ -1,6 +1,11 @@
 name: Gate 6 status docs patch
 
 on:
+  push:
+    branches:
+      - feat/day1-complete-task-read-models
+    paths:
+      - ".github/workflows/gate6-docs-patch.yml"
   pull_request:
     paths:
       - ".github/workflows/gate6-docs-patch.yml"
@@ -29,7 +34,7 @@ jobs:
           readme = Path('README.md')
           text = readme.read_text(encoding='utf-8')
           marker = '''Gate 5 intentionally registers no production reducer bundle. New valid commands return retryable `runtime_release_unavailable` without a receipt, event or projection write until Gate 6 adds the first exact pinned reducer and concrete read models. The function is not deployed remotely before PR review and protected CI completion. The next gate is the first vertical Engine runtime and read-model slice.
-'''
+          '''
           gate6 = '''
           Gate 6 implementation is complete locally under accepted `ADR-015`:
 
@@ -44,7 +49,7 @@ jobs:
           - protected diagnostics passed 36 Deno unit tests, 246 pgTAP assertions and two direct PostgreSQL integration tests.
 
           This implementation change deliberately keeps the production runtime registry empty. After the pure reducer source is merged to protected `main`, a separate registration PR will pin that merge SHA in `ilka.runtime_releases` and wire the exact bundle without changing reducer behavior. The read-model migration and runtime release are not applied remotely from this feature branch, no cloud fixture data is created, and the Edge Function deployment remains blocked by the missing `SUPABASE_ACCESS_TOKEN` GitHub secret.
-'''
+          '''
           if 'Gate 6 implementation is complete locally under accepted `ADR-015`' not in text:
               if marker not in text:
                   raise SystemExit('README Gate 5 marker not found')
@@ -68,7 +73,7 @@ jobs:
           supabase_readme = Path('supabase/README.md')
           text = supabase_readme.read_text(encoding='utf-8')
           marker = '''It does **not** contain concrete Participant/Captain read documents, public API read functions, a frontend network adapter, scheduler jobs or Storage buckets.
-'''
+          '''
           replacement = '''Gate 6 adds the first executable Day 1 vertical:
 
           - accepted `ADR-015` for the `complete_task` reducer and authoritative read transport;
@@ -80,7 +85,7 @@ jobs:
           - 36 Deno unit tests, 246 pgTAP assertions and two direct PostgreSQL integration tests.
 
           The implementation PR intentionally keeps the production runtime registry empty until the protected reducer merge SHA exists. It does **not** include Expedition bootstrap, invitation acceptance, rotation, Day start, initial projection generation, additional reducers, frontend adapters, scheduler jobs, Realtime or Storage.
-'''
+          '''
           if 'Gate 6 adds the first executable Day 1 vertical:' not in text:
               if marker not in text:
                   raise SystemExit('Supabase README Gate 5 marker not found')
@@ -111,7 +116,7 @@ jobs:
 
           changelog = Path('CHANGELOG.md')
           text = changelog.read_text(encoding='utf-8')
-          heading = '## 2026-07-20 — Day 1 complete_task vertical\n'
+          heading = '## 2026-07-20 — Day 1 `complete_task` vertical\n'
           section = '''## 2026-07-20 — Day 1 `complete_task` vertical
 
           - Accepted `ADR-015` for the first executable Day 1 reducer and authoritative read-model transport.
