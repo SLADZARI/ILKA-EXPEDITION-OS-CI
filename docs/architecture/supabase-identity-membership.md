@@ -220,4 +220,18 @@ Future create, invite, accept, ban, unban and revoke operations must append cano
 - projections and Realtime;
 - Product Captain assignment;
 - production or pilot data;
-- remote deployment before reviewed PR and green CI.
+- unreviewed or feature-branch remote deployment.
+
+## Development deployment record
+
+The reviewed Identity and Expedition Membership gate was merged through PR `#15` after protected run `29759210777` passed. It was then applied to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`) as remote migration version `20260720162648` with migration name `identity_membership`.
+
+Remote verification confirmed:
+
+- all five identity tables have enabled and forced RLS;
+- `anon` and `authenticated` have no raw table access;
+- `service_role` has no direct DELETE privilege;
+- only `service_role` can execute `private.resolve_actor_context(...)`;
+- Profiles, Expeditions, memberships, Participants and invitations all contain zero rows.
+
+The deployment does not add invitation delivery or acceptance transport, command gateway, stream heads, command receipts, event log, projections, Edge Functions, scheduler jobs, Storage buckets, pilot data or production data. The next persistence gate remains immutable history.
