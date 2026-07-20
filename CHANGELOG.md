@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-20 — Supabase Immutable History deployment
+
+- Applied the reviewed Immutable History migration to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`).
+- Recorded remote migration version `20260720175753` with migration name `immutable_history`.
+- Deployed `ilka.stream_heads`, `ilka.command_receipts`, `ilka.event_log` and the private integrity helpers for idempotency, expected stream position, ordered event sets and immutable corrections.
+- Verified enabled and forced RLS on all three history tables.
+- Verified no raw history access for `anon` or `authenticated`.
+- Verified that `service_role` has internal SELECT access but no direct INSERT, UPDATE or DELETE privilege on history tables.
+- Verified that only `service_role` can execute the private idempotency and stream-position helpers.
+- Confirmed that all Profile, Expedition, membership, Participant, invitation, stream-head, command-receipt and event-log tables remain empty.
+
+This development deployment does not add `private.process_command(...)`, projections, Edge Functions, command transport, pilot data or production data. The next backend gate is the atomic command transaction.
+
 ## 2026-07-20 — Supabase Immutable History
 
 - Added one `ilka.stream_heads` row per Expedition with automatic initialization at stream position `0`.
@@ -13,7 +26,7 @@
 - Reconciled `engine/event-catalog.yaml` with accepted `ADR-012`: persisted replay now uses `stream_position`; canonical fixture arrays preserve explicit array order.
 - Added pgTAP coverage, generated-type validation, architecture documentation and a protected static contract gate.
 
-This gate does not add `private.process_command(...)`, advisory command locking, projections, Edge Functions, API read functions or production data. Remote migration application remains blocked until the implementation PR and protected CI are green. The next gate is the atomic command transaction.
+At completion of the implementation PR, remote application remained blocked until protected CI was green. The later reviewed development deployment is recorded above. This gate does not add `private.process_command(...)`, advisory command locking, projections, Edge Functions, API read functions or production data.
 
 ## 2026-07-20 — Supabase Identity and Expedition Membership deployment
 
