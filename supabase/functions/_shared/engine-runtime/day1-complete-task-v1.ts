@@ -124,7 +124,7 @@ function asTodayView(value: JsonObject): TodayView | null {
     ) {
       return null;
     }
-    tasks.push(task as TodayTask);
+    tasks.push(task as unknown as TodayTask);
   }
 
   return value as unknown as TodayView;
