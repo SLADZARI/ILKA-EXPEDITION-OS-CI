@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-process-command-request.schema.json",
+  "title": "PrivateProcessCommandRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expedition_id",
+    "command",
+    "actor_context",
+    "request_hash",
+    "expected_stream_position",
+    "status",
+    "events",
+    "projection_mutations",
+    "runtime_release_id",
+    "reducer_version",
+    "received_at",
+    "processed_at",
+    "rejection"
+  ],
+  "properties": {
+    "expedition_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "command": {
+      "$ref": "../../schemas/command.schema.json"
+    },
+    "actor_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auth_user_id",
+        "profile_id",
+        "membership_id",
+        "participant_id",
+        "actor_id",
+        "actor_role"
+      ],
+      "properties": {
+        "auth_user_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "profile_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "membership_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "participant_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "actor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_role": {
+          "enum": [
+            "captain",
+            "product_captain",
+            "participant",
+            "shore_operator",
+            "system",
+            "system_clock"
+          ]
+        }
+      }
+    },
+    "request_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "expected_stream_position": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "enum": ["accepted", "rejected"]
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "../../engine/event.schema.json"
+      }
+    },
+    "projection_mutations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "projection_key",
+          "projection_type",
+          "subject_id",
+          "schema_id",
+          "schema_version",
+          "projection"
+        ],
+        "properties": {
+          "operation": {
+            "const": "upsert"
+          },
+          "projection_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(:[A-Za-z0-9_-]+)*$",
+            "maxLength": 240
+          },
+          "projection_type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "maxLength": 80
+          },
+          "subject_id": {
+            "type": ["string", "null"],
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "schema_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "schema_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "projection": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "runtime_release_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "reducer_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rejection": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message"],
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "message": {
+              "type": ["string", "null"],
+              "maxLength": 1000
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "accepted"
+          }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "events": {
+            "minItems": 1
+          },
+          "rejection": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "rejected"
+          }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "events": {
+            "maxItems": 0
+          },
+          "projection_mutations": {
+            "maxItems": 0
+          },
+          "rejection": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}
