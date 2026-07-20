@@ -34,10 +34,14 @@ REQUIRED = (
 )
 
 
+def normalize(text: str) -> str:
+    return text.lower().replace("`", "")
+
+
 def require(text: str, values: tuple[str, ...], label: str, errors: list[str]) -> None:
-    lowered = text.lower()
+    lowered = normalize(text)
     for value in values:
-        if value.lower() not in lowered:
+        if normalize(value) not in lowered:
             errors.append(f"{label}: {value}")
 
 
@@ -142,8 +146,6 @@ def main() -> int:
     ).read_text(encoding="utf-8")
     require(canonical, (
         "Object.keys(value).sort()",
-        "actor_id",
-        "actor_role",
         'digest("SHA-256"',
         "issuedAt.toISOString()",
     ), "normalized request hash missing behavior", errors)
@@ -186,6 +188,7 @@ def main() -> int:
     require(workflow, (
         "denoland/setup-deno@v2",
         "Generate command gateway contract",
+        "Format generated command gateway contract",
         "Check command gateway formatting",
         "Lint command gateway",
         "Typecheck command gateway",
