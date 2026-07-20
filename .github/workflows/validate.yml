@@ -13,7 +13,7 @@ permissions:
 jobs:
   contracts-and-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
@@ -28,6 +28,9 @@ jobs:
 
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
+
+      - name: Generate command gateway contract
+        run: python scripts/generate_supabase_command_gateway_contract.py
 
       - name: Validate canonical repository
         run: python scripts/validate_repository.py .
@@ -77,6 +80,23 @@ jobs:
         working-directory: frontend
         run: npm run build:preview
 
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check command gateway formatting
+        run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+
+      - name: Lint command gateway
+        run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway
+
+      - name: Typecheck command gateway
+        run: deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts
+
+      - name: Run command gateway unit tests
+        run: deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
+
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
         with:
@@ -95,6 +115,16 @@ jobs:
       - name: Lint Supabase database
         run: supabase db lint --local --level error
 
+      - name: Run command gateway database integration
+        shell: bash
+        run: |
+          db_url="$(supabase status -o json | jq -r '.DB_URL')"
+          SUPABASE_DB_URL="$db_url" deno test --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            --allow-env=SUPABASE_DB_URL \
+            --allow-net=127.0.0.1:54322 \
+            supabase/functions/command-gateway/tests/integration
+
       - name: Generate Supabase database types
         run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 
@@ -109,6 +139,9 @@ jobs:
 
       - name: Validate Supabase atomic command transaction contract
         run: python scripts/validate_supabase_atomic_command_transaction.py
+
+      - name: Validate Supabase command gateway contract
+        run: python scripts/validate_supabase_command_gateway.py
 
       - name: Verify generated sources are committed
         shell: bash
