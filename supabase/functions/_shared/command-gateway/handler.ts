@@ -600,6 +600,30 @@ export function createCommandGatewayHandler(
       );
     }
 
+    const projectionIssues = prepared.projection_mutations.flatMap(
+      (mutation, index) =>
+        dependencies.schemas
+          .validateProjection(mutation.schema_id, mutation.projection)
+          .map((issue) => ({
+            path: `/projection_mutations/${index}/projection${
+              issue.path === "/" ? "" : issue.path
+            }`,
+            message: issue.message,
+          })),
+    );
+    if (projectionIssues.length) {
+      return errorResponse(
+        500,
+        requestId,
+        "runtime_contract_invalid",
+        "The pinned runtime produced an invalid authoritative projection.",
+        false,
+        origin,
+        true,
+        projectionIssues,
+      );
+    }
+
     const processedAt = dependencies.now().toISOString();
     const persistenceRequest = processRequest(
       command,
