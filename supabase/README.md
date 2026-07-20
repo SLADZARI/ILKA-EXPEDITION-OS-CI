@@ -1,6 +1,6 @@
 # Supabase runtime
 
-This directory implements the Supabase runtime accepted by `ADR-012`.
+This directory implements the Supabase runtime accepted by `ADR-012` and `ADR-013`.
 
 ## Current scope
 
@@ -35,7 +35,22 @@ The Immutable History gate adds:
 - UPDATE, DELETE and TRUNCATE protection;
 - forced RLS and no direct browser or `service_role` history writes.
 
-It does **not** contain `private.process_command(...)`, projections, Edge Functions, API read functions, scheduler jobs or Storage buckets.
+The Atomic Command Transaction gate adds:
+
+- accepted `ADR-013` for one transaction kernel and neutral projection documents;
+- private request/result JSON Schemas;
+- one `ilka.projection_heads` row per Expedition;
+- versioned `ilka.projection_documents`;
+- `private.process_command(jsonb)` as the only prepared-result write boundary;
+- command and Expedition advisory locks;
+- exact replay and request-hash mismatch handling;
+- stale stream conflict without writes;
+- persisted deterministic rejections;
+- atomic receipt, event and projection persistence;
+- complete rollback on projection failure;
+- forced RLS and no direct projection writes.
+
+It does **not** contain the `command-gateway` Edge Function, TypeScript reducers, concrete Participant/Captain read documents, public API read functions, scheduler jobs or Storage buckets.
 
 ## Local verification
 
@@ -50,6 +65,7 @@ supabase gen types typescript --local --schema api,ilka,private > supabase/datab
 python scripts/validate_supabase_foundation.py
 python scripts/validate_supabase_identity_membership.py
 python scripts/validate_supabase_immutable_history.py
+python scripts/validate_supabase_atomic_command_transaction.py
 ```
 
 Stop the local stack when finished:
@@ -83,7 +99,17 @@ supabase stop
 - Canonical fixture arrays without persistence metadata preserve explicit array order.
 - A retry preserves the original `command_id` and normalized request hash.
 - Corrections append a new event with `correction_of_event_id`; prior events remain immutable.
-- The next gate must compose history writes and projection mutations inside `private.process_command(...)`.
+
+## Transaction boundary
+
+- Browser roles cannot call `private.process_command(jsonb)`.
+- `service_role` may call the function but cannot directly write receipts, events or projections.
+- Exact replay returns the original persisted receipt before current actor validation.
+- Stale expected stream position returns an unpersisted conflict.
+- Accepted and deterministic rejected results may persist immutable receipts.
+- One accepted command allocates consecutive event positions and at most one new Expedition projection version.
+- Projection documents store complete rebuildable JSON and final source stream position.
+- Concrete read-model semantics remain owned by `app/contracts/*.schema.json` and the later Read Models gate.
 
 ## Remote safety
 
@@ -95,4 +121,4 @@ The following reviewed migrations are deployed remotely:
 - `20260720162648 identity_membership`;
 - `20260720175753 immutable_history`.
 
-All identity and history tables remain empty. The remote history boundary has forced RLS, no browser access and no direct `service_role` writes. The next migration must not be applied remotely from a feature branch; remote application is allowed only after its implementation PR and protected CI are green. No pilot or production data is authorized.
+All identity and history tables remain empty. The atomic transaction migration must not be applied remotely from the feature branch. Remote application is allowed only after its implementation PR and protected CI are green. No pilot or production data is authorized.
