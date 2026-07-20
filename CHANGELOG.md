@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-20 — Supabase Foundation deployment
+
+- Applied the reviewed Supabase Foundation to the development-only cloud project `VOYAGE` (`rehfxjlyfojkpascjtmb`).
+- Recorded remote migration version `20260720142526` with migration name `foundation`.
+- Preserved Data API exposure limited to `api`; internal schemas `ilka` and `private` remain unavailable to browser roles.
+- Deployed only the Foundation boundary: schemas, explicit grants and immutable `ilka.runtime_releases`.
+- Confirmed that no ILKA pilot data, Auth membership model, command gateway, command receipts, event log, projections, Edge Functions, scheduler jobs or Storage buckets were introduced.
+
+This development deployment does not authorize production or pilot operation. The next backend gate remains identity and Expedition membership.
+
 ## 2026-07-20 — Supabase Foundation
 
 - Added reproducible local Supabase CLI configuration on PostgreSQL 17.
@@ -11,7 +21,7 @@
 - Added generated TypeScript database contracts for `api`, `ilka` and `private`.
 - Added a static Supabase Foundation contract validator and local runtime documentation.
 
-No Supabase migration has been applied to the cloud `VOYAGE` project. `VOYAGE` remains development-only and contains no ILKA domain data.
+At completion of the implementation PR, no Supabase migration had been applied to the cloud `VOYAGE` project. The later reviewed development deployment is recorded above.
 
 ## 2026-07-20 — Supabase runtime architecture
 
