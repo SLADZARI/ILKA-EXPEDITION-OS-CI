@@ -1,0 +1,2 @@
+-- Supabase Foundation intentionally contains no domain seed data.
+-- Identity, memberships and sample Expeditions are introduced by later migrations.

@@ -43,7 +43,7 @@ engine/         state, command, event, permission and rotation rules
 frontend/       React/TypeScript PWA
 schemas/        canonical JSON Schemas
 stages/         product stages
-supabase/       migrations and Edge Functions
+supabase/       migrations, tests and future Edge Functions
 tests/          validation and executable domain tests
 docs/           ADR, architecture and workflows
 design-system/  tokens and stable component IDs
@@ -77,9 +77,19 @@ Frontend Foundation is complete:
 
 `ADR-012` is accepted. The backend runtime is fixed as an event-sourced hybrid with immutable events, rebuildable projections, email OTP identity, Expedition-scoped membership, one authenticated command gateway and one atomic PostgreSQL transaction boundary.
 
-The Supabase `VOYAGE` project remains development-only and contains no ILKA domain migrations or pilot data. The next implementation gate is Supabase Foundation: local config, `ilka` / `api` / `private` schemas, explicit grants, runtime release registry and database reset/tests.
+Supabase Foundation is complete locally:
 
-Production authentication, remote projection loading, server command transport and multi-device synchronization are not yet implemented.
+- reproducible Supabase CLI configuration on PostgreSQL 17;
+- Data API exposure limited to `api`;
+- internal `ilka` and `private` schemas;
+- explicit schema, table and default privileges;
+- immutable `ilka.runtime_releases` registry;
+- pgTAP database tests and database linting in protected CI;
+- generated TypeScript types for `api`, `ilka` and `private` checked for deterministic parity.
+
+The cloud Supabase project `VOYAGE` remains development-only. Foundation migrations have **not** been applied remotely, and the project still contains no ILKA pilot data, command gateway or domain event stream.
+
+Production authentication, remote projection loading, server command transport and multi-device synchronization are not yet implemented. The next backend gate is identity and Expedition membership.
 
 ## Run the Day 1 prototype
 
@@ -116,8 +126,14 @@ pytest -q
 cd frontend
 npm ci
 npm run check
+cd ..
+supabase start
+supabase db reset
+supabase test db
+supabase db lint --local --level error
+supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+python scripts/validate_supabase_foundation.py
+supabase stop
 ```
 
-`npm run check` generates canonical frontend sources, validates source parity, runs frontend tests, performs strict TypeScript checking and builds both production and static preview outputs.
-
-The Supabase Foundation PR must add a reproducible local database reset and protected SQL/RLS validation before any server-backed feature is merged.
+Protected `contracts-and-tests` runs the same repository, frontend and local Supabase gates and rejects uncommitted generated-source drift.
