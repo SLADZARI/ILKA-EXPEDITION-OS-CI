@@ -303,7 +303,7 @@ select throws_ok(
       profile.id,
       'captain'
     from ilka.profiles as profile
-    where profile.auth_user_id = '10000000-0000-0000-0000-000000000005'
+    where profile.auth_user_id = '10000000-0000-0000-0000-000000000003'
   $$,
   '23505',
   'duplicate key value violates unique constraint "expedition_members_one_active_captain"',
