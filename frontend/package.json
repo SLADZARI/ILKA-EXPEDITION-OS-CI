@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
+    "preview:static": "vite preview --outDir dist-preview",
     "generate:design": "node scripts/generate-design-system.mjs",
     "generate:contracts": "node scripts/generate-contracts.mjs",
     "generate": "npm run generate:design && npm run generate:contracts",
@@ -13,7 +14,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "check": "npm run generate && npm run validate:sources && npm run test && npm run typecheck && npm run build"
+    "build:preview": "vite build --mode preview --outDir dist-preview",
+    "check": "npm run generate && npm run validate:sources && npm run test && npm run typecheck && npm run build && npm run build:preview"
   },
   "dependencies": {
     "react": "18.3.1",
