@@ -372,7 +372,9 @@ events:
   projection_effect:
     gamification.rating_snapshot: payload
 replay_rules:
-- events apply in recorded_at then event_id order
+- persisted runtime events apply in expedition stream_position order
+- canonical event fixtures without persistence metadata preserve array order
+- recorded_at and event_id are not authoritative runtime ordering
 - duplicate command_id returns original event set
 - duplicate event_id is ignored
 - boundary idempotency uses expedition_id and local_calendar_date
