@@ -14,42 +14,237 @@ export type CommandEnvelopeBase = {
   "day_revision"?: number | null;
 };
 
-export type create_expeditionPayload = { "name": string; "timezone": string; "duration_days": number; "day_boundary_local_time": string; [key: string]: unknown; };
-export type add_participantPayload = { "participant_id": string; "display_name": string; [key: string]: unknown; };
-export type ban_participantPayload = { "participant_id": string; "reason": string; "effective_at": string; [key: string]: unknown; };
-export type unban_participantPayload = { "participant_id": string; "reason": string; "effective_at": string; [key: string]: unknown; };
-export type generate_rotationPayload = { "seed": string | number; "rules_version": number | string; [key: string]: unknown; };
-export type start_expeditionPayload = { [key: string]: unknown; };
-export type request_stage_advancePayload = { "from_stage_id": string; "to_stage_id": string; "requested_for_day_number": number; [key: string]: unknown; };
-export type advance_stagePayload = { "from_stage_id": string; "to_stage_id": string; "effective_from_day_number": number; "request_event_id"?: string | null; [key: string]: unknown; };
-export type override_stage_advancePayload = { "from_stage_id": string; "to_stage_id": string; "effective_from_day_number": number; "reason": string; "unmet_conditions": Array<string>; [key: string]: unknown; };
-export type process_day_boundaryPayload = { "local_calendar_date": string; "boundary_at": string; [key: string]: unknown; };
-export type recover_day_transitionPayload = { "local_calendar_date": string; "reason": string; [key: string]: unknown; };
-export type force_day_transitionPayload = { "target_local_calendar_date": string; "reason": string; "expected_projection_version": number; [key: string]: unknown; };
-export type rewind_dayPayload = { "from_day_number": number; "to_day_number": number; "reason": string; "expected_projection_version": number; [key: string]: unknown; };
-export type start_evening_sessionPayload = { "day_number": number; "stage_id": string; [key: string]: unknown; };
-export type acknowledge_cardPayload = { "card_id": string; [key: string]: unknown; };
-export type start_taskPayload = { "task_id": string; [key: string]: unknown; };
-export type block_taskPayload = { "task_id": string; "reason": string; [key: string]: unknown; };
-export type complete_taskPayload = { "task_id": string; [key: string]: unknown; };
-export type waive_taskPayload = { "task_id": string; "reason": string; [key: string]: unknown; };
-export type confirm_outputPayload = { "stage_id": string; "output_id": string; "evidence_refs": Array<string>; [key: string]: unknown; };
-export type request_day_closePayload = { "day_number": number; [key: string]: unknown; };
-export type close_dayPayload = { "day_number": number; [key: string]: unknown; };
-export type close_expeditionPayload = { "final_stage_id": "demo_day"; "final_day_number": 12; "shore_package_ref": string; "completion_summary": string; "expected_projection_version": number; [key: string]: unknown; };
-export type override_day_closePayload = { "day_number": number; "reason": string; "unmet_conditions": Array<string>; [key: string]: unknown; };
-export type override_role_assignmentPayload = { "participant_id": string; "role_type": "product" | "onboard"; "previous_role_id": string; "new_role_id": string; "reason": string; [key: string]: unknown; };
-export type activate_recovery_dayPayload = { "local_calendar_date": string; "reason": string; [key: string]: unknown; };
-export type suspend_programPayload = { "reason": string; [key: string]: unknown; };
-export type resume_programPayload = { [key: string]: unknown; };
-export type create_decision_draftPayload = { "decision_id": string; "stage_id": "product_decision"; "question": string; "options": Array<{ "option_id": string; "title": string; "summary"?: string; }>; "criteria": Array<string>; "evidence_refs": Array<string>; [key: string]: unknown; };
-export type create_votePayload = { "vote_id": string; "decision_id": string; "eligible_voter_ids": Array<string>; "vote_mode": "single_choice"; "quorum_rule": "all_eligible"; "threshold_rule": "strict_majority_of_eligible"; "round_version": number; [key: string]: unknown; };
-export type votePayload = { "vote_id": string; "choice": string; "ballot_revision": number; "reason"?: string; [key: string]: unknown; };
-export type finalize_product_decisionPayload = { "vote_id": string; "decision_id": string; "selected_option_id": string; "rationale": string; "rejected_option_ids": Array<string>; "objection_summary": Array<string>; "evidence_refs": Array<string>; "expected_round_version": number; [key: string]: unknown; };
-export type override_product_decisionPayload = { "vote_id": string; "decision_id": string; "selected_option_id": string; "reason": string; "unresolved_objections": Array<string>; "evidence_refs": Array<string>; "expected_round_version": number; [key: string]: unknown; };
-export type verify_role_assignmentPayload = { "assignment_id": string; "participant_id": string; "role_id": string; "role_type": "product" | "onboard"; "outcome": "completed" | "partial" | "waived"; "evidence_refs": Array<string>; "expected_assignment_version": number; "reason"?: string; [key: string]: unknown; };
-export type adjust_role_xpPayload = { "adjustment_id": string; "participant_id": string; "role_id": string; "delta": number; "reason": string; "evidence_refs": Array<string>; "expected_balance_version": number; "correction_of"?: string; [key: string]: unknown; };
-export type publish_rating_snapshotPayload = { "day_number": number; "day_revision": number; "rules_version": number; "projection_version": number; [key: string]: unknown; };
+export type create_expeditionPayload = {
+  "name": string;
+  "timezone": string;
+  "duration_days": number;
+  "day_boundary_local_time": string;
+  [key: string]: unknown;
+};
+export type add_participantPayload = {
+  "participant_id": string;
+  "display_name": string;
+  [key: string]: unknown;
+};
+export type ban_participantPayload = {
+  "participant_id": string;
+  "reason": string;
+  "effective_at": string;
+  [key: string]: unknown;
+};
+export type unban_participantPayload = {
+  "participant_id": string;
+  "reason": string;
+  "effective_at": string;
+  [key: string]: unknown;
+};
+export type generate_rotationPayload = {
+  "seed": string | number;
+  "rules_version": number | string;
+  [key: string]: unknown;
+};
+export type start_expeditionPayload = {
+  [key: string]: unknown;
+};
+export type request_stage_advancePayload = {
+  "from_stage_id": string;
+  "to_stage_id": string;
+  "requested_for_day_number": number;
+  [key: string]: unknown;
+};
+export type advance_stagePayload = {
+  "from_stage_id": string;
+  "to_stage_id": string;
+  "effective_from_day_number": number;
+  "request_event_id"?: string | null;
+  [key: string]: unknown;
+};
+export type override_stage_advancePayload = {
+  "from_stage_id": string;
+  "to_stage_id": string;
+  "effective_from_day_number": number;
+  "reason": string;
+  "unmet_conditions": Array<string>;
+  [key: string]: unknown;
+};
+export type process_day_boundaryPayload = {
+  "local_calendar_date": string;
+  "boundary_at": string;
+  [key: string]: unknown;
+};
+export type recover_day_transitionPayload = {
+  "local_calendar_date": string;
+  "reason": string;
+  [key: string]: unknown;
+};
+export type force_day_transitionPayload = {
+  "target_local_calendar_date": string;
+  "reason": string;
+  "expected_projection_version": number;
+  [key: string]: unknown;
+};
+export type rewind_dayPayload = {
+  "from_day_number": number;
+  "to_day_number": number;
+  "reason": string;
+  "expected_projection_version": number;
+  [key: string]: unknown;
+};
+export type start_evening_sessionPayload = {
+  "day_number": number;
+  "stage_id": string;
+  [key: string]: unknown;
+};
+export type acknowledge_cardPayload = {
+  "card_id": string;
+  [key: string]: unknown;
+};
+export type start_taskPayload = {
+  "task_id": string;
+  [key: string]: unknown;
+};
+export type block_taskPayload = {
+  "task_id": string;
+  "reason": string;
+  [key: string]: unknown;
+};
+export type complete_taskPayload = {
+  "task_id": string;
+  [key: string]: unknown;
+};
+export type waive_taskPayload = {
+  "task_id": string;
+  "reason": string;
+  [key: string]: unknown;
+};
+export type confirm_outputPayload = {
+  "stage_id": string;
+  "output_id": string;
+  "evidence_refs": Array<string>;
+  [key: string]: unknown;
+};
+export type request_day_closePayload = {
+  "day_number": number;
+  [key: string]: unknown;
+};
+export type close_dayPayload = {
+  "day_number": number;
+  [key: string]: unknown;
+};
+export type close_expeditionPayload = {
+  "final_stage_id": "demo_day";
+  "final_day_number": 12;
+  "shore_package_ref": string;
+  "completion_summary": string;
+  "expected_projection_version": number;
+  [key: string]: unknown;
+};
+export type override_day_closePayload = {
+  "day_number": number;
+  "reason": string;
+  "unmet_conditions": Array<string>;
+  [key: string]: unknown;
+};
+export type override_role_assignmentPayload = {
+  "participant_id": string;
+  "role_type": "product" | "onboard";
+  "previous_role_id": string;
+  "new_role_id": string;
+  "reason": string;
+  [key: string]: unknown;
+};
+export type activate_recovery_dayPayload = {
+  "local_calendar_date": string;
+  "reason": string;
+  [key: string]: unknown;
+};
+export type suspend_programPayload = {
+  "reason": string;
+  [key: string]: unknown;
+};
+export type resume_programPayload = {
+  [key: string]: unknown;
+};
+export type create_decision_draftPayload = {
+  "decision_id": string;
+  "stage_id": "product_decision";
+  "question": string;
+  "options": Array<{
+    "option_id": string;
+    "title": string;
+    "summary"?: string;
+  }>;
+  "criteria": Array<string>;
+  "evidence_refs": Array<string>;
+  [key: string]: unknown;
+};
+export type create_votePayload = {
+  "vote_id": string;
+  "decision_id": string;
+  "eligible_voter_ids": Array<string>;
+  "vote_mode": "single_choice";
+  "quorum_rule": "all_eligible";
+  "threshold_rule": "strict_majority_of_eligible";
+  "round_version": number;
+  [key: string]: unknown;
+};
+export type votePayload = {
+  "vote_id": string;
+  "choice": string;
+  "ballot_revision": number;
+  "reason"?: string;
+  [key: string]: unknown;
+};
+export type finalize_product_decisionPayload = {
+  "vote_id": string;
+  "decision_id": string;
+  "selected_option_id": string;
+  "rationale": string;
+  "rejected_option_ids": Array<string>;
+  "objection_summary": Array<string>;
+  "evidence_refs": Array<string>;
+  "expected_round_version": number;
+  [key: string]: unknown;
+};
+export type override_product_decisionPayload = {
+  "vote_id": string;
+  "decision_id": string;
+  "selected_option_id": string;
+  "reason": string;
+  "unresolved_objections": Array<string>;
+  "evidence_refs": Array<string>;
+  "expected_round_version": number;
+  [key: string]: unknown;
+};
+export type verify_role_assignmentPayload = {
+  "assignment_id": string;
+  "participant_id": string;
+  "role_id": string;
+  "role_type": "product" | "onboard";
+  "outcome": "completed" | "partial" | "waived";
+  "evidence_refs": Array<string>;
+  "expected_assignment_version": number;
+  "reason"?: string;
+  [key: string]: unknown;
+};
+export type adjust_role_xpPayload = {
+  "adjustment_id": string;
+  "participant_id": string;
+  "role_id": string;
+  "delta": number;
+  "reason": string;
+  "evidence_refs": Array<string>;
+  "expected_balance_version": number;
+  "correction_of"?: string;
+  [key: string]: unknown;
+};
+export type publish_rating_snapshotPayload = {
+  "day_number": number;
+  "day_revision": number;
+  "rules_version": number;
+  "projection_version": number;
+  [key: string]: unknown;
+};
 
 export interface CommandPayloadByType {
   "create_expedition": create_expeditionPayload;

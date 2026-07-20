@@ -22,7 +22,11 @@ export type CaptainDayView = {
     "status"?: "active" | "banned";
     "access_revoked"?: boolean;
   }>;
-  "blockers": Array<{ "code": string; "message": string; "entity_id": string; }>;
+  "blockers": Array<{
+    "code": string;
+    "message": string;
+    "entity_id": string;
+  }>;
   "can_close_day": boolean;
   "controls": {
     "override_day_close": boolean;
@@ -44,7 +48,14 @@ export type CaptainDayView = {
     "close_expedition": boolean;
   };
   "sync_status": "synced" | "pending" | "conflict" | "rejected" | "offline";
-  "outputs": Array<{ "output_id": string; "required": boolean; "confirmed": boolean; "evidence_refs": Array<string>; "confirmed_by"?: string | null; "pending_sync"?: boolean; }>;
+  "outputs": Array<{
+    "output_id": string;
+    "required": boolean;
+    "confirmed": boolean;
+    "evidence_refs": Array<string>;
+    "confirmed_by"?: string | null;
+    "pending_sync"?: boolean;
+  }>;
   "stage": {
     "stage_id": string;
     "status": "locked" | "available" | "active" | "completed";
@@ -52,9 +63,18 @@ export type CaptainDayView = {
     "advance_request_status": "none" | "pending" | "synced" | "conflict" | "rejected";
     "requested_by"?: string | null;
     "can_advance": boolean;
-    "advance_blockers"?: Array<{ "code": string; "message": string; }>;
+    "advance_blockers"?: Array<{
+      "code": string;
+      "message": string;
+    }>;
   };
-  "super_admin"?: { "enabled": true; "scope": "expedition"; "server_confirmation_required": true; "can_delete_events"?: false; "can_impersonate_system_clock"?: false; };
+  "super_admin"?: {
+    "enabled": true;
+    "scope": "expedition";
+    "server_confirmation_required": true;
+    "can_delete_events"?: false;
+    "can_impersonate_system_clock"?: false;
+  };
   "decision"?: {
     "status": "none" | "draft" | "vote_open" | "finalized" | "overridden";
     "decision_id"?: string | null;
@@ -65,16 +85,36 @@ export type CaptainDayView = {
     "abstention_count"?: number;
     "selected_option_id"?: string | null;
     "can_finalize"?: boolean;
-    "blockers"?: Array<{ "code": string; "message": string; }>;
+    "blockers"?: Array<{
+      "code": string;
+      "message": string;
+    }>;
   } | null;
   "gamification_summary"?: {
     "rules_version": number;
     "snapshot_at": string;
-    "entries": Array<{ "participant_id": string; "score": number; "rank": number | null; "status": "active" | "inactive" | "not_enough_data"; }>;
-    "pending_verifications": Array<{ "assignment_id": string; "participant_id": string; "role_id": string; "role_type": "product" | "onboard"; }>;
+    "entries": Array<{
+      "participant_id": string;
+      "score": number;
+      "rank": number | null;
+      "status": "active" | "inactive" | "not_enough_data";
+    }>;
+    "pending_verifications": Array<{
+      "assignment_id": string;
+      "participant_id": string;
+      "role_id": string;
+      "role_type": "product" | "onboard";
+    }>;
   } | null;
   "expedition_status": "draft" | "ready" | "active" | "suspended" | "completed" | "cancelled";
-  "expedition_completion": { "completed_at": string; "final_stage_id": "demo_day"; "final_day_number": 12; "shore_package_ref": string; "completion_summary": string; "final_projection_version": number; } | null;
+  "expedition_completion": {
+    "completed_at": string;
+    "final_stage_id": "demo_day";
+    "final_day_number": 12;
+    "shore_package_ref": string;
+    "completion_summary": string;
+    "final_projection_version": number;
+  } | null;
   "completion_readiness": {
     "state": "unavailable" | "blocked" | "ready" | "completed";
     "can_close_expedition": boolean;
@@ -82,6 +122,10 @@ export type CaptainDayView = {
     "final_day_number": number | null;
     "shore_package_ref": string | null;
     "expected_projection_version": number;
-    "blockers": Array<{ "code": string; "message": string; "entity_id"?: string | null; }>;
+    "blockers": Array<{
+      "code": string;
+      "message": string;
+      "entity_id"?: string | null;
+    }>;
   };
 };
