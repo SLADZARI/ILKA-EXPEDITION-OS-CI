@@ -42,21 +42,38 @@ function commonJsDefault(value: unknown): unknown {
   return value;
 }
 
-function normalizeContractRefs(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map(normalizeContractRefs);
-  }
+function cloneWithoutIdentity(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(cloneWithoutIdentity);
   if (value === null || typeof value !== "object") return value;
 
-  const normalized: Record<string, unknown> = {};
+  const cloned: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {
-    if (key === "$ref" && item === "../../schemas/command.schema.json") {
-      normalized[key] = commandSchema.$id;
-    } else if (key === "$ref" && item === "../../engine/event.schema.json") {
-      normalized[key] = eventSchema.$id;
-    } else {
-      normalized[key] = normalizeContractRefs(item);
-    }
+    if (key !== "$id") cloned[key] = cloneWithoutIdentity(item);
+  }
+  return cloned;
+}
+
+function normalizeContractRefs(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeContractRefs);
+  if (value === null || typeof value !== "object") return value;
+
+  const record = value as Record<string, unknown>;
+  if (
+    record.$ref === "../../schemas/command.schema.json" ||
+    record.$ref === commandSchema.$id
+  ) {
+    return cloneWithoutIdentity(commandSchema);
+  }
+  if (
+    record.$ref === "../../engine/event.schema.json" ||
+    record.$ref === eventSchema.$id
+  ) {
+    return cloneWithoutIdentity(eventSchema);
+  }
+
+  const normalized: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(record)) {
+    normalized[key] = normalizeContractRefs(item);
   }
   return normalized;
 }
