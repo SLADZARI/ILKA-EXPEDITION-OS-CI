@@ -16,7 +16,10 @@ const exactRelease: RuntimeRelease = {
 };
 
 Deno.test("runtime registry resolves the exact immutable Day 1 release", () => {
-  assertStrictEquals(commandGatewayRuntimeRegistry.find(exactRelease), day1CompleteTaskV1);
+  assertStrictEquals(
+    commandGatewayRuntimeRegistry.find(exactRelease),
+    day1CompleteTaskV1,
+  );
 });
 
 Deno.test("runtime registry rejects any pinned metadata mismatch", () => {
