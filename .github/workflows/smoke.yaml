@@ -1,0 +1,14 @@
+name: Actions smoke test
+
+on:
+  push:
+    branches:
+      - chore/bootstrap-canonical-repository
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Runner started
+        run: echo "GitHub Actions runner started"
