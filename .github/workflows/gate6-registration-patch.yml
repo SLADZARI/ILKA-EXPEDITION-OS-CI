@@ -1,16 +1,12 @@
 name: Gate 6 runtime registration patch
 
 on:
-  push:
-    branches:
-      - feat/register-day1-complete-task-runtime
-    paths:
-      - ".github/workflows/gate6-registration-patch.yml"
   pull_request:
     paths:
       - ".github/workflows/gate6-registration-patch.yml"
+      - "scripts/validate_supabase_command_gateway.py"
+      - "scripts/validate_supabase_day1_vertical.py"
       - "supabase/functions/_shared/command-gateway/runtime-registry.ts"
-      - "supabase/migrations/20260720213000_day1_complete_task_runtime_release.sql"
 
 permissions:
   contents: write
@@ -29,6 +25,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           gate5 = Path('scripts/validate_supabase_command_gateway.py')
           text = gate5.read_text(encoding='utf-8')
@@ -40,21 +37,18 @@ jobs:
 
           gate6 = Path('scripts/validate_supabase_day1_vertical.py')
           text = gate6.read_text(encoding='utf-8')
-          text = text.replace(
-              'MIGRATION = ROOT / "supabase/migrations/20260720210000_day1_read_model_api.sql"\n',
-              'MIGRATION = ROOT / "supabase/migrations/20260720210000_day1_read_model_api.sql"\nREGISTRATION_MIGRATION = ROOT / "supabase/migrations/20260720213000_day1_complete_task_runtime_release.sql"\n',
-          )
-          text = text.replace(
-              '    MIGRATION,\n    PGTAP,',
-              '    MIGRATION,\n    REGISTRATION_MIGRATION,\n    PGTAP,',
-          )
-          old = '''    registry = REGISTRY.read_text(encoding="utf-8")
-            if "new StaticRuntimeRegistry([])" not in registry:
-                errors.append("implementation PR must keep production runtime registry empty")
-            if "day1_complete_task_v1" in registry:
-                errors.append("implementation PR must not register the runtime before protected merge SHA exists")
-          '''
-          new = '''    registry = REGISTRY.read_text(encoding="utf-8")
+          if 'REGISTRATION_MIGRATION =' not in text:
+              text = text.replace(
+                  'MIGRATION = ROOT / "supabase/migrations/20260720210000_day1_read_model_api.sql"\n',
+                  'MIGRATION = ROOT / "supabase/migrations/20260720210000_day1_read_model_api.sql"\nREGISTRATION_MIGRATION = ROOT / "supabase/migrations/20260720213000_day1_complete_task_runtime_release.sql"\n',
+              )
+          if '    REGISTRATION_MIGRATION,\n' not in text:
+              text = text.replace(
+                  '    MIGRATION,\n    PGTAP,',
+                  '    MIGRATION,\n    REGISTRATION_MIGRATION,\n    PGTAP,',
+              )
+
+          replacement = '''    registry = REGISTRY.read_text(encoding="utf-8")
             require(
                 registry,
                 (
@@ -84,11 +78,15 @@ jobs:
                 "runtime release migration missing exact metadata",
                 errors,
             )
+
           '''
-          if old in text:
-              text = text.replace(old, new, 1)
-          elif 'runtime registry missing exact Day 1 release' not in text:
-              raise SystemExit('Gate 6 registry validator block not found')
+          pattern = re.compile(
+              r'    registry = REGISTRY\.read_text\(encoding="utf-8"\)\n.*?(?=    sql = MIGRATION\.read_text)',
+              re.DOTALL,
+          )
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f'expected one Gate 6 registry validator block, found {count}')
           gate6.write_text(text, encoding='utf-8')
           PY
 
