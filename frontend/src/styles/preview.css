@@ -1,0 +1,37 @@
+.ilka-preview-switcher {
+  position: sticky;
+  z-index: 40;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px max(12px, env(safe-area-inset-left));
+  border-bottom: 1px solid var(--ilka-color-border-default);
+  background: color-mix(in srgb, var(--ilka-color-background-surface) 96%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.ilka-preview-switcher strong {
+  margin-right: 4px;
+  color: var(--ilka-color-text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.ilka-preview-switcher a {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: var(--ilka-radius-control);
+  color: var(--ilka-color-text-secondary);
+  background: var(--ilka-color-background-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ilka-preview-switcher a[data-active='true'] {
+  color: white;
+  background: var(--ilka-color-brand-blue);
+}
