@@ -32,7 +32,7 @@ type TaskStatus =
   | "completed_late"
   | "waived";
 
-interface TodayTask extends JsonObject {
+interface TodayTask {
   task_id: string;
   title: string;
   status: TaskStatus;
@@ -40,7 +40,7 @@ interface TodayTask extends JsonObject {
   pending_sync?: boolean;
 }
 
-interface TodayView extends JsonObject {
+interface TodayView {
   expedition_id: string;
   participant_id: string;
   local_date: string;
@@ -51,19 +51,19 @@ interface TodayView extends JsonObject {
   sync_status: string;
 }
 
-interface CaptainParticipant extends JsonObject {
+interface CaptainParticipant {
   participant_id: string;
   required_tasks_terminal: boolean;
   sync_status?: string;
 }
 
-interface CaptainBlocker extends JsonObject {
+interface CaptainBlocker {
   code: string;
   message: string;
   entity_id: string;
 }
 
-interface CaptainDayView extends JsonObject {
+interface CaptainDayView {
   expedition_id: string;
   day: JsonObject & { number: number; status: string; revision: number };
   participants: CaptainParticipant[];
@@ -127,7 +127,7 @@ function asTodayView(value: JsonObject): TodayView | null {
     tasks.push(task as TodayTask);
   }
 
-  return value as TodayView;
+  return value as unknown as TodayView;
 }
 
 function asCaptainDayView(value: JsonObject): CaptainDayView | null {
@@ -168,7 +168,7 @@ function asCaptainDayView(value: JsonObject): CaptainDayView | null {
     }
   }
 
-  return value as CaptainDayView;
+  return value as unknown as CaptainDayView;
 }
 
 function projection(
@@ -438,14 +438,14 @@ async function reduceCompleteTask(
         "today_view",
         actor.participant_key,
         TODAY_VIEW_SCHEMA_ID,
-        today,
+        today as unknown as JsonObject,
       ),
       mutation(
         "captain_day_view",
         "captain_day_view",
         null,
         CAPTAIN_DAY_VIEW_SCHEMA_ID,
-        captain,
+        captain as unknown as JsonObject,
       ),
     ],
     rejection: null,
