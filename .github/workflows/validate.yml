@@ -49,15 +49,20 @@ jobs:
           test_status=$?
           tail -n 200 /tmp/identity-test.log > /tmp/identity-test-tail.log
           cat /tmp/identity-test-tail.log
+          if [[ $test_status -eq 0 ]]; then
+            supabase gen types typescript --local --schema api,ilka,private > /tmp/database.types.ts
+          fi
           exit $test_status
 
-      - name: Upload database diagnostic tail
+      - name: Upload database diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: identity-test-tail
-          path: /tmp/identity-test-tail.log
-          if-no-files-found: error
+          name: identity-diagnostics
+          path: |
+            /tmp/identity-test-tail.log
+            /tmp/database.types.ts
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Stop local Supabase
@@ -162,7 +167,8 @@ jobs:
         run: |
           status="$(git status --porcelain --untracked-files=all)"
           if [[ -n "$status" ]]; then
-            printf '%s\n' "$status"
+            printf '%s
+' "$status"
             git diff --exit-code || true
             exit 1
           fi
