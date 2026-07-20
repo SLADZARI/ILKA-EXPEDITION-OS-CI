@@ -10,9 +10,10 @@
     "generate:contracts": "node scripts/generate-contracts.mjs",
     "generate": "npm run generate:design && npm run generate:contracts",
     "validate:sources": "python3 scripts/validate-sources.py",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "check": "npm run generate && npm run validate:sources && npm run typecheck && npm run build"
+    "check": "npm run generate && npm run validate:sources && npm run test && npm run typecheck && npm run build"
   },
   "dependencies": {
     "react": "18.3.1",
