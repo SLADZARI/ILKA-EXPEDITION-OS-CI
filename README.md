@@ -116,7 +116,7 @@ Immutable History is complete locally and deployed to development:
 
 The reviewed history migration is deployed to development-only `VOYAGE` as remote migration `20260720175753` (`immutable_history`). Forced RLS is enabled on `stream_heads`, `command_receipts` and `event_log`; `anon` and `authenticated` have no raw access; `service_role` has SELECT but no direct INSERT, UPDATE or DELETE; only trusted private idempotency and stream-position helpers are executable by `service_role`. Identity and history tables remain empty.
 
-Atomic Command Transaction is implemented as the next local gate under accepted `ADR-013`:
+Atomic Command Transaction is complete locally and deployed to development under accepted `ADR-013`:
 
 - `private.process_command(jsonb)` is the only trusted persistence call for prepared Engine results;
 - command and Expedition advisory locks serialize idempotency and stream updates;
@@ -129,7 +129,7 @@ Atomic Command Transaction is implemented as the next local gate under accepted 
 - projection persistence failure rolls back receipt, events and both heads;
 - browser roles and direct `service_role` writes remain denied.
 
-The atomic transaction migration is not applied remotely until its implementation PR and protected CI are green. The transaction provides only a neutral projection-document substrate; concrete `TodayView`, `CaptainDayView`, task/card/role read models, `command-gateway` and real frontend synchronization are still absent. The next gate after this one is Command Gateway.
+The reviewed atomic transaction migration is deployed to development-only `VOYAGE` as remote migration `20260720185027` (`atomic_command_transaction`). Forced RLS is enabled on `projection_heads` and `projection_documents`; `anon` and `authenticated` cannot read internal projections or execute `private.process_command(jsonb)`; `service_role` can execute only the approved transaction entry point and SELECT internal projection state, with no direct INSERT, UPDATE or DELETE. The projection-head trigger is installed, and all identity, history and projection tables remain empty. Concrete `TodayView`, `CaptainDayView`, task/card/role read models, `command-gateway` and real frontend synchronization are still absent. The next gate is Command Gateway.
 
 ## Run the Day 1 prototype
 

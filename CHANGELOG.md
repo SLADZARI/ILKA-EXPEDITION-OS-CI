@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-20 — Supabase Atomic Command Transaction deployment
+
+- Applied the reviewed Atomic Command Transaction migration to development-only `VOYAGE` (`rehfxjlyfojkpascjtmb`).
+- Recorded remote migration version `20260720185027` with migration name `atomic_command_transaction`.
+- Deployed `ilka.projection_heads`, `ilka.projection_documents`, `private.process_command(jsonb)` and the internal projection-head/receipt-result helpers.
+- Verified forced RLS, browser denial, SELECT-only projection access for `service_role`, no direct projection writes and no `service_role` access to the internal serializer.
+- Verified the Expedition projection-head initialization trigger.
+- Confirmed that all identity, history and projection tables remain empty.
+
+This development deployment does not add `command-gateway`, TypeScript reducers, concrete read models, public API functions, frontend transport, Realtime, scheduler, Storage, pilot data or production data. The next gate is Command Gateway.
+
 ## 2026-07-20 — Supabase Atomic Command Transaction
 
 - Accepted `ADR-013` for one private command transaction and a neutral projection-document persistence substrate.

@@ -412,3 +412,12 @@ Existing Gate 3 event/receipt constraints remain active as a second persistence 
 - scheduler;
 - Storage;
 - production or pilot deployment.
+
+## Development deployment record
+
+The reviewed Gate 4 implementation was merged through PR `#19` at commit `448fb6e9fac0521f9c9660c4d1ae5400ed16d186` after protected CI run `29768781004` passed 221 pgTAP assertions and all repository gates.
+
+It was applied to development-only `VOYAGE` as remote migration `20260720185027 atomic_command_transaction`. Full remote verification is recorded in `docs/deployments/2026-07-20-supabase-atomic-command-transaction.md`.
+
+The deployment contains no Expedition, actor, command, event or projection data. The next gate remains Command Gateway.
+

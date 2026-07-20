@@ -119,6 +119,7 @@ The following reviewed migrations are deployed remotely:
 
 - `20260720142526 foundation`;
 - `20260720162648 identity_membership`;
-- `20260720175753 immutable_history`.
+- `20260720175753 immutable_history`;
+- `20260720185027 atomic_command_transaction`.
 
-All identity and history tables remain empty. The atomic transaction migration must not be applied remotely from the feature branch. Remote application is allowed only after its implementation PR and protected CI are green. No pilot or production data is authorized.
+All identity, history and projection tables remain empty. The remote transaction boundary has forced RLS, no browser access, no direct `service_role` writes and only the approved `private.process_command(jsonb)` execution grant. The next migration must not be applied remotely from a feature branch; remote application is allowed only after its implementation PR and protected CI are green. No pilot or production data is authorized.
