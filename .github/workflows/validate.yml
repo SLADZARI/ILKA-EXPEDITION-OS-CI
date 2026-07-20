@@ -101,15 +101,15 @@ jobs:
       - name: Validate Supabase Foundation contract
         run: python scripts/validate_supabase_foundation.py
 
-      - name: Upload generated database types
-        uses: actions/upload-artifact@v4
-        with:
-          name: supabase-database-types
-          path: supabase/database.types.ts
-          retention-days: 1
-
       - name: Verify generated sources are committed
-        run: git diff --exit-code
+        shell: bash
+        run: |
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            git diff --exit-code || true
+            exit 1
+          fi
 
       - name: Stop local Supabase
         if: always()
