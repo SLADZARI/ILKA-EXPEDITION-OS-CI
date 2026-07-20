@@ -26,6 +26,230 @@ export type Database = {
   }
   ilka: {
     Tables: {
+      command_receipts: {
+        Row: {
+          actor_auth_user_id: string | null
+          actor_membership_id: string | null
+          actor_participant_id: string | null
+          actor_profile_id: string | null
+          actor_role: string
+          command_id: string
+          command_type: string
+          conflict_code: string | null
+          created_at: string
+          event_ids: string[]
+          expedition_id: string
+          processed_at: string
+          projection_version: number | null
+          received_at: string
+          reducer_version: string
+          rejection_code: string | null
+          rejection_message: string | null
+          request_hash: string
+          runtime_release_id: string
+          status: string
+          stream_position: number | null
+        }
+        Insert: {
+          actor_auth_user_id?: string | null
+          actor_membership_id?: string | null
+          actor_participant_id?: string | null
+          actor_profile_id?: string | null
+          actor_role: string
+          command_id: string
+          command_type: string
+          conflict_code?: string | null
+          created_at?: string
+          event_ids?: string[]
+          expedition_id: string
+          processed_at: string
+          projection_version?: number | null
+          received_at: string
+          reducer_version: string
+          rejection_code?: string | null
+          rejection_message?: string | null
+          request_hash: string
+          runtime_release_id: string
+          status: string
+          stream_position?: number | null
+        }
+        Update: {
+          actor_auth_user_id?: string | null
+          actor_membership_id?: string | null
+          actor_participant_id?: string | null
+          actor_profile_id?: string | null
+          actor_role?: string
+          command_id?: string
+          command_type?: string
+          conflict_code?: string | null
+          created_at?: string
+          event_ids?: string[]
+          expedition_id?: string
+          processed_at?: string
+          projection_version?: number | null
+          received_at?: string
+          reducer_version?: string
+          rejection_code?: string | null
+          rejection_message?: string | null
+          request_hash?: string
+          runtime_release_id?: string
+          status?: string
+          stream_position?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "command_receipts_actor_membership_expedition_fk"
+            columns: ["actor_membership_id", "expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expedition_members"
+            referencedColumns: ["id", "expedition_id"]
+          },
+          {
+            foreignKeyName: "command_receipts_actor_participant_expedition_fk"
+            columns: ["actor_participant_id", "expedition_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id", "expedition_id"]
+          },
+          {
+            foreignKeyName: "command_receipts_actor_profile_id_fkey"
+            columns: ["actor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "command_receipts_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "command_receipts_runtime_release_id_fkey"
+            columns: ["runtime_release_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_log: {
+        Row: {
+          actor_auth_user_id: string | null
+          actor_membership_id: string | null
+          actor_participant_id: string | null
+          actor_profile_id: string | null
+          actor_role: string
+          causation_id: string | null
+          command_id: string
+          correction_of_event_id: string | null
+          correlation_id: string | null
+          created_at: string
+          event_id: string
+          event_json: Json
+          event_type: string
+          expedition_id: string
+          occurred_at: string
+          recorded_at: string
+          reducer_version: string
+          runtime_release_id: string
+          stream_position: number
+        }
+        Insert: {
+          actor_auth_user_id?: string | null
+          actor_membership_id?: string | null
+          actor_participant_id?: string | null
+          actor_profile_id?: string | null
+          actor_role: string
+          causation_id?: string | null
+          command_id: string
+          correction_of_event_id?: string | null
+          correlation_id?: string | null
+          created_at?: string
+          event_id: string
+          event_json: Json
+          event_type: string
+          expedition_id: string
+          occurred_at: string
+          recorded_at: string
+          reducer_version: string
+          runtime_release_id: string
+          stream_position: number
+        }
+        Update: {
+          actor_auth_user_id?: string | null
+          actor_membership_id?: string | null
+          actor_participant_id?: string | null
+          actor_profile_id?: string | null
+          actor_role?: string
+          causation_id?: string | null
+          command_id?: string
+          correction_of_event_id?: string | null
+          correlation_id?: string | null
+          created_at?: string
+          event_id?: string
+          event_json?: Json
+          event_type?: string
+          expedition_id?: string
+          occurred_at?: string
+          recorded_at?: string
+          reducer_version?: string
+          runtime_release_id?: string
+          stream_position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_log_actor_membership_expedition_fk"
+            columns: ["actor_membership_id", "expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expedition_members"
+            referencedColumns: ["id", "expedition_id"]
+          },
+          {
+            foreignKeyName: "event_log_actor_participant_expedition_fk"
+            columns: ["actor_participant_id", "expedition_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id", "expedition_id"]
+          },
+          {
+            foreignKeyName: "event_log_actor_profile_id_fkey"
+            columns: ["actor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_log_command_expedition_fk"
+            columns: ["command_id", "expedition_id"]
+            isOneToOne: false
+            referencedRelation: "command_receipts"
+            referencedColumns: ["command_id", "expedition_id"]
+          },
+          {
+            foreignKeyName: "event_log_correction_of_event_id_fkey"
+            columns: ["correction_of_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_log"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_log_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_log_runtime_release_id_fkey"
+            columns: ["runtime_release_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expedition_members: {
         Row: {
           ban_reason: string | null
@@ -343,6 +567,35 @@ export type Database = {
         }
         Relationships: []
       }
+      stream_heads: {
+        Row: {
+          created_at: string
+          current_stream_position: number
+          expedition_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_stream_position?: number
+          expedition_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_stream_position?: number
+          expedition_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stream_heads_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: true
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -365,6 +618,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assert_expected_stream_position: {
+        Args: { p_expected_stream_position: number; p_expedition_id: string }
+        Returns: number
+      }
+      check_command_idempotency: {
+        Args: { p_command_id: string; p_request_hash: string }
+        Returns: {
+          outcome: string
+          projection_version: number
+          receipt_status: string
+          stream_position: number
+        }[]
+      }
       resolve_actor_context: {
         Args: { p_auth_user_id: string; p_expedition_id: string }
         Returns: {
