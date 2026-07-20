@@ -1,0 +1,22 @@
+{
+  "name": "ILKA Expedition OS",
+  "short_name": "ILKA",
+  "description": "Offline-first role-card operating system for a team product expedition.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f7fb",
+  "theme_color": "#082554",
+  "categories": ["productivity", "education"],
+  "icons": [
+    {
+      "src": "./ilka-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
