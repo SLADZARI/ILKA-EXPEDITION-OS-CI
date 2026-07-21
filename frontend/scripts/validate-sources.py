@@ -37,10 +37,10 @@ def main() -> int:
         if values:
             errors.append(f"{label}: {', '.join(sorted(values))}")
 
-    if len(command_catalog) != 36:
-        errors.append(f"expected 36 commands, found {len(command_catalog)}")
-    if len(event_catalog) != 48:
-        errors.append(f"expected 48 events, found {len(event_catalog)}")
+    if len(command_catalog) != 39:
+        errors.append(f"expected 39 commands, found {len(command_catalog)}")
+    if len(event_catalog) != 52:
+        errors.append(f"expected 52 events, found {len(event_catalog)}")
     if "close_expedition" not in command_catalog or "expedition.completed" not in event_catalog:
         errors.append("Stage 12 completion command/event missing")
 
