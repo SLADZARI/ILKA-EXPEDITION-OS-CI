@@ -1,0 +1,55 @@
+name: Gate 8D changelog patch
+
+on:
+  push:
+    branches:
+      - feat/gate-8d-bootstrap-release-deployment
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/gate-8d-bootstrap-release-deployment
+      - name: Prepend Gate 8D changelog
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("CHANGELOG.md")
+          text = path.read_text(encoding="utf-8")
+          heading = "## 2026-07-21 — Gate 8D Expedition bootstrap release registration"
+          if heading in text:
+              raise SystemExit(0)
+
+          section = """## 2026-07-21 — Gate 8D Expedition bootstrap release registration
+
+- Registered `expedition_bootstrap_v1` in the exact-match Engine runtime registry.
+- Pinned the release to protected Gate 8C merge commit `6175902f32a73a08476111befcb9e9be36e219bf`.
+- Pinned rules release `engine_v8_permissions_v7`, content release `ilka_mvp_12_day_v5` and reducer version `expedition_bootstrap_v1`.
+- Preserved release-owned program policy at 12 days and one floating Recovery Day.
+- Added an immutable `ilka.runtime_releases` migration, exact registry-match tests, pgTAP immutability checks and a protected Gate 8D validator.
+- Added a deployment runbook requiring `ILKA_DEFAULT_RUNTIME_RELEASE_KEY=expedition_bootstrap_v1`, JWT verification and an authenticated development smoke bootstrap.
+
+`expedition_bootstrap_v1` is bootstrap-only and is not a pilot runtime. A runtime-composition gate is required before invitations, Participants, rotation, Expedition start or Day commands can be used by a real Expedition. Remote migration, environment configuration, Edge Function deployment and smoke verification remain separate post-merge actions.
+
+"""
+          marker = "# Changelog\n\n"
+          if not text.startswith(marker):
+              raise SystemExit("unexpected CHANGELOG header")
+          path.write_text(marker + section + text[len(marker):], encoding="utf-8")
+      - name: Commit changelog
+        shell: bash
+        run: |
+          if git diff --quiet -- CHANGELOG.md; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs(gate8d): record bootstrap release registration"
+          git push origin HEAD:feat/gate-8d-bootstrap-release-deployment
