@@ -1,0 +1,73 @@
+name: Gate 9B2B generated sources
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  generate-persistence-sources:
+    if: github.head_ref == 'feat/gate-9b2b-invitation-persistence'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/gate-9b2b-invitation-persistence
+          token: ${{ github.token }}
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Rebuild local database and generate types
+        shell: bash
+        run: |
+          supabase start
+          supabase db reset
+          supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+          supabase stop --no-backup
+
+      - name: Add Gate 9B2B changelog entry
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('CHANGELOG.md')
+          text = path.read_text(encoding='utf-8')
+          marker = '# Changelog\n\n'
+          entry = '''## 2026-07-21 — Gate 9B2B invitation persistence
+
+          - Added service-role-only atomic wrappers `private.invite_participant(jsonb)`, `private.accept_invitation(jsonb)` and `private.revoke_invitation(jsonb)`.
+          - Preserved `private.process_command(jsonb)` as the only receipt, event and projection writer.
+          - Added a secret-free nested invitation process contract with empty command payload and membership-attributed acceptance history.
+          - Enforced command → Expedition → invitation identity → projection lock order, exact replay before terminal guards and rollback on version conflict.
+          - Added verified Auth email matching, lowest-free Participant order, terminal invitation transitions and complete `ExpeditionSetupView` upserts.
+          - Added Captain-only `api.get_expedition_setup_view(text)`, pgTAP coverage, generated database types and protected persistence validation.
+
+          Gate 9B2B adds no reducer, command-gateway execution branch, runtime release, deployment, invitation delivery, expiration worker, rotation or pilot data. Gate 9B2C implements runtime preparation and public gateway execution.
+
+          '''
+          if 'Gate 9B2B invitation persistence' not in text:
+              if marker not in text:
+                  raise SystemExit('CHANGELOG header missing')
+              text = text.replace(marker, marker + entry, 1)
+              path.write_text(text, encoding='utf-8')
+
+      - name: Commit generated sources
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/database.types.ts CHANGELOG.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "chore(gate9b2b): refresh generated persistence sources"
+          git push origin HEAD:feat/gate-9b2b-invitation-persistence
