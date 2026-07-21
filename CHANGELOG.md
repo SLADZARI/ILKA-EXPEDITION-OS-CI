@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-21 — Gate 9B2A invitation transaction contracts
+
+- Accepted `ADR-019` for the structural invitation transaction boundary extending `ADR-018`.
+- Added private request schemas for `invite_participant`, `accept_invitation` and `revoke_invitation`.
+- Fixed command → Expedition → invitation-email/row → projection lock order and exact replay before mutable invitation guards.
+- Required verified authoritative Auth email for pre-membership acceptance and SHA-256-only token handling in private requests.
+- Fixed atomic membership/Participant creation, ordered acceptance events and one complete `ExpeditionSetupView` upsert contract.
+- Added stable public error mapping, privacy constraints and protected Gate 9B2A validation.
+
+Gate 9B2A is contract-only. It adds no SQL migration, private function, reducer, gateway execution branch, read API, runtime bundle, runtime release, deployment or cloud data. Gate 9B2B implements PostgreSQL wrappers and the Captain setup read API.
+
 ## 2026-07-21 — Gate 9B1 canonical Expedition setup contracts
 
 - Published canonical online-only `invite_participant`, `accept_invitation` and `revoke_invitation` commands under accepted `ADR-018`.
