@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-accept-invitation-request.schema.json",
+  "title": "PrivateAcceptInvitationRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "auth_identity",
+    "invitation_match",
+    "participant_membership",
+    "participant",
+    "process_command_request"
+  ],
+  "properties": {
+    "auth_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auth_user_id",
+        "profile_id",
+        "email_normalized",
+        "email_verified",
+        "profile_status"
+      ],
+      "properties": {
+        "auth_user_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "profile_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "email_normalized": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 254
+        },
+        "email_verified": {
+          "const": true
+        },
+        "profile_status": {
+          "const": "active"
+        }
+      }
+    },
+    "invitation_match": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invitation_id",
+        "expedition_id",
+        "token_hash",
+        "email_normalized",
+        "expected_status"
+      ],
+      "properties": {
+        "invitation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expedition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "token_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "email_normalized": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 254
+        },
+        "expected_status": {
+          "const": "pending"
+        }
+      }
+    },
+    "participant_membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "expedition_id",
+        "profile_id",
+        "role",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expedition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "profile_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "role": {
+          "const": "participant"
+        },
+        "status": {
+          "const": "active"
+        }
+      }
+    },
+    "participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "expedition_id",
+        "expedition_member_id",
+        "participant_key",
+        "participant_order",
+        "display_name",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expedition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expedition_member_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "participant_key": {
+          "type": "string",
+          "pattern": "^participant_[a-f0-9]{32}$"
+        },
+        "participant_order": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": ".*\\S.*"
+        },
+        "status": {
+          "const": "active"
+        }
+      }
+    },
+    "process_command_request": {
+      "allOf": [
+        {
+          "$ref": "./private-process-command-request.schema.json"
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "accepted"
+            },
+            "rejection": {
+              "type": "null"
+            },
+            "command": {
+              "properties": {
+                "command_type": {
+                  "const": "accept_invitation"
+                },
+                "actor_role": {
+                  "const": "participant"
+                },
+                "day_number": {
+                  "type": "null"
+                },
+                "stage_id": {
+                  "type": "null"
+                },
+                "day_revision": {
+                  "type": "null"
+                }
+              }
+            },
+            "actor_context": {
+              "properties": {
+                "auth_user_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "profile_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "membership_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "participant_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "actor_id": {
+                  "type": "string",
+                  "pattern": "^member_[a-f0-9]{32}$"
+                },
+                "actor_role": {
+                  "const": "participant"
+                }
+              }
+            },
+            "events": {
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "allOf": [
+                    {
+                      "$ref": "../../engine/event.schema.json"
+                    },
+                    {
+                      "properties": {
+                        "event_type": {
+                          "const": "invitation.accepted"
+                        },
+                        "actor_role": {
+                          "const": "participant"
+                        },
+                        "day_number": {
+                          "type": "null"
+                        },
+                        "stage_id": {
+                          "type": "null"
+                        },
+                        "day_revision": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "../../engine/event.schema.json"
+                    },
+                    {
+                      "properties": {
+                        "event_type": {
+                          "const": "participant.added"
+                        },
+                        "actor_role": {
+                          "const": "participant"
+                        },
+                        "day_number": {
+                          "type": "null"
+                        },
+                        "stage_id": {
+                          "type": "null"
+                        },
+                        "day_revision": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "projection_mutations": {
+              "minItems": 1,
+              "maxItems": 1,
+              "prefixItems": [
+                {
+                  "properties": {
+                    "operation": {
+                      "const": "upsert"
+                    },
+                    "projection_key": {
+                      "const": "expedition_setup_view"
+                    },
+                    "projection_type": {
+                      "const": "expedition_setup_view"
+                    },
+                    "subject_id": {
+                      "type": "null"
+                    },
+                    "schema_id": {
+                      "const": "https://ilka.local/schemas/expedition-setup-view.schema.json"
+                    },
+                    "schema_version": {
+                      "const": "1"
+                    },
+                    "projection": {
+                      "$ref": "../../app/contracts/expedition-setup-view.schema.json"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
