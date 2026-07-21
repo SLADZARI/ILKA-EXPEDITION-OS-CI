@@ -1,0 +1,91 @@
+name: Gate 7 status docs
+
+on:
+  push:
+    branches:
+      - feat/offline-sync-reconciliation
+    paths:
+      - ".github/workflows/gate7-status-docs.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Gate 7 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/offline-sync-reconciliation
+
+      - name: Record Gate 7 umbrella status
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          marker = '''The exact `day1_complete_task_v1` runtime bundle is registered against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Development `VOYAGE` now contains remote migrations `20260720223150 day1_read_model_api` and `20260720223210 day1_complete_task_runtime_release`. The three authenticated read functions and immutable runtime metadata are deployed, while all identity/history/projection tables remain empty. Cloud command execution is still blocked because `command-gateway` is not deployed without the `SUPABASE_ACCESS_TOKEN` GitHub secret.
+          '''
+          section = '''
+          Gate 7 offline synchronization is complete locally under accepted `ADR-016` as one umbrella composed of five bounded subgates:
+
+          - **7A — Canonical command contract:** frontend commands now use `idempotency_key == command_id`, retries preserve the exact stored command, and `CommandResult` is generated from the canonical Supabase result schema;
+          - **7B — Offline queue persistence:** IndexedDB stores attempts, last-attempt/settlement timestamps, stable error metadata and compact immutable receipt snapshots without rewriting the canonical command;
+          - **7C — Supabase transport:** authenticated HTTP adapters submit commands to `command-gateway`, load `api.get_today_view(...)`, classify auth/network/terminal failures and reject malformed or mismatched responses;
+          - **7D — Sync Engine:** one single-flight FIFO cycle submits pending commands sequentially and maps accepted/replay, rejected, conflict and retryable outcomes;
+          - **7E — Participant integration:** app startup, online transition and online enqueue trigger synchronization; domain state changes only after an authoritative TodayView refetch.
+
+          Conflict stops later FIFO delivery, retryable/auth failures remain `pending`, settled records remain attributable in IndexedDB, and the service worker remains shell-cache-only. Gate 7 adds no client reducer, no new server reducer, no database migration, no Realtime and no automatic Day 1 bootstrap.
+
+          The complete local `complete_task` path is now transport-ready, but live cloud execution still requires deployment of `command-gateway`, authenticated session composition and an actual bootstrapped Expedition/Participant/TodayView.
+          '''
+          if 'Gate 7 offline synchronization is complete locally' not in text:
+              if marker not in text:
+                  raise SystemExit('README Gate 6 marker not found')
+              text = text.replace(marker, marker + section, 1)
+          if 'python scripts/validate_frontend_offline_sync.py' not in text:
+              text = text.replace(
+                  'python scripts/validate_repository.py .\npytest -q',
+                  'python scripts/validate_repository.py .\npython scripts/validate_frontend_offline_sync.py\npytest -q',
+                  1,
+              )
+          readme.write_text(text, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text(encoding='utf-8')
+          heading = '## 2026-07-21 — Gate 7 offline synchronization and reconciliation\n'
+          section = '''## 2026-07-21 — Gate 7 offline synchronization and reconciliation
+
+          - Accepted `ADR-016` for canonical offline command delivery and authoritative projection reconciliation.
+          - Split the umbrella implementation into bounded subgates 7A command contract, 7B queue persistence, 7C Supabase transport, 7D Sync Engine and 7E Participant integration.
+          - Corrected frontend idempotency so every generated command uses `idempotency_key == command_id`.
+          - Extended IndexedDB queue records with attempt, settlement, stable error and compact receipt metadata while preserving the original command body.
+          - Added authenticated `command-gateway` HTTP transport and authoritative `api.get_today_view(...)` loader with response and identity guards.
+          - Added sequential FIFO, single-flight synchronization with accepted/replay, rejected, conflict, retryable and authentication outcome mapping.
+          - Required authoritative TodayView refetch before accepted commands become `synced`; rejected/conflict results never apply domain state optimistically.
+          - Added Participant startup, online-event and online-enqueue synchronization triggers.
+          - Kept stream conflicts terminal for the current FIFO cycle and retained pending commands after retryable/auth failures.
+          - Kept the service worker free of background command submission and retained settled queue records until a separate retention decision.
+          - Added generated CommandResult types, transport/queue/synchronizer tests and a protected Gate 7 static contract validator.
+
+          Gate 7 adds no database migration, new server reducer, Auth UI, Realtime, Background Sync API, automatic Day 1 or cloud seed data. Live execution still requires deployment of `command-gateway`, authenticated session composition and a bootstrapped Expedition with authoritative projections.
+
+          '''
+          if heading not in text:
+              text = text.replace('# Changelog\n\n', '# Changelog\n\n' + section, 1)
+          changelog.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit Gate 7 status docs
+        run: |
+          git add README.md CHANGELOG.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs(gate7): record offline sync umbrella completion"
+          git push origin HEAD:feat/offline-sync-reconciliation
