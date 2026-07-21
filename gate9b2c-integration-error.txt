@@ -158,16 +158,16 @@
 [0m[32mDownload[0m https://jsr.io/@std/crypto/1.1.0/_wasm/lib/deno_std_wasm_crypto.d.mts
 [0m[32mDownload[0m https://jsr.io/@std/internal/1.0.14/os.ts
 [0m[32mDownload[0m https://jsr.io/@std/internal/1.0.14/_os.ts
-[0m[32mDownload[0m https://registry.npmjs.org/ajv-formats/-/ajv-formats-3.0.1.tgz
 [0m[32mDownload[0m https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz
+[0m[32mDownload[0m https://registry.npmjs.org/ajv-formats/-/ajv-formats-3.0.1.tgz
 [0m[32mDownload[0m https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz
-[0m[32mDownload[0m https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.4.tgz
-[0m[32mDownload[0m https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz
 [0m[32mDownload[0m https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz
-[0m[32mInitialize[0m require-from-string@2.0.2
-[0m[32mInitialize[0m fast-deep-equal@3.1.3
+[0m[32mDownload[0m https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz
+[0m[32mDownload[0m https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.4.tgz
 [0m[32mInitialize[0m json-schema-traverse@1.0.0
+[0m[32mInitialize[0m require-from-string@2.0.2
 [0m[32mInitialize[0m ajv-formats@3.0.1
+[0m[32mInitialize[0m fast-deep-equal@3.1.3
 [0m[32mInitialize[0m fast-uri@3.1.4
 [0m[32mInitialize[0m ajv@8.20.0
 [0m[32mCheck[0m supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts
@@ -177,19 +177,10 @@ invitation executor persists invite, pre-membership acceptance and revoke atomic
 [0m[1m[37m[41m ERRORS [0m
 
 invitation executor persists invite, pre-membership acceptance and revoke atomically [0m[38;5;245m=> ./supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts:19:6[0m
-[0m[1m[31merror[0m: AssertionError: Values are not equal.
-
-
-    [90m[1m[Diff][22m[39m [31m[1mActual[22m[39m / [32m[1mExpected[22m[39m
-
-
-[31m[1m-   false[22m[39m
-[32m[1m+   true[22m[39m
-
-  throw new AssertionError(message);
-[0m[31m        ^[0m
-    at [0m[1m[3massertEquals[0m ([0m[36mhttps://jsr.io/@std/assert/1.0.19/equals.ts[0m:[0m[33m67[0m:[0m[33m9[0m)
-    at [0m[1m[3mfn[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/command-gateway/tests/integration/invitation-execution.test.ts[0m:[0m[33m275[0m:[0m[33m7[0m)
+[0m[1m[31merror[0m: Error: acceptance_outcome:{"status":503,"code":"invitation_persistence_unavailable","message":"The invitation command could not be committed.","retryable":true}
+      throw new Error(`acceptance_outcome:${JSON.stringify({
+[0m[31m            ^[0m
+    at [0m[1m[3mfn[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/command-gateway/tests/integration/invitation-execution.test.ts[0m:[0m[33m276[0m:[0m[33m13[0m)
 
 [0m[1m[37m[41m FAILURES [0m
 
