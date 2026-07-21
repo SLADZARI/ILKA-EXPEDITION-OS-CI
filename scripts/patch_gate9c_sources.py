@@ -253,14 +253,14 @@ if "const rotationExecutor = createRotationExecutor" not in index:
         "const handler = createCommandGatewayHandler(\n",
         "index rotation executor",
     )
-if "    rotationExecutor,\n" not in index:
+if "  rotationExecutor,\n" not in index:
     index = replace_once(
         index,
-        "    invitationExecutor,\n"
-        "  );\n",
-        "    invitationExecutor,\n"
-        "    rotationExecutor,\n"
-        "  );\n",
+        "  invitationExecutor,\n"
+        ");\n",
+        "  invitationExecutor,\n"
+        "  rotationExecutor,\n"
+        ");\n",
         "index handler arguments",
     )
 index_path.write_text(index, encoding="utf-8")
