@@ -174,13 +174,19 @@ def main() -> int:
     ).read_text(encoding="utf-8")
     for command in catalog.get("commands", []):
         command_type = command["command_type"]
-        if f'"{command_type}"' not in generated:
-            errors.append(f"generated command matrix missing {command_type}")
-        for actor in command.get("allowed_actors", []):
-            if f'"{actor}"' not in generated:
-                errors.append(
-                    f"generated command matrix missing actor {actor} for {command_type}"
-                )
+        public_command = command.get("external_api_allowed", True) is not False
+        if public_command:
+            if f'"{command_type}"' not in generated:
+                errors.append(f"generated command matrix missing public command {command_type}")
+            for actor in command.get("allowed_actors", []):
+                if f'"{actor}"' not in generated:
+                    errors.append(
+                        f"generated command matrix missing actor {actor} for {command_type}"
+                    )
+        elif f'"{command_type}"' in generated:
+            errors.append(
+                f"generated command matrix exposes legacy non-public command {command_type}"
+            )
 
     workflow = (ROOT / ".github/workflows/validate.yml").read_text(
         encoding="utf-8"
