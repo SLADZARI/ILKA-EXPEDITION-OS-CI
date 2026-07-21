@@ -184,7 +184,17 @@ Gate 8A Expedition bootstrap contract is accepted under `ADR-017`:
 - accepted bootstrap ends at stream position `1` and projection version `0`;
 - no Participant, invitation, rotation, Day, Stage, assignment, Card Bundle or projection document is created by this gate.
 
-Gate 8A is contract-only. The transaction migration, bootstrap reducer, gateway implementation, runtime release registration and live deployment remain separate subgates.
+Gate 8A established the contract. Gate 8B now implements the local atomic PostgreSQL transaction:
+
+- `private.bootstrap_expedition(jsonb)` validates active Profile ownership, IANA timezone, canonical actor identity and immutable runtime pinning;
+- command-ID and Expedition-key advisory locks serialize replay and key collisions;
+- the transaction inserts one draft Expedition and one active Captain membership;
+- existing triggers initialize stream/projection heads, and existing `private.process_command(jsonb)` persists the accepted receipt plus one prepared `expedition.created` event;
+- successful bootstrap ends at stream position `1` and projection version `0`;
+- exact replay, idempotency mismatch, duplicate key, disabled Profile, missing runtime and rollback behavior are covered by pgTAP;
+- no Participant, invitation or projection document is created.
+
+Gate 8B remains local and undeployed. The bootstrap reducer and `command-gateway` pre-membership branch remain Gate 8C; Auth/UI and live aggregate creation remain later subgates.
 
 ## Run the Day 1 prototype
 
@@ -220,6 +230,7 @@ python scripts/generate_supabase_command_gateway_contract.py
 python scripts/validate_repository.py .
 python scripts/validate_frontend_offline_sync.py
 python scripts/validate_expedition_bootstrap_contract.py
+python scripts/validate_expedition_bootstrap_transaction.py
 pytest -q
 cd frontend
 npm ci
