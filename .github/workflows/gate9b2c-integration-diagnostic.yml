@@ -29,13 +29,34 @@ jobs:
           version: 2.101.0
           github-token: ${{ github.token }}
 
+      - name: Add safe acceptance diagnostic
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              '      assertEquals(accepted.ok, true);',
+              '''      if (!accepted.ok) {
+                throw new Error(`acceptance_outcome:${JSON.stringify({
+                  status: accepted.status,
+                  code: accepted.code,
+                  message: accepted.message,
+                  retryable: accepted.retryable,
+                  details: accepted.details,
+                })}`);
+              }''',
+              1,
+          )
+          path.write_text(text, encoding='utf-8')
+
       - name: Run invitation integration and persist failure
         shell: bash
         run: |
           supabase start >/tmp/supabase-start.log 2>&1
           supabase db reset >/tmp/supabase-reset.log 2>&1
           db_url="$(supabase status -o json | jq -r '.DB_URL')"
-          if ! SUPABASE_DB_URL="$db_url" deno test --frozen \
+          if ! SUPABASE_DB_URL="$db_url" deno test \
             --config supabase/functions/command-gateway/deno.json \
             --allow-env=SUPABASE_DB_URL \
             --allow-net=127.0.0.1:54322 \
@@ -43,10 +64,11 @@ jobs:
             >/tmp/gate9b2c-integration.log 2>&1; then
             tail -n 220 /tmp/gate9b2c-integration.log > gate9b2c-integration-error.txt
             cat gate9b2c-integration-error.txt
+            git checkout -- supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add gate9b2c-integration-error.txt
-            git commit -m "chore(gate9b2c): capture integration error"
+            git commit -m "chore(gate9b2c): capture stable integration outcome"
             git push origin HEAD:feat/gate-9b2c-invitation-execution
             exit 1
           fi
