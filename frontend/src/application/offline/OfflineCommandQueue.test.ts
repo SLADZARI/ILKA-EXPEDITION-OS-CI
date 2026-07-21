@@ -5,6 +5,7 @@ import {
   IndexedDbCommandQueue,
   MemoryCommandQueue,
   type OfflineQueueableCommand,
+  type QueueReceipt,
 } from './OfflineCommandQueue';
 
 const fixedTime = '2026-07-20T12:00:00.000Z';
@@ -20,8 +21,23 @@ function createCommand(commandId: string): OfflineQueueableCommand {
   return {
     ...generated,
     command_id: commandId,
-    idempotency_key: `expedition_01:start_task:${commandId}`,
+    idempotency_key: commandId,
     issued_at: fixedTime,
+  };
+}
+
+function receipt(): QueueReceipt {
+  return {
+    outcome: 'accepted',
+    replayed: false,
+    event_ids: ['evt_queue_01'],
+    stream_position: 1,
+    projection_version: 2,
+    rejection_code: null,
+    rejection_message: null,
+    conflict_code: null,
+    expected_stream_position: 0,
+    current_stream_position: 1,
   };
 }
 
@@ -67,7 +83,10 @@ describe('IndexedDbCommandQueue', () => {
     await queue.update(queued.local_id, {
       status: 'conflict',
       attempts: 2,
-      last_error: { code: 'revision_conflict', message: 'Projection changed', retryable: true },
+      last_attempt_at: '2026-07-20T12:01:00.000Z',
+      settled_at: '2026-07-20T12:01:01.000Z',
+      last_error: { code: 'version_conflict', message: 'Projection changed', retryable: false },
+      receipt: { ...receipt(), outcome: 'conflict', conflict_code: 'version_conflict' },
     });
 
     const [updated] = await queue.list();
@@ -75,6 +94,26 @@ describe('IndexedDbCommandQueue', () => {
     expect(updated?.command).toEqual(command);
     expect(updated?.status).toBe('conflict');
     expect(updated?.attempts).toBe(2);
+    expect(updated?.receipt?.conflict_code).toBe('version_conflict');
+  });
+
+  it('persists accepted receipt metadata across IndexedDB instances', async () => {
+    const factory = new IDBFactory();
+    const databaseName = 'queue-receipt-persistence';
+    const firstQueue = new IndexedDbCommandQueue({ indexedDBFactory: factory, databaseName, now: () => fixedTime });
+    const queued = await firstQueue.enqueue(createCommand('cmd_receipt'));
+    await firstQueue.update(queued.local_id, {
+      status: 'synced',
+      attempts: 1,
+      settled_at: fixedTime,
+      receipt: receipt(),
+    });
+
+    const secondQueue = new IndexedDbCommandQueue({ indexedDBFactory: factory, databaseName });
+    const [stored] = await secondQueue.list();
+    expect(stored?.status).toBe('synced');
+    expect(stored?.receipt?.event_ids).toEqual(['evt_queue_01']);
+    expect(stored?.command).toEqual(queued.command);
   });
 
   it('falls back to memory when IndexedDB is unavailable', async () => {
