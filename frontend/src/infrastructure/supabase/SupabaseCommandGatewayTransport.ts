@@ -62,6 +62,17 @@ function retryableStatus(status: number): boolean {
   return status === 429 || status === 502 || status === 503 || status === 504;
 }
 
+function invalidSuccessResponse(status: number): OfflineDeliveryResult {
+  return {
+    kind: 'retryable_error',
+    error: {
+      code: 'invalid_gateway_response',
+      message: `Command Gateway returned malformed result data (${status}).`,
+      retryable: true,
+    },
+  };
+}
+
 export class SupabaseCommandGatewayTransport implements OfflineCommandTransport {
   private readonly endpoint: string;
   private readonly fetchImpl: ReturnType<typeof resolveFetch>;
@@ -103,21 +114,15 @@ export class SupabaseCommandGatewayTransport implements OfflineCommandTransport 
     }
 
     const body = await responseJson(response);
-    if ((response.status === 200 || response.status === 409) && isRecord(body) && isCommandResult(body.data)) {
+    if (response.status === 200 || response.status === 409) {
+      if (!isRecord(body) || !isCommandResult(body.data)) return invalidSuccessResponse(response.status);
       const result = body.data;
       if (
         result.receipt.command_id !== command.command_id
         || result.receipt.expedition_key !== command.expedition_id
         || result.receipt.command_type !== command.command_type
       ) {
-        return {
-          kind: 'retryable_error',
-          error: {
-            code: 'invalid_gateway_response',
-            message: 'Command Gateway receipt identity does not match the queued command.',
-            retryable: true,
-          },
-        };
+        return invalidSuccessResponse(response.status);
       }
       return { kind: 'result', result };
     }
