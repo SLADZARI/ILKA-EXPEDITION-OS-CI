@@ -26,14 +26,28 @@ jobs:
           version: 2.101.0
           github-token: ${{ github.token }}
 
-      - name: Start local Supabase with compact debug tail
+      - name: Start local Supabase and capture diagnostic
+        id: start
         shell: bash
         run: |
           set +e
-          supabase start --debug > /tmp/supabase-start.log 2>&1
+          supabase start --debug > /tmp/supabase-start-full.log 2>&1
           status=$?
-          tail -n 180 /tmp/supabase-start.log
-          exit "$status"
+          tail -n 220 /tmp/supabase-start-full.log > /tmp/supabase-start-tail.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload startup diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate8b-supabase-start-diagnostic
+          path: /tmp/supabase-start-tail.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail when startup failed
+        if: steps.start.outputs.status != '0'
+        run: exit 1
 
       - name: Stop local Supabase
         if: always()
