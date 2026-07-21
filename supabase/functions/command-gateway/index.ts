@@ -7,6 +7,8 @@ import { PostgresInvitationDatabase } from "../_shared/command-gateway/invitatio
 import { createInvitationExecutor } from "../_shared/command-gateway/invitation.ts";
 import { PostgresInvitationDatabase } from "../_shared/command-gateway/invitation-database.ts";
 import { createInvitationExecutor } from "../_shared/command-gateway/invitation.ts";
+import { PostgresInvitationDatabase } from "../_shared/command-gateway/invitation-database.ts";
+import { createInvitationExecutor } from "../_shared/command-gateway/invitation.ts";
 import { commandGatewayRuntimeRegistry } from "../_shared/command-gateway/runtime-registry.ts";
 import { createSchemaValidator } from "../_shared/command-gateway/schema-validation.ts";
 
@@ -34,6 +36,7 @@ const projectPublicKey = Deno.env.get("SUPABASE_ANON_KEY") ??
 const connectionString = requiredEnv("SUPABASE_DB_URL");
 const database = new PostgresGatewayDatabase(connectionString);
 const bootstrapDatabase = new PostgresBootstrapDatabase(connectionString);
+const invitationDatabase = new PostgresInvitationDatabase(connectionString);
 const invitationDatabase = new PostgresInvitationDatabase(connectionString);
 const invitationDatabase = new PostgresInvitationDatabase(connectionString);
 const schemas = createSchemaValidator();
