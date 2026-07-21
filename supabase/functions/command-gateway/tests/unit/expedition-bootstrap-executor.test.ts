@@ -158,7 +158,10 @@ Deno.test("bootstrap executor prepares the atomic request and returns accepted r
   assertEquals(membership.role, "captain");
   assertEquals(process.expected_stream_position, 0);
   assertEquals(process.projection_mutations, []);
-  assertEquals(canonicalCommand.actor_id, `member_${MEMBERSHIP_ID.replaceAll("-", "")}`);
+  assertEquals(
+    canonicalCommand.actor_id,
+    `member_${MEMBERSHIP_ID.replaceAll("-", "")}`,
+  );
   assertEquals(actor.participant_id, null);
 });
 
