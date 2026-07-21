@@ -63,7 +63,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [[ "${{ steps.integration.outcome }}" == "success" ]]; then
             rm -f gate9b2c-integration-error.txt
-            git add -A gate9b2c-integration-error.txt supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts
+            git add supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts
+            git add -u -- gate9b2c-integration-error.txt || true
             message="test(gate9b2c): align receipt time after issued commands"
           else
             tail -n 160 /tmp/gate9b2c-integration.log > gate9b2c-integration-error.txt
