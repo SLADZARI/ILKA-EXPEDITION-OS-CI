@@ -1,6 +1,6 @@
 # Expedition bootstrap architecture
 
-Status: implementation contract under accepted `ADR-017`.
+Status: Gate 8C implementation under accepted `ADR-017`; runtime registration and deployment remain Gate 8D.
 
 ## Purpose
 
@@ -21,13 +21,13 @@ No parallel bootstrap command, event or public endpoint is introduced.
 
 ## Gateway branch
 
-After canonical schema validation, request hashing and Supabase Auth verification:
+After canonical schema validation, request hashing, Supabase Auth verification and exact receipt replay:
 
 ```text
-if command_type != create_expedition:
-  existing active-membership command path
-else:
+if command_type == create_expedition:
   pre-membership bootstrap path
+else:
+  existing active-membership command path
 ```
 
 The bootstrap path:
@@ -41,9 +41,13 @@ The bootstrap path:
 7. replaces client actor claims with the canonical membership actor ID;
 8. runs the pure `create_expedition` reducer;
 9. validates the single prepared `expedition.created` event;
-10. validates `private-bootstrap-expedition-request.schema.json`;
-11. calls `private.bootstrap_expedition(jsonb)`;
-12. returns the standard command result or a stable public error.
+10. validates the nested private process request;
+11. validates `private-bootstrap-expedition-request.schema.json`;
+12. calls `private.bootstrap_expedition(jsonb)`;
+13. validates the authoritative result;
+14. returns the standard command result or a stable public error.
+
+All non-bootstrap commands continue through the existing membership/runtime path unchanged.
 
 ## Identity model
 
@@ -113,6 +117,8 @@ day_boundary_local_time
 
 The command keeps `duration_days` for canonical compatibility, but the reducer requires equality with release-owned configuration.
 
+The Gate 8C implementation adds a pure runtime factory, but does not register it in the production static registry. This is intentional: immutable registry metadata must reference a protected merge SHA containing the implementation. Gate 8D owns that exact registration.
+
 ## Private request
 
 `private.bootstrap_expedition(jsonb)` receives:
@@ -181,7 +187,9 @@ No independent SQL event construction is allowed.
 
 ### Exact replay
 
-If `command_id`, request hash and original authenticated actor match an existing receipt, return the persisted result without checking current membership or current default runtime configuration.
+If `command_id`, request hash and original authenticated actor match an existing receipt, the common gateway replay path returns the persisted result before current Profile, membership or runtime checks.
+
+A concurrent retry that passes the first lookup is serialized inside `private.bootstrap_expedition(jsonb)` and returns the same persisted result.
 
 ### Command-ID mismatch
 
@@ -228,8 +236,10 @@ Accepted bootstrap guarantees:
 - browser roles retain no INSERT/UPDATE/DELETE grants on internal tables;
 - only trusted `service_role` runtime may execute the private function;
 - `search_path` is empty inside the security-definer function;
-- Profile and Auth ownership are rechecked inside PostgreSQL;
-- runtime release pinning is validated inside PostgreSQL.
+- Profile and Auth ownership are checked by the gateway and rechecked inside PostgreSQL;
+- runtime release pinning is checked by the exact registry and rechecked inside PostgreSQL;
+- a human cannot submit `system` or `system_clock` bootstrap claims;
+- Product Captain has no role in Expedition creation.
 
 ## Offline and UI
 
@@ -247,17 +257,55 @@ rejected
 
 The next UI/Auth gate owns the actual screen composition.
 
+## Gate 8C implementation map
+
+```text
+supabase/functions/_shared/engine-runtime/expedition-bootstrap-v1.ts
+  pure reducer and release-owned bootstrap policy
+
+supabase/functions/_shared/command-gateway/bootstrap.ts
+  Profile/runtime resolution, actor conversion, contract validation and execution
+
+supabase/functions/_shared/command-gateway/bootstrap-database.ts
+  service-role reads and private.bootstrap_expedition(jsonb) call
+
+supabase/functions/_shared/command-gateway/bootstrap-schema-validation.ts
+  outer private request schema validation
+
+supabase/functions/_shared/command-gateway/handler.ts
+  explicit pre-membership branch after auth and exact replay
+
+supabase/functions/command-gateway/index.ts
+  environment and executor wiring
+```
+
+The implementation keeps the existing `PostgresGatewayDatabase`, normal command path and registered Day 1 runtime unchanged.
+
+## Gate 8D boundary
+
+Gate 8D begins only after Gate 8C is merged and its protected merge SHA is known. It must:
+
+- register an immutable bootstrap-capable runtime release pinned to that protected SHA;
+- add the bundle to `commandGatewayRuntimeRegistry` with exact metadata;
+- set `ILKA_DEFAULT_RUNTIME_RELEASE_KEY`;
+- deploy the reviewed Edge Function and runtime metadata;
+- run an authenticated development smoke test;
+- verify one Expedition, one Captain membership, one receipt and one event;
+- avoid creating Participants, invitations, Day 1 data or pilot fixtures.
+
 ## Tests required by implementation gates
 
-- valid bootstrap;
+- valid reducer output;
+- active Profile ownership and Profile actor mismatch;
+- exact runtime metadata match and unavailable runtime;
+- invalid timezone and duration mismatch;
+- gateway branch before membership lookup;
+- valid private bootstrap request construction;
+- accepted transaction result;
 - exact replay;
 - concurrent exact replay;
 - command-ID payload mismatch;
 - Expedition-key collision;
-- disabled/mismatched Profile;
-- invalid timezone;
-- runtime release missing/mismatch;
-- duration mismatch with release policy;
 - transaction rollback after Expedition insert;
 - no direct browser/private access;
 - zero Participant/invitation/projection-document side effects;

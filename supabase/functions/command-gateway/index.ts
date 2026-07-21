@@ -1,4 +1,6 @@
 import { createSupabaseAuthVerifier } from "../_shared/command-gateway/auth.ts";
+import { PostgresBootstrapDatabase } from "../_shared/command-gateway/bootstrap-database.ts";
+import { createExpeditionBootstrapExecutor } from "../_shared/command-gateway/bootstrap.ts";
 import { PostgresGatewayDatabase } from "../_shared/command-gateway/database.ts";
 import { createCommandGatewayHandler } from "../_shared/command-gateway/handler.ts";
 import { commandGatewayRuntimeRegistry } from "../_shared/command-gateway/runtime-registry.ts";
@@ -25,19 +27,33 @@ const supabaseUrl = requiredEnv("SUPABASE_URL");
 const projectPublicKey = Deno.env.get("SUPABASE_ANON_KEY") ??
   Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ??
   requiredEnv("SUPABASE_ANON_KEY");
-const database = new PostgresGatewayDatabase(requiredEnv("SUPABASE_DB_URL"));
+const connectionString = requiredEnv("SUPABASE_DB_URL");
+const database = new PostgresGatewayDatabase(connectionString);
+const bootstrapDatabase = new PostgresBootstrapDatabase(connectionString);
+const schemas = createSchemaValidator();
+const auth = createSupabaseAuthVerifier({
+  baseUrl: supabaseUrl,
+  projectPublicKey,
+});
+const now = () => new Date();
+
+const bootstrapExecutor = createExpeditionBootstrapExecutor({
+  database: bootstrapDatabase,
+  schemas,
+  runtimes: commandGatewayRuntimeRegistry,
+  defaultRuntimeReleaseKey: requiredEnv("ILKA_DEFAULT_RUNTIME_RELEASE_KEY"),
+  now,
+  uuid: () => crypto.randomUUID(),
+});
 
 const handler = createCommandGatewayHandler({
-  auth: createSupabaseAuthVerifier({
-    baseUrl: supabaseUrl,
-    projectPublicKey,
-  }),
+  auth,
   database,
-  schemas: createSchemaValidator(),
+  schemas,
   runtimes: commandGatewayRuntimeRegistry,
   allowedOrigins: allowedOrigins(),
-  now: () => new Date(),
+  now,
   requestId: () => crypto.randomUUID(),
-});
+}, bootstrapExecutor);
 
 Deno.serve(handler);

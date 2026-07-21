@@ -1,4 +1,5 @@
 import { AuthServiceError } from "./auth.ts";
+import type { BootstrapExecutor } from "./bootstrap.ts";
 import { commandRequestHash } from "./canonical-json.ts";
 import {
   COMMAND_CONTRACTS,
@@ -181,6 +182,7 @@ function responseStatus(result: ProcessCommandResult): number {
 
 export function createCommandGatewayHandler(
   dependencies: GatewayDependencies,
+  bootstrapExecutor?: BootstrapExecutor,
 ): (request: Request) => Promise<Response> {
   return async (request: Request): Promise<Response> => {
     const requestId = dependencies.requestId();
@@ -391,6 +393,59 @@ export function createCommandGatewayHandler(
       return jsonResponse(
         200,
         { request_id: requestId, data: existing.result },
+        origin,
+        true,
+      );
+    }
+
+    if (command.command_type === "create_expedition") {
+      if (!bootstrapExecutor) {
+        return errorResponse(
+          503,
+          requestId,
+          "runtime_release_unavailable",
+          "The approved bootstrap runtime is unavailable.",
+          true,
+          origin,
+          true,
+        );
+      }
+
+      let outcome;
+      try {
+        outcome = await bootstrapExecutor.execute({
+          command,
+          auth_user: authUser,
+          request_hash: requestHash,
+        });
+      } catch {
+        return errorResponse(
+          503,
+          requestId,
+          "bootstrap_persistence_unavailable",
+          "The Expedition could not be created.",
+          true,
+          origin,
+          true,
+        );
+      }
+
+      if (!outcome.ok) {
+        return errorResponse(
+          outcome.status,
+          requestId,
+          outcome.code,
+          outcome.message,
+          outcome.retryable,
+          origin,
+          true,
+          outcome.details,
+        );
+      }
+
+      return jsonResponse(
+        responseStatus(outcome.result),
+        { request_id: requestId, data: outcome.result },
         origin,
         true,
       );

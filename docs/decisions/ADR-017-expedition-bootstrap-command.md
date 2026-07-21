@@ -4,7 +4,7 @@
 - Date: 2026-07-21
 - Owners: Product Architecture / Backend / Engine / Security
 - Extends: `ADR-012`, `ADR-014`, `ADR-015`, `ADR-016`
-- Gate: 8A — Expedition bootstrap contract
+- Gates: 8A contract, 8B transaction, 8C execution, 8D registration/deployment
 
 ## Context
 
@@ -196,6 +196,31 @@ expedition_key_already_exists
 idempotency_key_reused_with_different_payload
 bootstrap_persistence_unavailable
 ```
+
+## Implementation status
+
+Gate 8A accepted this contract. Gate 8B implemented the local atomic PostgreSQL wrapper.
+
+Gate 8C implements:
+
+- the pure `create_expedition` TypeScript reducer;
+- active Profile and default runtime resolution;
+- canonical Captain membership actor conversion;
+- the explicit gateway branch after authentication and exact replay but before Expedition membership lookup;
+- validation of the canonical event, nested process request and outer private bootstrap request;
+- execution through `private.bootstrap_expedition(jsonb)`;
+- stable public error mapping;
+- Deno unit and local PostgreSQL integration coverage.
+
+Gate 8C deliberately does **not** add an immutable production runtime registration. The bootstrap runtime factory remains unregistered in `commandGatewayRuntimeRegistry` until its implementation commit is merged into protected `main` and has a stable protected SHA.
+
+Gate 8D must then:
+
+1. register an exact immutable bootstrap-capable runtime release pinned to the protected Gate 8C implementation SHA;
+2. set `ILKA_DEFAULT_RUNTIME_RELEASE_KEY` for the target environment;
+3. apply any reviewed runtime-release migration;
+4. deploy `command-gateway`;
+5. execute an authenticated live bootstrap smoke test without pilot data reuse.
 
 ## Acceptance criteria
 

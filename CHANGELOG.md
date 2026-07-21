@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-21 — Gate 8C executable Expedition bootstrap
+
+- Added a pure TypeScript `create_expedition` reducer that derives duration and Recovery Day policy from the selected immutable runtime bundle and emits exactly one canonical `expedition.created` event.
+- Added the explicit `command-gateway` pre-membership branch after authentication and exact replay but before existing Expedition membership resolution.
+- Added active Profile ownership checks, server-selected `ILKA_DEFAULT_RUNTIME_RELEASE_KEY`, exact runtime matching and canonical Captain membership actor conversion.
+- Added validation for the prepared event, nested `private.process_command` request and outer `private.bootstrap_expedition` request before persistence.
+- Added a service-role PostgreSQL adapter that resolves Profile/runtime metadata and calls only `private.bootstrap_expedition(jsonb)` without direct domain writes.
+- Added stable public mappings for Profile, runtime, idempotency, Expedition-key, timezone and persistence failures.
+- Added reducer, executor, gateway-branch and local PostgreSQL integration tests plus a protected static Gate 8C validator.
+- Updated `ADR-017` and the bootstrap architecture with the implementation boundary and the next immutable registration/deployment step.
+
+Gate 8C intentionally does not register the new bootstrap runtime in `commandGatewayRuntimeRegistry`, add an immutable runtime-release row or deploy the Edge Function. Gate 8D must pin the protected Gate 8C merge SHA, configure `ILKA_DEFAULT_RUNTIME_RELEASE_KEY`, deploy and run the first authenticated development smoke bootstrap. This gate adds no Auth UI, invitation, Participant, rotation, Day 1, projection document or pilot data.
+
 ## 2026-07-21 — Gate 8B Expedition bootstrap transaction
 
 - Added server-only `private.bootstrap_expedition(jsonb)` as the atomic aggregate-initialization wrapper accepted by `ADR-017`.
@@ -125,7 +138,7 @@ This development deployment does not add `command-gateway`, TypeScript reducers,
 - Denied browser execution and direct `service_role` projection writes while granting only the private transaction entry point.
 - Added pgTAP coverage, generated database type validation, architecture documentation and a protected static contract gate.
 
-This gate does not add `command-gateway`, TypeScript reducers, concrete Participant/Captain read models, public API functions, frontend transport, Realtime, scheduler, Storage, pilot data or production data. Remote migration application remains blocked until the implementation PR and protected CI are green. The next gate is Command Gateway.
+This gate does not add `command-gateway`, TypeScript reducers, concrete Participant/Captain read models, public API functions, frontend transport, Realtime, scheduler, Storage, pilot data or production data. Remote migration application remains blocked until protected CI is green. The next gate is Command Gateway.
 
 ## 2026-07-20 — Supabase Immutable History deployment
 
