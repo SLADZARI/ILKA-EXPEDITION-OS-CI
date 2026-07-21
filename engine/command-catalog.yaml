@@ -263,6 +263,7 @@ error_codes:
 - system_actor_not_allowed
 - expedition_not_active
 - stage_not_open
+- boundary_not_reached
 - local_boundary_not_reached
 - boundary_date_mismatch
 - boundary_already_processed
