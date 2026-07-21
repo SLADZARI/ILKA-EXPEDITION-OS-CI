@@ -1,4 +1,4 @@
-version: 10
+version: 11
 kind: transport_projection
 source_of_truth: engine/command-catalog.yaml
 generated_from: engine/command-catalog.yaml
@@ -87,7 +87,43 @@ expedition_setup:
     forbidden_outputs: [event, projection, receipt, structured_log, public_error]
     event_identity: masked_email_hint_only
   authoritative_refetch: api.get_expedition_setup_view
-  implementation_status: contracts_only_gate_9b1
+  implementation_status: executable_gate_9b2c_and_9c
+expedition_day1_start:
+  source_of_truth: docs/decisions/ADR-021-start-expedition-and-day1-boundary.md
+  implementation_status: contracts_only_gate_9d1
+  start_expedition:
+    endpoint: /functions/v1/command-gateway
+    authentication: supabase_bearer_session
+    actor: active_captain_membership
+    payload: []
+    expedition_from: ready
+    expedition_to: active
+    events: [expedition.started, stage.opened]
+    creates_calendar_day: false
+    offline_allowed: false
+    authoritative_refetch: api.get_expedition_setup_view
+    planned_private_transaction: private.start_expedition
+  process_day_boundary:
+    endpoint: /functions/v1/command-gateway
+    authentication: trusted_system_clock_hmac
+    actor: system_clock
+    browser_api_allowed: false
+    payload: [local_calendar_date, boundary_at]
+    command_id_template: cmd_day_boundary_<expedition_id>_<local_calendar_date_compact>
+    idempotency_key: command_id
+    day1_events: [day.started, role_assignments.activated, card_bundles.published]
+    conditional_previous_day_events: [role_assignments.expired, task.overdue]
+    planned_private_transaction: private.process_day_boundary
+    projection_publication: [today_view_per_active_participant, captain_day_view]
+    offline_allowed: false
+  system_clock_headers:
+    timestamp: x-ilka-system-timestamp
+    signature: x-ilka-system-signature
+    algorithm: hmac_sha256
+    signed_value: timestamp_dot_raw_request_body
+    constant_time_compare_required: true
+    server_secret_only: true
+  participant_task_blocker_key: <participant_key>:<task_id>
 offline_delivery:
   queueable_commands:
   - acknowledge_card
