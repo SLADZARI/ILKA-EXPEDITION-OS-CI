@@ -128,10 +128,10 @@ function executor(
 }
 
 Deno.test("bootstrap executor prepares the atomic request and returns accepted result", async () => {
-  let captured: Record<string, JsonValue> | null = null;
+  const capturedRequests: Array<Record<string, JsonValue>> = [];
   const current = executor({
     bootstrapExpedition: async (request) => {
-      captured = request;
+      capturedRequests.push(request);
       return acceptedResult();
     },
   });
@@ -143,6 +143,8 @@ Deno.test("bootstrap executor prepares the atomic request and returns accepted r
   });
 
   assertEquals(outcome.ok, true);
+  assertEquals(capturedRequests.length, 1);
+  const captured = capturedRequests[0];
   assertExists(captured);
   const expedition = captured.expedition as Record<string, JsonValue>;
   const membership = captured.captain_membership as Record<string, JsonValue>;
