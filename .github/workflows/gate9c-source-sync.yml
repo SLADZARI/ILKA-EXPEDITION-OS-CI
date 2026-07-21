@@ -1,16 +1,14 @@
 name: Gate 9C source synchronization
 
 on:
-  push:
-    branches:
-      - feat/gate-9c-deterministic-rotation
+  pull_request:
 
 permissions:
   contents: write
 
 jobs:
   synchronize:
-    if: github.event.head_commit.message == 'chore(gate9c): run source sync'
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
