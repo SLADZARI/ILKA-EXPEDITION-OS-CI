@@ -17,7 +17,7 @@ PGTAP = ROOT / "supabase/tests/expedition_bootstrap_runtime_release.test.sql"
 UNIT = ROOT / "supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts"
 INDEX = ROOT / "supabase/functions/command-gateway/index.ts"
 ADR = ROOT / "docs/decisions/ADR-017-expedition-bootstrap-command.md"
-ARCHITECTURE = ROOT / "docs/architecture/expedition-bootstrap.md"
+ARCHITECTURE = ROOT / "docs/architecture/expedition-bootstrap-release.md"
 WORKFLOW = ROOT / ".github/workflows/validate.yml"
 
 REQUIRED = (
@@ -153,14 +153,14 @@ def main() -> int:
     architecture = ARCHITECTURE.read_text(encoding="utf-8")
     require(
         adr,
-        ("Gate 8D", "bootstrap-only", "runtime-composition"),
-        "ADR-017 missing Gate 8D release boundary",
+        ("Gate 8D", "protected Gate 8C implementation SHA"),
+        "ADR-017 missing Gate 8D registration decision",
         errors,
     )
     require(
         architecture,
         ("Gate 8D", RELEASE_KEY, GIT_SHA, "bootstrap-only", "runtime-composition"),
-        "bootstrap architecture missing exact release boundary",
+        "bootstrap release architecture missing exact boundary",
         errors,
     )
 
