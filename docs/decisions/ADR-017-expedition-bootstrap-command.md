@@ -40,8 +40,10 @@ authenticated Profile
 → create draft Expedition and active Captain membership
 → initialize stream/projection heads
 → persist receipt and expedition.created event
-→ return authoritative accepted/rejected result
+→ return authoritative accepted or replayed result
 ```
+
+Pre-aggregate validation, Profile, runtime and Expedition-key failures are returned as public gateway errors and write nothing. A rejected receipt is not created before an Expedition aggregate exists.
 
 ### Canonical identifiers
 
@@ -49,7 +51,7 @@ authenticated Profile
 - PostgreSQL `ilka.expeditions.id` remains an internal UUID;
 - before membership exists, the client supplies its authenticated `profile_id` as `command.actor_id`;
 - the gateway verifies that profile claim against the authenticated Supabase user;
-- the gateway generates the new Captain membership UUID;
+- the gateway generates the new Expedition UUID and Captain membership UUID;
 - the persisted command, receipt and event use the canonical Captain actor ID:
 
 ```text
@@ -85,7 +87,7 @@ recovery_days_available: 1
 
 `command.payload.duration_days` must equal the selected release program duration. This preserves the canonical command field without allowing the browser to redefine the program.
 
-`timezone` and `day_boundary_local_time` are Captain inputs. `06:00` is the UI/default configuration, not a mandatory Engine constant. The server validates the timezone against PostgreSQL timezone names and validates local time format.
+`timezone` and `day_boundary_local_time` are Captain inputs. `06:00` is the default configuration, not a mandatory hard-coded Engine value. The server validates the timezone against PostgreSQL timezone names and validates local time format.
 
 ### Atomic bootstrap transaction
 
@@ -151,7 +153,7 @@ SQL enforces transactional integrity and uniqueness but does not generate the ca
 
 - exact retry by the original authenticated actor returns the original receipt;
 - same command ID with another normalized request hash is rejected;
-- another command using an existing Expedition key is rejected as `expedition_key_already_exists`;
+- another command using an existing Expedition key returns `expedition_key_already_exists` without a receipt;
 - concurrent exact retries create one Expedition, one Captain membership, one receipt and one event.
 
 ### Permissions
@@ -170,7 +172,7 @@ The UI may preserve unsent form fields locally, but it must display the Expediti
 
 ### Public result
 
-The command gateway returns the existing command-result envelope. The accepted receipt includes:
+The command gateway returns the existing command-result envelope for accepted and exact replay outcomes. The accepted receipt includes:
 
 - command and Expedition identity;
 - authoritative Auth/Profile/Captain membership identity;
@@ -179,7 +181,7 @@ The command gateway returns the existing command-result envelope. The accepted r
 - projection version `0`;
 - pinned runtime release and reducer version.
 
-No additional competing bootstrap result contract is introduced.
+No additional competing bootstrap success contract is introduced.
 
 ## Stable errors
 
