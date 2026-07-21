@@ -28,6 +28,36 @@ jobs:
       - name: Install validation dependencies
         run: python -m pip install -r requirements-dev.txt
 
+      - name: Correct source-sync index marker
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('scripts/patch_gate9c_sources.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''if "    rotationExecutor,\n" not in index:
+              index = replace_once(
+                  index,
+                  "    invitationExecutor,\n"
+                  "  );\n",
+                  "    invitationExecutor,\n"
+                  "    rotationExecutor,\n"
+                  "  );\n",
+                  "index handler arguments",
+              )'''
+          new = '''if "  rotationExecutor,\n" not in index:
+              index = replace_once(
+                  index,
+                  "  invitationExecutor,\n"
+                  ");\n",
+                  "  invitationExecutor,\n"
+                  "  rotationExecutor,\n"
+                  ");\n",
+                  "index handler arguments",
+              )'''
+          if text.count(old) != 1:
+              raise SystemExit(f'index marker correction count: {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
       - name: Apply canonical source synchronization
         shell: bash
         run: |
@@ -36,7 +66,7 @@ jobs:
             cat gate9c-source-sync-error.txt
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add gate9c-source-sync-error.txt
+            git add scripts/patch_gate9c_sources.py gate9c-source-sync-error.txt
             git commit -m "chore(gate9c): capture source sync guard failure"
             git push origin HEAD:feat/gate-9c-deterministic-rotation
             exit 1
