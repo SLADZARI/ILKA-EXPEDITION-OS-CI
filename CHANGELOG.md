@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-21 — Gate 8B Expedition bootstrap transaction
+
+- Added server-only `private.bootstrap_expedition(jsonb)` as the atomic aggregate-initialization wrapper accepted by `ADR-017`.
+- Added fixed command-ID and Expedition-key advisory locking before reusing the existing Expedition lock inside `private.process_command(jsonb)`.
+- Added exact replay for the original authenticated actor and deterministic command-ID/request-hash and Expedition-key collision errors.
+- Added active Profile, IANA timezone, Captain identity, immutable runtime-release and prepared event/request consistency checks.
+- Reused existing Expedition triggers for stream/projection head creation and delegated receipt/event persistence to `private.process_command(jsonb)`.
+- Fixed the accepted postcondition at one draft Expedition, one active Captain membership, stream position `1`, projection version `0`, one receipt and one `expedition.created` event.
+- Added pgTAP coverage for accepted bootstrap, exact replay, idempotency mismatch, duplicate key, disabled Profile, invalid timezone, missing runtime and full rollback after a process-command failure.
+- Added generated database types and a protected Gate 8B transaction validator.
+
+This subgate adds no reducer, public gateway behavior, runtime registration change, Auth/UI, invitation, Participant, rotation, Day 1, projection document, cloud migration or pilot data.
+
 ## 2026-07-21 — Gate 8A Expedition bootstrap contract
 
 - Accepted `ADR-017` for executing canonical `create_expedition` through the existing authenticated `command-gateway` rather than a second public bootstrap endpoint.
