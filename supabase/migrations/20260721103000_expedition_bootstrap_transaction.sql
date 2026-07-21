@@ -39,8 +39,7 @@ declare
   v_request_hash bytea;
   v_registered_reducer_version text;
   v_result jsonb;
-  v_existing_receipt ilka.command_receipts%rowtype;
-  v_existing_expedition_key text;
+  v_existing_receipt record;
 begin
   if p_request is null or jsonb_typeof(p_request) <> 'object' then
     raise exception using errcode = '22023', message = 'invalid_bootstrap_request';
@@ -219,8 +218,11 @@ begin
     pg_catalog.hashtextextended('ilka:expedition-key:' || v_expedition_key, 0)
   );
 
-  select receipt, expedition.expedition_key
-  into v_existing_receipt, v_existing_expedition_key
+  select
+    receipt.request_hash as request_hash,
+    receipt.actor_auth_user_id as actor_auth_user_id,
+    expedition.expedition_key as expedition_key
+  into v_existing_receipt
   from ilka.command_receipts as receipt
   join ilka.expeditions as expedition on expedition.id = receipt.expedition_id
   where receipt.command_id = v_command_id;
@@ -228,7 +230,7 @@ begin
   if found then
     if v_existing_receipt.request_hash = v_request_hash
        and v_existing_receipt.actor_auth_user_id = v_actor_auth_user_id
-       and v_existing_expedition_key = v_expedition_key then
+       and v_existing_receipt.expedition_key = v_expedition_key then
       return private.build_persisted_command_result(
         v_command_id,
         true,
