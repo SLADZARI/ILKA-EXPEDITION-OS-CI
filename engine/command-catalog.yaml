@@ -1,4 +1,4 @@
-version: 10
+version: 11
 source_of_truth: engine/command-catalog.yaml
 idempotency_key: command_id
 command_envelope:
@@ -90,8 +90,13 @@ commands:
 - command_type: process_day_boundary
   allowed_actors: [system_clock]
   payload_required: [local_calendar_date, boundary_at]
-  idempotency_key_template: day_boundary:<expedition_id>:<local_calendar_date>
-  emits: [role_assignments.expired, task.overdue, day.started, role_assignments.activated, card_bundles.published]
+  command_id_template: cmd_day_boundary_<expedition_id>_<local_calendar_date_compact>
+  idempotency_key: command_id
+  transport: trusted_system_clock
+  browser_api_allowed: false
+  emits: [day.started, role_assignments.activated, card_bundles.published]
+  conditional_emits:
+    previous_day_exists: [role_assignments.expired, task.overdue]
   failure_emits: [day.transition_failed]
   offline_allowed: false
 - command_type: recover_day_transition
@@ -248,6 +253,22 @@ error_codes:
 - pending_invitations_exist
 - rotation_already_generated
 - expedition_not_ready
+- expedition_already_started
+- team_not_frozen
+- first_stage_unresolvable
+- calendar_day_already_exists
+- system_clock_authentication_required
+- system_clock_signature_invalid
+- system_clock_timestamp_invalid
+- system_actor_not_allowed
+- expedition_not_active
+- stage_not_open
+- local_boundary_not_reached
+- boundary_date_mismatch
+- boundary_already_processed
+- active_day_already_exists
+- scheduled_assignments_unresolvable
+- card_bundle_unresolvable
 - runtime_release_unavailable
 - idempotency_key_reused_with_different_payload
 - command_duplicate
@@ -256,7 +277,6 @@ error_codes:
 - validation_failed
 - version_conflict
 - captain_confirmation_required
-- boundary_not_reached
 - transition_recovery_required
 - stage_transition_conflict
 - stage_advance_not_ready
