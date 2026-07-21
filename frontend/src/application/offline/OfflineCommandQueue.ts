@@ -11,16 +11,35 @@ export function isOfflineQueueableCommand(command: Command): command is OfflineQ
 
 export type QueueError = { code: string; message: string; retryable: boolean };
 
+export type QueueReceipt = {
+  outcome: 'accepted' | 'rejected' | 'conflict';
+  replayed: boolean;
+  event_ids: string[];
+  stream_position: number;
+  projection_version: number;
+  rejection_code: string | null;
+  rejection_message: string | null;
+  conflict_code: string | null;
+  expected_stream_position: number;
+  current_stream_position: number;
+};
+
 export type QueuedCommand = {
   local_id: string;
   command: OfflineQueueableCommand;
   status: QueueStatus;
   attempts: number;
   created_at: string;
+  last_attempt_at?: string | null;
+  settled_at?: string | null;
   last_error?: QueueError | null;
+  receipt?: QueueReceipt | null;
 };
 
-export type QueuePatch = Partial<Pick<QueuedCommand, 'status' | 'attempts' | 'last_error'>>;
+export type QueuePatch = Partial<Pick<
+  QueuedCommand,
+  'status' | 'attempts' | 'last_attempt_at' | 'settled_at' | 'last_error' | 'receipt'
+>>;
 
 export interface OfflineCommandQueue {
   enqueue(command: OfflineQueueableCommand): Promise<QueuedCommand>;
@@ -35,8 +54,32 @@ function createQueuedCommand(command: OfflineQueueableCommand, createdAt: string
     status: 'pending',
     attempts: 0,
     created_at: createdAt,
+    last_attempt_at: null,
+    settled_at: null,
     last_error: null,
+    receipt: null,
   };
+}
+
+function isQueueError(value: unknown): value is QueueError {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<QueueError>;
+  return typeof candidate.code === 'string'
+    && typeof candidate.message === 'string'
+    && typeof candidate.retryable === 'boolean';
+}
+
+function isQueueReceipt(value: unknown): value is QueueReceipt {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<QueueReceipt>;
+  return ['accepted', 'rejected', 'conflict'].includes(candidate.outcome ?? '')
+    && typeof candidate.replayed === 'boolean'
+    && Array.isArray(candidate.event_ids)
+    && candidate.event_ids.every((eventId) => typeof eventId === 'string')
+    && typeof candidate.stream_position === 'number'
+    && typeof candidate.projection_version === 'number'
+    && typeof candidate.expected_stream_position === 'number'
+    && typeof candidate.current_stream_position === 'number';
 }
 
 function isQueuedCommand(value: unknown): value is QueuedCommand {
@@ -46,8 +89,20 @@ function isQueuedCommand(value: unknown): value is QueuedCommand {
     && typeof candidate.created_at === 'string'
     && typeof candidate.attempts === 'number'
     && ['pending', 'synced', 'conflict', 'rejected'].includes(candidate.status ?? '')
+    && (candidate.last_error == null || isQueueError(candidate.last_error))
+    && (candidate.receipt == null || isQueueReceipt(candidate.receipt))
     && Boolean(candidate.command)
     && isOfflineQueueableCommand(candidate.command as Command);
+}
+
+function mergePatch(existing: QueuedCommand, patch: QueuePatch): QueuedCommand {
+  return {
+    ...existing,
+    ...patch,
+    local_id: existing.local_id,
+    command: existing.command,
+    created_at: existing.created_at,
+  };
 }
 
 export class MemoryCommandQueue implements OfflineCommandQueue {
@@ -69,13 +124,15 @@ export class MemoryCommandQueue implements OfflineCommandQueue {
   }
 
   async list(): Promise<QueuedCommand[]> {
-    return [...this.items.values()].sort((left, right) => left.created_at.localeCompare(right.created_at));
+    return [...this.items.values()].sort((left, right) =>
+      left.created_at.localeCompare(right.created_at) || left.local_id.localeCompare(right.local_id)
+    );
   }
 
   async update(localId: string, patch: QueuePatch): Promise<void> {
     const existing = this.items.get(localId);
     if (!existing) return;
-    this.items.set(localId, { ...existing, ...patch, local_id: existing.local_id, command: existing.command });
+    this.items.set(localId, mergePatch(existing, patch));
   }
 }
 
@@ -188,7 +245,9 @@ export class IndexedDbCommandQueue implements OfflineCommandQueue {
       const items = await requestResult<QueuedCommand[]>(transaction.objectStore(this.storeName).getAll());
       await transactionComplete(transaction);
       return items.filter(isQueuedCommand)
-        .sort((left, right) => left.created_at.localeCompare(right.created_at));
+        .sort((left, right) =>
+          left.created_at.localeCompare(right.created_at) || left.local_id.localeCompare(right.local_id)
+        );
     }, () => this.fallback.list());
   }
 
@@ -197,9 +256,7 @@ export class IndexedDbCommandQueue implements OfflineCommandQueue {
       const transaction = database.transaction(this.storeName, 'readwrite');
       const store = transaction.objectStore(this.storeName);
       const existing = await requestResult<QueuedCommand | undefined>(store.get(localId));
-      if (existing && isQueuedCommand(existing)) {
-        store.put({ ...existing, ...patch, local_id: existing.local_id, command: existing.command });
-      }
+      if (existing && isQueuedCommand(existing)) store.put(mergePatch(existing, patch));
       await transactionComplete(transaction);
     }, () => this.fallback.update(localId, patch));
   }
