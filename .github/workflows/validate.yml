@@ -50,6 +50,9 @@ jobs:
       - name: Validate Expedition Day 1 start contract
         run: python scripts/validate_expedition_day1_start_contract.py
 
+      - name: Validate Expedition start execution
+        run: python scripts/validate_expedition_start_execution.py
+
       - name: Run test suite
         run: pytest -q
 
@@ -148,6 +151,19 @@ jobs:
 
       - name: Generate Supabase database types
         run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+
+      - name: Export temporary Gate 9D2A workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9d2a-workspace
+          path: |
+            supabase/database.types.ts
+            supabase/functions/_shared/engine-runtime/expedition-start-v1.ts
+            supabase/functions/_shared/command-gateway/start.ts
+            supabase/functions/_shared/command-gateway/start-schema-validation.ts
+            supabase/migrations/20260722010000_start_expedition_transaction.sql
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Validate Supabase Foundation contract
         run: python scripts/validate_supabase_foundation.py
