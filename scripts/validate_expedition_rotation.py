@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -216,7 +215,7 @@ def main() -> int:
             "isExpeditionRotationRuntime",
             '"SHA-256"',
             "participant_order",
-            "lowest",
+            "const productCaptain = withOnboardRole.find",
             'candidate.onboard_role_id !== "cook"',
             'event(input, 1, "rotation.generated"',
             'event(input, 2, "expedition.ready"',
@@ -387,11 +386,10 @@ def main() -> int:
     )
 
     generated = GENERATED_CONTRACT.read_text(encoding="utf-8")
-    if not re.search(
-        r'"generate_rotation":\s*\{\s*"allowedActors":\s*\[\s*"captain"\s*\]',
-        generated,
-        re.S,
-    ):
+    rotation_start = generated.find('"generate_rotation": {')
+    rotation_end = generated.find("\n  },", rotation_start)
+    rotation_block = generated[rotation_start:rotation_end] if rotation_start >= 0 and rotation_end >= 0 else ""
+    if '"allowedActors": [' not in rotation_block or '"captain"' not in rotation_block or '"system"' in rotation_block:
         errors.append("generated gateway contract must make rotation Captain-only")
 
     if "generate_rotation: { Args: { p_request: Json }; Returns: Json }" not in DATABASE_TYPES.read_text(encoding="utf-8"):
