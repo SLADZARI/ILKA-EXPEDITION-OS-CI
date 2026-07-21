@@ -31,24 +31,6 @@ if "Transaction boundary decision:" not in text:
     text = text.replace(needle, replacement)
 architecture.write_text(text, encoding="utf-8")
 
-workflow = ROOT / ".github/workflows/validate.yml"
-text = workflow.read_text(encoding="utf-8")
-needle = (
-    "      - name: Validate Expedition setup contract\n"
-    "        run: python scripts/validate_expedition_setup_contract.py\n"
-)
-addition = (
-    needle
-    + "\n"
-    + "      - name: Validate Expedition invitation transaction contract\n"
-    + "        run: python scripts/validate_expedition_invitation_transaction_contract.py\n"
-)
-if "Validate Expedition invitation transaction contract" not in text:
-    if needle not in text:
-        raise SystemExit("validate.yml insertion point not found")
-    text = text.replace(needle, addition)
-workflow.write_text(text, encoding="utf-8")
-
 changelog = ROOT / "CHANGELOG.md"
 text = changelog.read_text(encoding="utf-8")
 entry = """## 2026-07-21 — Gate 9B2A invitation transaction contracts
