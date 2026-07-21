@@ -3,6 +3,7 @@
 Status: Gate 9B2A contract-only
 
 Decision authority: `docs/decisions/ADR-018-expedition-setup-and-day1-pilot-runtime.md`
+Transaction boundary decision: `docs/decisions/ADR-019-invitation-transaction-boundaries.md`
 
 Canonical command and event vocabulary remains owned by:
 

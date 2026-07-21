@@ -10,7 +10,7 @@ from jsonschema import Draft202012Validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ADR = ROOT / "docs/decisions/ADR-018-expedition-setup-and-day1-pilot-runtime.md"
+ADR = ROOT / "docs/decisions/ADR-019-invitation-transaction-boundaries.md"
 ARCH = ROOT / "docs/architecture/expedition-invitation-transactions.md"
 WORKFLOW = ROOT / ".github/workflows/validate.yml"
 CHANGELOG = ROOT / "CHANGELOG.md"
@@ -226,11 +226,11 @@ def main() -> int:
     require_text(
         adr,
         (
-            "## Gate 9B2A invitation transaction contracts",
+            "# ADR-019 — Invitation transaction boundaries",
             "three private request schemas",
             "no SQL migration, reducer, gateway execution branch or read API",
         ),
-        "ADR-018 Gate 9B2A record",
+        "ADR-019 Gate 9B2A record",
         errors,
     )
 
