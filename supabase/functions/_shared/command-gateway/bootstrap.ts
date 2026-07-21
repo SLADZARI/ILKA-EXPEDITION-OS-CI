@@ -1,13 +1,14 @@
 import {
   isExpeditionBootstrapRuntime,
 } from "../engine-runtime/expedition-bootstrap-v1.ts";
-import { createBootstrapRequestValidator } from "./bootstrap-schema-validation.ts";
 import type { BootstrapDatabase } from "./bootstrap-database.ts";
+import { createBootstrapRequestValidator } from "./bootstrap-schema-validation.ts";
 import type {
   AuthUser,
   CommandEnvelope,
   GatewayExecutionContext,
   JsonValue,
+  PreparedCommandResult,
   ProcessCommandResult,
   RuntimeRegistry,
   SchemaValidator,
@@ -64,7 +65,7 @@ function processRequest(
   requestHash: string,
   receivedAt: string,
   processedAt: string,
-  prepared: Awaited<ReturnType<ReturnType<RuntimeRegistry["find"]>["reduce"]>>,
+  prepared: PreparedCommandResult,
 ): Record<string, JsonValue> {
   const actor = context.actor;
   if (!actor) throw new Error("bootstrap_actor_context_required");
@@ -299,7 +300,7 @@ export function createExpeditionBootstrapExecutor(
         projections: [],
       };
 
-      let prepared;
+      let prepared: PreparedCommandResult;
       try {
         prepared = await runtime.reduce({
           command: canonicalCommand,
@@ -319,7 +320,7 @@ export function createExpeditionBootstrapExecutor(
 
       if (prepared.status !== "accepted") {
         return failure(
-          prepared.rejection?.code === "invalid_timezone" ? 400 : 400,
+          400,
           prepared.rejection?.code ?? "validation_failed",
           prepared.rejection?.message ?? "The Expedition bootstrap was rejected.",
           false,
