@@ -44,6 +44,9 @@ jobs:
       - name: Validate Expedition bootstrap release
         run: python scripts/validate_expedition_bootstrap_release.py
 
+      - name: Validate Expedition setup contract
+        run: python scripts/validate_expedition_setup_contract.py
+
       - name: Run test suite
         run: pytest -q
 

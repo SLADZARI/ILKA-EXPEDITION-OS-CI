@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ilka.local/schemas/expedition-setup-view.schema.json",
+  "title": "ExpeditionSetupView",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expedition_id",
+    "expedition_status",
+    "team",
+    "participants",
+    "invitations",
+    "rotation",
+    "readiness",
+    "controls",
+    "expected_projection_version",
+    "sync_status"
+  ],
+  "properties": {
+    "expedition_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_]{0,127}$"
+    },
+    "expedition_status": {
+      "enum": [
+        "draft",
+        "ready",
+        "active",
+        "suspended",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "team": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_participant_count",
+        "pending_invitation_count",
+        "minimum",
+        "maximum",
+        "slots_remaining"
+      ],
+      "properties": {
+        "active_participant_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "pending_invitation_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "minimum": {
+          "const": 3
+        },
+        "maximum": {
+          "const": 5
+        },
+        "slots_remaining": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      }
+    },
+    "participants": {
+      "type": "array",
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "participant_id",
+          "display_name",
+          "participant_order",
+          "status"
+        ],
+        "properties": {
+          "participant_id": {
+            "type": "string",
+            "pattern": "^participant_[a-f0-9]{32}$"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "participant_order": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "status": {
+            "enum": [
+              "active",
+              "banned"
+            ]
+          }
+        }
+      }
+    },
+    "invitations": {
+      "type": "array",
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "invitation_id",
+          "email_hint",
+          "role",
+          "status",
+          "expires_at",
+          "accepted_participant_id"
+        ],
+        "properties": {
+          "invitation_id": {
+            "type": "string",
+            "pattern": "^invitation_[a-f0-9]{32}$"
+          },
+          "email_hint": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254,
+            "pattern": "\\*"
+          },
+          "role": {
+            "const": "participant"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "accepted",
+              "revoked",
+              "expired"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "accepted_participant_id": {
+            "oneOf": [
+              {
+                "type": "string",
+                "pattern": "^participant_[a-f0-9]{32}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "rotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "rotation_id",
+        "rules_version",
+        "assignments"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_generated",
+            "generated"
+          ]
+        },
+        "rotation_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rules_version": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assignments": {
+          "type": "array",
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "participant_id",
+              "product_role_id",
+              "onboard_role_id"
+            ],
+            "properties": {
+              "participant_id": {
+                "type": "string",
+                "pattern": "^participant_[a-f0-9]{32}$"
+              },
+              "product_role_id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9_]{0,127}$"
+              },
+              "onboard_role_id": {
+                "enum": [
+                  "navigation",
+                  "mooring",
+                  "order",
+                  "cook",
+                  "product_focus"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "can_generate_rotation",
+        "can_start_expedition",
+        "blockers"
+      ],
+      "properties": {
+        "can_generate_rotation": {
+          "type": "boolean"
+        },
+        "can_start_expedition": {
+          "type": "boolean"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "entity_id"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9_]{0,127}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "entity_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invite_participant",
+        "revoke_invitation",
+        "generate_rotation",
+        "start_expedition"
+      ],
+      "properties": {
+        "invite_participant": {
+          "type": "boolean"
+        },
+        "revoke_invitation": {
+          "type": "boolean"
+        },
+        "generate_rotation": {
+          "type": "boolean"
+        },
+        "start_expedition": {
+          "type": "boolean"
+        }
+      }
+    },
+    "expected_projection_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sync_status": {
+      "enum": [
+        "synced",
+        "pending",
+        "conflict",
+        "rejected",
+        "offline"
+      ]
+    }
+  }
+}
