@@ -53,7 +53,7 @@ function command(
   type: "invite_participant" | "accept_invitation" | "revoke_invitation",
   overrides: Partial<CommandEnvelope> = {},
 ): CommandEnvelope {
-  const payload = type === "invite_participant"
+  const payload: Record<string, JsonValue> = type === "invite_participant"
     ? { email: "Anna@Example.Test", invitation_token: "A".repeat(43) }
     : type === "accept_invitation"
     ? { invitation_token: "A".repeat(43), display_name: " Anna " }
