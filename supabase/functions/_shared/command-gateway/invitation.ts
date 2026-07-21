@@ -1,7 +1,7 @@
 import {
-  isExpeditionInvitationRuntime,
   type InvitationExecutionContext,
   type InvitationOperation,
+  isExpeditionInvitationRuntime,
 } from "../engine-runtime/expedition-invitations-v1.ts";
 import type { InvitationDatabase } from "./invitation-database.ts";
 import {
@@ -88,7 +88,9 @@ function uuidFromCanonical(
   if (typeof value !== "string" || !value.startsWith(prefix)) return null;
   const hex = value.slice(prefix.length);
   if (!/^[a-f0-9]{32}$/.test(hex)) return null;
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${
+    hex.slice(16, 20)
+  }-${hex.slice(20)}`;
 }
 
 function normalizeEmail(value: string): string {
@@ -635,7 +637,11 @@ export function createInvitationExecutor(
           const emailValue = command.payload.email;
           const token = command.payload.invitation_token;
           if (typeof emailValue !== "string") {
-            return failure(400, "validation_failed", "An invitation email is required.");
+            return failure(
+              400,
+              "validation_failed",
+              "An invitation email is required.",
+            );
           }
           if (
             typeof token !== "string" ||
@@ -645,7 +651,11 @@ export function createInvitationExecutor(
           }
           const email = normalizeEmail(emailValue);
           if (email.length < 3 || email.length > 254 || !email.includes("@")) {
-            return failure(400, "validation_failed", "The invitation email is invalid.");
+            return failure(
+              400,
+              "validation_failed",
+              "The invitation email is invalid.",
+            );
           }
           const tokenHash = await sha256Hex(token);
           const invitationUuid = dependencies.uuid();
@@ -676,7 +686,11 @@ export function createInvitationExecutor(
           const reasonValue = command.payload.reason;
           if (!invitationUuid) return publicFailure("invitation_not_found");
           if (typeof reasonValue !== "string") {
-            return failure(400, "validation_failed", "A revocation reason is required.");
+            return failure(
+              400,
+              "validation_failed",
+              "A revocation reason is required.",
+            );
           }
           const reason = reasonValue.trim();
           if (reason.length === 0 || reason.length > 2000) {

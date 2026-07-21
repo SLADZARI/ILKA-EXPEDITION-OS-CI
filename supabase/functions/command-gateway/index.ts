@@ -3,6 +3,8 @@ import { PostgresBootstrapDatabase } from "../_shared/command-gateway/bootstrap-
 import { createExpeditionBootstrapExecutor } from "../_shared/command-gateway/bootstrap.ts";
 import { PostgresGatewayDatabase } from "../_shared/command-gateway/database.ts";
 import { createCommandGatewayHandler } from "../_shared/command-gateway/handler.ts";
+import { PostgresInvitationDatabase } from "../_shared/command-gateway/invitation-database.ts";
+import { createInvitationExecutor } from "../_shared/command-gateway/invitation.ts";
 import { commandGatewayRuntimeRegistry } from "../_shared/command-gateway/runtime-registry.ts";
 import { createSchemaValidator } from "../_shared/command-gateway/schema-validation.ts";
 
@@ -30,6 +32,7 @@ const projectPublicKey = Deno.env.get("SUPABASE_ANON_KEY") ??
 const connectionString = requiredEnv("SUPABASE_DB_URL");
 const database = new PostgresGatewayDatabase(connectionString);
 const bootstrapDatabase = new PostgresBootstrapDatabase(connectionString);
+const invitationDatabase = new PostgresInvitationDatabase(connectionString);
 const schemas = createSchemaValidator();
 const auth = createSupabaseAuthVerifier({
   baseUrl: supabaseUrl,
@@ -46,14 +49,27 @@ const bootstrapExecutor = createExpeditionBootstrapExecutor({
   uuid: () => crypto.randomUUID(),
 });
 
-const handler = createCommandGatewayHandler({
-  auth,
-  database,
+const invitationExecutor = createInvitationExecutor({
+  database: invitationDatabase,
+  contextDatabase: database,
   schemas,
   runtimes: commandGatewayRuntimeRegistry,
-  allowedOrigins: allowedOrigins(),
   now,
-  requestId: () => crypto.randomUUID(),
-}, bootstrapExecutor);
+  uuid: () => crypto.randomUUID(),
+});
+
+const handler = createCommandGatewayHandler(
+  {
+    auth,
+    database,
+    schemas,
+    runtimes: commandGatewayRuntimeRegistry,
+    allowedOrigins: allowedOrigins(),
+    now,
+    requestId: () => crypto.randomUUID(),
+  },
+  bootstrapExecutor,
+  invitationExecutor,
+);
 
 Deno.serve(handler);

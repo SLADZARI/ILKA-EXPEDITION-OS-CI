@@ -213,9 +213,8 @@ function recalculate(
   projectionVersion: number,
   policy: ExpeditionInvitationRuntime["invitation_policy"],
 ): void {
-  const activeParticipants = view.participants.filter((participant) =>
-    participant.status === "active"
-  ).length;
+  const activeParticipants =
+    view.participants.filter((participant) => participant.status === "active").length;
   const pendingInvitations = view.invitations.filter((invitation) =>
     invitation.status === "pending"
   );
@@ -368,7 +367,9 @@ function validateActor(input: RuntimeInput): PreparedCommandResult | null {
     return rejected("active_profile_required", "A trusted actor context is required.");
   }
   const expectedActorId = membershipActorId(actor.membership_id);
-  if (input.actor_id !== expectedActorId || input.command.actor_id !== expectedActorId) {
+  if (
+    input.actor_id !== expectedActorId || input.command.actor_id !== expectedActorId
+  ) {
     return rejected(
       "profile_actor_mismatch",
       "The canonical actor does not match the prepared membership.",
@@ -466,9 +467,11 @@ function reduceInvitation(
 
   const events: JsonObject[] = [];
   if (operation.kind === "invite") {
-    if (view.invitations.some((candidate) =>
-      candidate.invitation_id === operation.invitation_id
-    )) {
+    if (
+      view.invitations.some((candidate) =>
+        candidate.invitation_id === operation.invitation_id
+      )
+    ) {
       return rejected(
         "pending_invitation_already_exists",
         "The invitation already exists in the authoritative setup projection.",
@@ -483,8 +486,10 @@ function reduceInvitation(
       }
     }
     if (
-      view.participants.filter((participant) => participant.status === "active").length +
-          view.invitations.filter((invitation) => invitation.status === "pending").length >=
+      view.participants.filter((participant) => participant.status === "active")
+            .length +
+          view.invitations.filter((invitation) => invitation.status === "pending")
+            .length >=
         policy.team_size_max
     ) {
       return rejected("team_capacity_reached", "The Expedition team is full.");
