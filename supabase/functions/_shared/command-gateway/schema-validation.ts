@@ -14,6 +14,9 @@ import todayViewSchema from "../../../../app/contracts/today-view.schema.json" w
 import captainDayViewSchema from "../../../../app/contracts/captain-day-view.schema.json" with {
   type: "json",
 };
+import expeditionSetupViewSchema from "../../../../app/contracts/expedition-setup-view.schema.json" with {
+  type: "json",
+};
 import processRequestSchema from "../../../contracts/private-process-command-request.schema.json" with {
   type: "json",
 };
@@ -109,6 +112,7 @@ export function createSchemaValidator(): SchemaValidator {
   ajv.addSchema(eventSchema);
   ajv.addSchema(todayViewSchema);
   ajv.addSchema(captainDayViewSchema);
+  ajv.addSchema(expeditionSetupViewSchema);
 
   const command = ajv.getSchema(commandSchema.$id) ?? ajv.compile(commandSchema);
   const event = ajv.getSchema(eventSchema.$id) ?? ajv.compile(eventSchema);
@@ -116,12 +120,15 @@ export function createSchemaValidator(): SchemaValidator {
     ajv.compile(todayViewSchema);
   const captainDayView = ajv.getSchema(captainDayViewSchema.$id) ??
     ajv.compile(captainDayViewSchema);
+  const expeditionSetupView = ajv.getSchema(expeditionSetupViewSchema.$id) ??
+    ajv.compile(expeditionSetupViewSchema);
   const processRequest = ajv.compile(normalizeContractRefs(processRequestSchema));
   const processResult = ajv.compile(normalizeContractRefs(processResultSchema));
 
   const projectionValidators = new Map<string, ValidateFunction>([
     [todayViewSchema.$id, todayView],
     [captainDayViewSchema.$id, captainDayView],
+    [expeditionSetupViewSchema.$id, expeditionSetupView],
   ]);
 
   return {
