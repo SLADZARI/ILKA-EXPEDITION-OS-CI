@@ -19,7 +19,7 @@ def load_json(rel: str):
 
 def test_every_command_declares_delivery_mode_and_offline_sets_match():
     commands = load_yaml("engine/command-catalog.yaml")["commands"]
-    assert len(commands) == 36
+    assert len(commands) == 39
     assert all(type(item.get("offline_allowed")) is bool for item in commands)
     allowed = {item["command_type"] for item in commands if item["offline_allowed"]}
     expected = {
@@ -35,6 +35,7 @@ def test_every_command_declares_delivery_mode_and_offline_sets_match():
     assert "close_expedition" not in allowed
     assert "advance_stage" not in allowed
     assert "activate_recovery_day" not in allowed
+    assert {"invite_participant", "accept_invitation", "revoke_invitation"}.isdisjoint(allowed)
 
 
 def test_completion_projections_are_schema_owned_and_fixtures_validate():

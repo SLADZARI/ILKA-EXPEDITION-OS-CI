@@ -80,20 +80,42 @@ def test_captain_is_expedition_super_admin_and_inherits_human_roles():
     assert permissions["restrictions"]["captain_super_admin_scope"] == "expedition_only"
 
 
-def test_captain_can_execute_every_human_facing_command():
+def test_captain_can_execute_every_inheritable_human_facing_command():
     catalog = load_yaml("engine/command-catalog.yaml")
     permissions = load_yaml("engine/permissions.yaml")
     captain_can = set(permissions["roles"]["captain"]["can"])
-    command_ids = {item["command_type"] for item in catalog["commands"]}
+    commands = catalog["commands"]
+    command_ids = {item["command_type"] for item in commands}
     system_only = {
         item["command_type"]
-        for item in catalog["commands"]
-        if set(item["allowed_actors"]) <= {"system", "system_clock"}
+        for item in commands
+        if item["allowed_actors"]
+        and set(item["allowed_actors"]) <= {"system", "system_clock"}
     }
-    assert command_ids - system_only <= captain_can
+    pre_membership_self_service = {
+        item["command_type"]
+        for item in commands
+        if item.get("pre_membership_allowed") is True
+    }
+    legacy_non_public = {
+        item["command_type"]
+        for item in commands
+        if item.get("external_api_allowed") is False
+    }
 
-    for item in catalog["commands"]:
-        if item["command_type"] in system_only:
+    inheritable = command_ids - system_only - pre_membership_self_service - legacy_non_public
+    assert inheritable <= captain_can
+    assert pre_membership_self_service == {"accept_invitation"}
+    assert legacy_non_public == {"add_participant"}
+
+    for item in commands:
+        command_type = item["command_type"]
+        if command_type in legacy_non_public:
+            assert item["allowed_actors"] == []
+        elif command_type in pre_membership_self_service:
+            assert item["allowed_actors"] == ["participant"]
+            assert command_type not in captain_can
+        elif command_type in system_only:
             assert set(item["allowed_actors"]) <= {"system", "system_clock"}
         else:
             assert "captain" in item["allowed_actors"]
