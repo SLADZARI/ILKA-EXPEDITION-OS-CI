@@ -1,10 +1,6 @@
 import { Pool, type PoolClient } from "jsr:@db/postgres@0.19.5";
 
-import type {
-  JsonValue,
-  ProcessCommandResult,
-  RuntimeRelease,
-} from "./types.ts";
+import type { JsonValue, ProcessCommandResult, RuntimeRelease } from "./types.ts";
 
 export interface ActiveProfile {
   id: string;
