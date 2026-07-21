@@ -1,4 +1,4 @@
-version: 9
+version: 10
 source_of_truth: engine/command-catalog.yaml
 idempotency_key: command_id
 command_envelope:
@@ -17,6 +17,11 @@ legacy_aliases:
   start_day:
     replacement: process_day_boundary
     external_api_allowed: false
+legacy_commands:
+  add_participant:
+    replacement: accept_invitation
+    external_api_allowed: false
+    reason: authenticated_invitation_required
 commands:
 - command_type: create_expedition
   allowed_actors: [captain]
@@ -24,9 +29,27 @@ commands:
   emits: [expedition.created]
   offline_allowed: false
 - command_type: add_participant
-  allowed_actors: [captain]
+  allowed_actors: []
   payload_required: [participant_id, display_name]
   emits: [participant.added]
+  offline_allowed: false
+  external_api_allowed: false
+  lifecycle: legacy_non_public
+- command_type: invite_participant
+  allowed_actors: [captain]
+  payload_required: [email, invitation_token]
+  emits: [invitation.created]
+  offline_allowed: false
+- command_type: accept_invitation
+  allowed_actors: [participant]
+  payload_required: [invitation_token, display_name]
+  emits: [invitation.accepted, participant.added]
+  offline_allowed: false
+  pre_membership_allowed: true
+- command_type: revoke_invitation
+  allowed_actors: [captain]
+  payload_required: [invitation_id, reason]
+  emits: [invitation.revoked]
   offline_allowed: false
 - command_type: ban_participant
   allowed_actors: [captain]
@@ -42,7 +65,7 @@ commands:
 - command_type: generate_rotation
   allowed_actors: [captain, system]
   payload_required: [seed, rules_version]
-  emits: [rotation.generated]
+  emits: [rotation.generated, expedition.ready]
   offline_allowed: false
 - command_type: start_expedition
   allowed_actors: [captain]
@@ -209,6 +232,24 @@ commands:
   idempotency_key_template: rating:<expedition_id>:<day_number>:<day_revision>:<rules_version>
   emits: [rating.snapshot_published]
 error_codes:
+- active_profile_required
+- profile_actor_mismatch
+- expedition_not_in_setup
+- team_capacity_reached
+- participant_already_member
+- pending_invitation_already_exists
+- invitation_not_found
+- invitation_expired
+- invitation_not_pending
+- invitation_email_mismatch
+- invitation_token_invalid
+- participant_order_unavailable
+- rotation_not_ready
+- pending_invitations_exist
+- rotation_already_generated
+- expedition_not_ready
+- runtime_release_unavailable
+- idempotency_key_reused_with_different_payload
 - command_duplicate
 - permission_denied
 - invalid_state

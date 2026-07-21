@@ -1,5 +1,11 @@
 /* GENERATED from engine/command-catalog.yaml. Do not edit. */
 export const COMMAND_CONTRACTS = {
+  "accept_invitation": {
+    "allowedActors": [
+      "participant",
+    ],
+    "offlineAllowed": false,
+  },
   "acknowledge_card": {
     "allowedActors": [
       "participant",
@@ -9,12 +15,6 @@ export const COMMAND_CONTRACTS = {
     "offlineAllowed": true,
   },
   "activate_recovery_day": {
-    "allowedActors": [
-      "captain",
-    ],
-    "offlineAllowed": false,
-  },
-  "add_participant": {
     "allowedActors": [
       "captain",
     ],
@@ -113,6 +113,12 @@ export const COMMAND_CONTRACTS = {
     ],
     "offlineAllowed": false,
   },
+  "invite_participant": {
+    "allowedActors": [
+      "captain",
+    ],
+    "offlineAllowed": false,
+  },
   "override_day_close": {
     "allowedActors": [
       "captain",
@@ -171,6 +177,12 @@ export const COMMAND_CONTRACTS = {
     "offlineAllowed": true,
   },
   "resume_program": {
+    "allowedActors": [
+      "captain",
+    ],
+    "offlineAllowed": false,
+  },
+  "revoke_invitation": {
     "allowedActors": [
       "captain",
     ],

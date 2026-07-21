@@ -21,6 +21,8 @@ def main() -> int:
     contracts: dict[str, dict[str, object]] = {}
 
     for command in commands:
+        if command.get("external_api_allowed", True) is False:
+            continue
         command_type = command["command_type"]
         contracts[command_type] = {
             "allowedActors": command.get("allowed_actors", []),

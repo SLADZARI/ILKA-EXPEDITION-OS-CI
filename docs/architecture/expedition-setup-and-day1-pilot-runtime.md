@@ -378,7 +378,11 @@ Pre-persistence failures write nothing:
 
 Deterministic reducer rejections may be persisted only after the Expedition and actor context exist and the private transaction contract supports them. Gate 9B must document which setup failures are pre-aggregate errors and which are immutable rejected receipts.
 
-## Runtime composition and registration
+## Gate 9B1 canonical contract result
+
+The protected canonical layer now reserves executable identities and payloads for the later transaction gate. `add_participant` is retained only for historical compatibility and excluded from generated public gateway actor metadata. No runtime can execute setup commands until Gate 9B2 adds the trusted transaction and gateway branches.
+
+## Implementation sequence
 
 Implementation stages:
 

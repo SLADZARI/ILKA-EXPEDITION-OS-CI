@@ -1,4 +1,4 @@
-version: 9
+version: 10
 kind: transport_projection
 source_of_truth: engine/command-catalog.yaml
 generated_from: engine/command-catalog.yaml
@@ -58,6 +58,36 @@ expedition_bootstrap:
   - expedition_key_already_exists
   - idempotency_key_reused_with_different_payload
   - bootstrap_persistence_unavailable
+expedition_setup:
+  source_of_truth: docs/decisions/ADR-018-expedition-setup-and-day1-pilot-runtime.md
+  endpoint: /functions/v1/command-gateway
+  legacy_non_public_commands: [add_participant]
+  commands:
+    invite_participant:
+      actor: active_captain_membership
+      payload: [email, invitation_token]
+      pre_membership: false
+      offline_allowed: false
+      event: invitation.created
+    accept_invitation:
+      actor: authenticated_active_profile_matching_invitation_email
+      payload: [invitation_token, display_name]
+      pre_membership: true
+      offline_allowed: false
+      events: [invitation.accepted, participant.added]
+    revoke_invitation:
+      actor: active_captain_membership
+      payload: [invitation_id, reason]
+      pre_membership: false
+      offline_allowed: false
+      event: invitation.revoked
+  secret_handling:
+    token_format: 32_byte_unpadded_base64url
+    persisted_value: sha256_only
+    forbidden_outputs: [event, projection, receipt, structured_log, public_error]
+    event_identity: masked_email_hint_only
+  authoritative_refetch: api.get_expedition_setup_view
+  implementation_status: contracts_only_gate_9b1
 offline_delivery:
   queueable_commands:
   - acknowledge_card
@@ -109,6 +139,11 @@ server_only_commands:
 - publish_rating_snapshot
 server_confirmation_required:
 - create_expedition
+- invite_participant
+- accept_invitation
+- revoke_invitation
+- generate_rotation
+- start_expedition
 - advance_stage
 - override_stage_advance
 - close_day

@@ -1,5 +1,5 @@
 /* GENERATED from schemas/command.schema.json. Do not edit. */
-export type CommandType = "create_expedition" | "add_participant" | "ban_participant" | "unban_participant" | "generate_rotation" | "start_expedition" | "request_stage_advance" | "advance_stage" | "override_stage_advance" | "process_day_boundary" | "recover_day_transition" | "force_day_transition" | "rewind_day" | "start_evening_session" | "acknowledge_card" | "start_task" | "block_task" | "complete_task" | "waive_task" | "confirm_output" | "request_day_close" | "close_day" | "close_expedition" | "override_day_close" | "override_role_assignment" | "activate_recovery_day" | "suspend_program" | "resume_program" | "create_decision_draft" | "create_vote" | "vote" | "finalize_product_decision" | "override_product_decision" | "verify_role_assignment" | "adjust_role_xp" | "publish_rating_snapshot";
+export type CommandType = "create_expedition" | "invite_participant" | "accept_invitation" | "revoke_invitation" | "add_participant" | "ban_participant" | "unban_participant" | "generate_rotation" | "start_expedition" | "request_stage_advance" | "advance_stage" | "override_stage_advance" | "process_day_boundary" | "recover_day_transition" | "force_day_transition" | "rewind_day" | "start_evening_session" | "acknowledge_card" | "start_task" | "block_task" | "complete_task" | "waive_task" | "confirm_output" | "request_day_close" | "close_day" | "close_expedition" | "override_day_close" | "override_role_assignment" | "activate_recovery_day" | "suspend_program" | "resume_program" | "create_decision_draft" | "create_vote" | "vote" | "finalize_product_decision" | "override_product_decision" | "verify_role_assignment" | "adjust_role_xp" | "publish_rating_snapshot";
 export type ActorRole = "captain" | "product_captain" | "participant" | "shore_operator" | "system" | "system_clock";
 export type CommandEnvelopeBase = {
   "command_id": string;
@@ -20,6 +20,18 @@ export type create_expeditionPayload = {
   "duration_days": number;
   "day_boundary_local_time": string;
   [key: string]: unknown;
+};
+export type invite_participantPayload = {
+  "email": string;
+  "invitation_token": string;
+};
+export type accept_invitationPayload = {
+  "invitation_token": string;
+  "display_name": string;
+};
+export type revoke_invitationPayload = {
+  "invitation_id": string;
+  "reason": string;
 };
 export type add_participantPayload = {
   "participant_id": string;
@@ -248,6 +260,9 @@ export type publish_rating_snapshotPayload = {
 
 export interface CommandPayloadByType {
   "create_expedition": create_expeditionPayload;
+  "invite_participant": invite_participantPayload;
+  "accept_invitation": accept_invitationPayload;
+  "revoke_invitation": revoke_invitationPayload;
   "add_participant": add_participantPayload;
   "ban_participant": ban_participantPayload;
   "unban_participant": unban_participantPayload;

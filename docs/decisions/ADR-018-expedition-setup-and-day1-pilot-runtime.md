@@ -346,6 +346,19 @@ Additional criteria:
 - pilot or production data in Gate 9A;
 - migration, reducer or runtime registration in Gate 9A.
 
+## Gate 9B1 canonical synchronization
+
+Gate 9B1 publishes the accepted setup vocabulary without adding execution:
+
+- `invite_participant`, `accept_invitation` and `revoke_invitation` are canonical online-only commands;
+- `add_participant` remains in historical schemas only as `legacy_non_public` and is excluded from the public gateway contract;
+- invitation events and `expedition.ready` are canonical append-only events;
+- `participant.added` now carries `participant_order`;
+- `generate_rotation` canonically emits `rotation.generated` followed by `expedition.ready`;
+- `start_expedition` is `ready`-only;
+- JSON Schemas reject unknown invitation event payload fields so raw email/token/hash cannot be smuggled into history;
+- no SQL transaction, reducer, gateway branch, read API or runtime release is added in Gate 9B1.
+
 ## Consequences
 
 The pilot setup path now has one authenticated identity model, one public write transport and one immutable runtime-composition target. Gate 9B can synchronize canonical commands, events, permissions and schemas without inventing Participant identity, while later subgates can implement rotation and Day 1 as separately reviewable transactions.

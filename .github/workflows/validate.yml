@@ -1,104 +1,179 @@
-name: Gate 9B1 branch builder
+name: Validate repository
 
 on:
+  workflow_dispatch:
   pull_request:
+  push:
     branches:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-gate9b1:
-    if: github.head_ref == 'feat/gate-9b1-canonical-setup-contracts'
+  contracts-and-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
+
     steps:
-      - name: Checkout feature branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
 
-      - name: Install repository dependencies
+      - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
 
-      - name: Prepare architecture heading for one-shot builder
-        run: python scripts/prepare_gate9b1_builder.py
-
-      - name: Apply Gate 9B1 canonical contract changes
-        id: apply
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          python scripts/apply_gate9b1_contract.py 2>&1 | tee gate9b1-builder-error.log
-
-      - name: Upload deterministic builder diagnostic
-        if: steps.apply.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: gate9b1-builder-error
-          path: gate9b1-builder-error.log
-
-      - name: Stop after builder diagnostic
-        if: steps.apply.outcome == 'failure'
-        run: exit 1
-
       - name: Generate command gateway contract
-        if: steps.apply.outcome == 'success'
         run: python scripts/generate_supabase_command_gateway_contract.py
 
-      - name: Set up Deno
-        if: steps.apply.outcome == 'success'
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
+      - name: Validate canonical repository
+        run: python scripts/validate_repository.py .
 
-      - name: Format generated gateway contract
-        if: steps.apply.outcome == 'success'
-        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
+      - name: Validate Expedition bootstrap contract
+        run: python scripts/validate_expedition_bootstrap_contract.py
+
+      - name: Validate Expedition bootstrap transaction
+        run: python scripts/validate_expedition_bootstrap_transaction.py
+
+      - name: Validate Expedition bootstrap release
+        run: python scripts/validate_expedition_bootstrap_release.py
+
+      - name: Validate Expedition setup contract
+        run: python scripts/validate_expedition_setup_contract.py
+
+      - name: Run test suite
+        run: pytest -q
 
       - name: Set up Node
-        if: steps.apply.outcome == 'success'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Generate frontend command contracts
-        if: steps.apply.outcome == 'success'
+      - name: Install frontend dependencies
         working-directory: frontend
-        run: |
-          npm ci
-          npm run generate:contracts
+        run: npm ci
 
-      - name: Validate Gate 9B1 before commit
-        if: steps.apply.outcome == 'success'
-        run: |
-          python scripts/validate_repository.py .
-          python scripts/validate_expedition_setup_contract.py
-          pytest -q tests/test_expedition_setup_contract.py
+      - name: Generate design-system sources
+        working-directory: frontend
+        run: npm run generate:design
 
-      - name: Restore protected workflow and remove builder files
-        if: steps.apply.outcome == 'success'
-        run: |
-          git fetch origin main
-          git checkout origin/main -- .github/workflows/validate.yml
-          git rm scripts/apply_gate9b1_contract.py scripts/prepare_gate9b1_builder.py .github/workflows/gate9b1-builder.yml
-          rm -f gate9b1-builder-error.log
+      - name: Generate frontend contracts
+        working-directory: frontend
+        run: npm run generate:contracts
 
-      - name: Commit final Gate 9B1 branch
-        if: steps.apply.outcome == 'success'
+      - name: Validate frontend sources
+        working-directory: frontend
+        run: npm run validate:sources
+
+      - name: Validate frontend offline synchronization contract
+        run: python scripts/validate_frontend_offline_sync.py
+
+      - name: Validate service worker syntax
+        run: node --check frontend/public/sw.js
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm run test
+
+      - name: Typecheck frontend
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build production frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Build static Day 1 preview
+        working-directory: frontend
+        run: npm run build:preview
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format generated command gateway contract
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
+
+      - name: Check command gateway and Engine runtime formatting
+        run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+
+      - name: Lint command gateway and Engine runtime
+        run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+
+      - name: Typecheck command gateway and Engine runtime
+        run: deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts supabase/functions/_shared/engine-runtime/*.ts
+
+      - name: Run command gateway and Engine runtime unit tests
+        run: deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Rebuild local database from migrations
+        run: supabase db reset
+
+      - name: Run Supabase database tests
+        run: supabase test db
+
+      - name: Lint Supabase database
+        run: supabase db lint --local --level error
+
+      - name: Run command gateway database integration
+        shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat(gate9b1): publish canonical Expedition setup contracts"
-          git push origin HEAD:${{ github.head_ref }}
+          db_url="$(supabase status -o json | jq -r '.DB_URL')"
+          SUPABASE_DB_URL="$db_url" deno test --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            --allow-env=SUPABASE_DB_URL \
+            --allow-net=127.0.0.1:54322 \
+            supabase/functions/command-gateway/tests/integration
+
+      - name: Generate Supabase database types
+        run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+
+      - name: Validate Supabase Foundation contract
+        run: python scripts/validate_supabase_foundation.py
+
+      - name: Validate Supabase identity and membership contract
+        run: python scripts/validate_supabase_identity_membership.py
+
+      - name: Validate Supabase immutable history contract
+        run: python scripts/validate_supabase_immutable_history.py
+
+      - name: Validate Supabase atomic command transaction contract
+        run: python scripts/validate_supabase_atomic_command_transaction.py
+
+      - name: Validate Supabase command gateway contract
+        run: python scripts/validate_supabase_command_gateway.py
+
+      - name: Validate Supabase Day 1 vertical contract
+        run: python scripts/validate_supabase_day1_vertical.py
+
+      - name: Verify generated sources are committed
+        shell: bash
+        run: |
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            git diff --exit-code || true
+            exit 1
+          fi
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true

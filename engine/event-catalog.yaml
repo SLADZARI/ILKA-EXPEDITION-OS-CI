@@ -1,4 +1,4 @@
-version: 10
+version: 11
 source_of_truth: engine/event-catalog.yaml
 events:
 - event_type: expedition.created
@@ -9,10 +9,32 @@ events:
   - day_boundary_local_time
   projection_effect:
     expedition.status: draft
+- event_type: invitation.created
+  payload_required:
+  - invitation_id
+  - email_hint
+  - role
+  - expires_at
+  projection_effect:
+    invitations.append: payload
+- event_type: invitation.accepted
+  payload_required:
+  - invitation_id
+  - participant_id
+  projection_effect:
+    invitations.status: accepted
+    invitations.accepted_participant_id: payload.participant_id
+- event_type: invitation.revoked
+  payload_required:
+  - invitation_id
+  - reason
+  projection_effect:
+    invitations.status: revoked
 - event_type: participant.added
   payload_required:
   - participant_id
   - display_name
+  - participant_order
   projection_effect:
     participants.append: payload
 - event_type: participant.banned
@@ -46,6 +68,11 @@ events:
   - reason
   projection_effect:
     rotation.current: payload
+- event_type: expedition.ready
+  payload_required:
+  - rotation_id
+  projection_effect:
+    expedition.status: ready
 - event_type: expedition.started
   payload_required: []
   projection_effect:
@@ -404,3 +431,8 @@ replay_rules:
 - stage.completed may use next_stage_id null only for the final demo_day Stage
 - expedition.completed is terminal for operational commands and preserves append-only history
 - duplicate close_expedition returns the original completion event set
+- invitation.created, invitation.accepted and invitation.revoked never contain raw email, raw token or token hash
+- invitation acceptance and revocation are terminal competing transitions; one wins
+- participant.added from invitation acceptance includes the allocated participant_order
+- expedition.ready follows rotation.generated in the same accepted command
+- ready setup is frozen until a future explicit reopen decision
