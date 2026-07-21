@@ -1,4 +1,5 @@
 import { createDay1CompleteTaskRuntime } from "../engine-runtime/day1-complete-task-v1.ts";
+import { createExpeditionBootstrapRuntime } from "../engine-runtime/expedition-bootstrap-v1.ts";
 import type { RuntimeBundle, RuntimeRegistry, RuntimeRelease } from "./types.ts";
 
 function matches(bundle: RuntimeBundle, release: RuntimeRelease): boolean {
@@ -29,6 +30,17 @@ export const day1CompleteTaskV1 = createDay1CompleteTaskRuntime({
   reducer_version: "day1_complete_task_v1",
 });
 
+export const expeditionBootstrapV1 = createExpeditionBootstrapRuntime({
+  release_key: "expedition_bootstrap_v1",
+  git_commit_sha: "6175902f32a73a08476111befcb9e9be36e219bf",
+  rules_release: "engine_v8_permissions_v7",
+  content_release: "ilka_mvp_12_day_v5",
+  reducer_version: "expedition_bootstrap_v1",
+  duration_days: 12,
+  recovery_days_available: 1,
+});
+
 export const commandGatewayRuntimeRegistry = new StaticRuntimeRegistry([
   day1CompleteTaskV1,
+  expeditionBootstrapV1,
 ]);

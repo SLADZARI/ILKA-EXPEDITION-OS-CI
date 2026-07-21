@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-21 — Gate 8D Expedition bootstrap release registration
+
+- Registered `expedition_bootstrap_v1` in the exact-match Engine runtime registry.
+- Pinned the release to protected Gate 8C merge commit `6175902f32a73a08476111befcb9e9be36e219bf`.
+- Pinned rules release `engine_v8_permissions_v7`, content release `ilka_mvp_12_day_v5` and reducer version `expedition_bootstrap_v1`.
+- Preserved release-owned program policy at 12 days and one floating Recovery Day.
+- Added an immutable `ilka.runtime_releases` migration, exact registry-match tests, pgTAP immutability checks and a protected Gate 8D validator.
+- Added a deployment runbook requiring `ILKA_DEFAULT_RUNTIME_RELEASE_KEY=expedition_bootstrap_v1`, JWT verification and an authenticated development smoke bootstrap.
+
+`expedition_bootstrap_v1` is bootstrap-only and is not a pilot runtime. A runtime-composition gate is required before invitations, Participants, rotation, Expedition start or Day commands can be used by a real Expedition. Remote migration, environment configuration, Edge Function deployment and smoke verification remain separate post-merge actions.
+
 ## 2026-07-21 — Gate 8C executable Expedition bootstrap
 
 - Added a pure TypeScript `create_expedition` reducer that derives duration and Recovery Day policy from the selected immutable runtime bundle and emits exactly one canonical `expedition.created` event.
