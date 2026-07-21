@@ -9,12 +9,16 @@ import { PostgresRotationDatabase } from "../../../_shared/command-gateway/rotat
 import { createRotationExecutor } from "../../../_shared/command-gateway/rotation.ts";
 import { StaticRuntimeRegistry } from "../../../_shared/command-gateway/runtime-registry.ts";
 import { createSchemaValidator } from "../../../_shared/command-gateway/schema-validation.ts";
-import type { JsonValue } from "../../../_shared/command-gateway/types.ts";
+import type {
+  JsonValue,
+  ProcessCommandResult,
+} from "../../../_shared/command-gateway/types.ts";
 
 const DB_URL = Deno.env.get("SUPABASE_DB_URL");
 
 Deno.test({
-  name: "generate_rotation persists deterministic assignments, ready state and exact replay",
+  name:
+    "generate_rotation persists deterministic assignments, ready state and exact replay",
   ignore: !DB_URL,
   async fn() {
     const connectionString = DB_URL!;

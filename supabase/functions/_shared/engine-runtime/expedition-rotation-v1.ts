@@ -332,10 +332,9 @@ async function reduceRotation(
 
   const withOnboardRole = activeParticipants.map((participant) => ({
     participant,
-    onboard_role_id:
-      policy.onboard_role_cycle[
-        (participant.participant_order - 1) % policy.onboard_role_cycle.length
-      ],
+    onboard_role_id: policy.onboard_role_cycle[
+      (participant.participant_order - 1) % policy.onboard_role_cycle.length
+    ],
   }));
   const productCaptain = withOnboardRole.find((candidate) =>
     candidate.onboard_role_id !== "cook"
@@ -349,11 +348,10 @@ async function reduceRotation(
 
   const assignments: SetupAssignment[] = withOnboardRole.map((candidate) => ({
     participant_id: candidate.participant.participant_id,
-    product_role_id:
-      candidate.participant.participant_id ===
-          productCaptain.participant.participant_id
-        ? policy.onboarding_product_captain_role
-        : policy.onboarding_support_role,
+    product_role_id: candidate.participant.participant_id ===
+        productCaptain.participant.participant_id
+      ? policy.onboarding_product_captain_role
+      : policy.onboarding_support_role,
     onboard_role_id: candidate.onboard_role_id,
   }));
 
@@ -448,8 +446,7 @@ export function createExpeditionRotationRuntime(
     team_size_max: metadata.team_size_max,
     rotation_rules_version: metadata.rotation_rules_version,
     onboard_role_cycle: Object.freeze([...metadata.onboard_role_cycle]),
-    onboarding_product_captain_role:
-      metadata.onboarding_product_captain_role,
+    onboarding_product_captain_role: metadata.onboarding_product_captain_role,
     onboarding_support_role: metadata.onboarding_support_role,
   });
 

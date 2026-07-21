@@ -99,7 +99,7 @@ commands:
     guards: [participant_is_banned, target_is_not_current_captain, unban_reason_present, no_concurrent_participant_admin_operation]
     emits: [participant.unbanned, rotation.recalculated]
   generate_rotation:
-    actor_roles: [captain, system]
+    actor_roles: [captain]
     expedition_from: [draft]
     guards: [team_size_valid, participant_order_defined, no_pending_invitations, rotation_not_generated]
     emits: [rotation.generated, expedition.ready]

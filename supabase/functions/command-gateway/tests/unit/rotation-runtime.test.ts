@@ -88,8 +88,9 @@ function setupView(
     duplicateOrder?: boolean;
   } = {},
 ): Record<string, JsonValue> {
-  const participants = Array.from({ length: count }, (_, index) =>
-    participant(index + 1)
+  const participants = Array.from(
+    { length: count },
+    (_, index) => participant(index + 1),
   );
   if (options.duplicateOrder && participants[1]) {
     participants[1].participant_order = 1;
@@ -131,7 +132,8 @@ function setupView(
         assignments: [],
       },
     readiness: {
-      can_generate_rotation: !pending && count >= 3 && rotationStatus === "not_generated",
+      can_generate_rotation: !pending && count >= 3 &&
+        rotationStatus === "not_generated",
       can_start_expedition: false,
       blockers: [],
     },
@@ -222,15 +224,12 @@ Deno.test("four Participants assign Cook only product_support", async () => {
   const assignments = prepared.events[0].payload.assignments as Array<
     Record<string, JsonValue>
   >;
-  const cook = assignments.find((assignment) =>
-    assignment.onboard_role_id === "cook"
-  );
+  const cook = assignments.find((assignment) => assignment.onboard_role_id === "cook");
   assertExists(cook);
   assertEquals(cook.product_role_id, "product_support");
   assertEquals(
-    assignments.filter((assignment) =>
-      assignment.product_role_id === "product_captain"
-    ).length,
+    assignments.filter((assignment) => assignment.product_role_id === "product_captain")
+      .length,
     1,
   );
 });

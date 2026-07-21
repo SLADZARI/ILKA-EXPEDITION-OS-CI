@@ -73,7 +73,6 @@ roles:
     can: [read_shared_events, create_ai_artifact]
   system:
     can:
-    - generate_rotation
     - recover_day_transition
     - validate_transition
     - queue_sync
@@ -141,3 +140,6 @@ restrictions:
   invitation_events_and_projections_use_masked_email_only: true
   product_captain_has_no_setup_membership_authority: true
   ready_setup_is_frozen: true
+  rotation_generation: captain_only_server_confirmed
+  rotation_assignments_server_derived: true
+  rotation_seed_server_derived: true

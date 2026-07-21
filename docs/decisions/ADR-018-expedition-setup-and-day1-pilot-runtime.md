@@ -359,6 +359,10 @@ Gate 9B1 publishes the accepted setup vocabulary without adding execution:
 - JSON Schemas reject unknown invitation event payload fields so raw email/token/hash cannot be smuggled into history;
 - no SQL transaction, reducer, gateway branch, read API or runtime release is added in Gate 9B1.
 
+## Gate 9C implementation result
+
+Gate 9C implements the accepted deterministic initial-rotation boundary through `ADR-020`, one pure reducer, one specialized gateway executor and one atomic structural PostgreSQL wrapper. The canonical command now has empty payload, Captain-only authority and server-derived rules/seed. The production runtime registry remains unchanged until Gate 9E.
+
 ## Consequences
 
 The pilot setup path now has one authenticated identity model, one public write transport and one immutable runtime-composition target. Gate 9B can synchronize canonical commands, events, permissions and schemas without inventing Participant identity, while later subgates can implement rotation and Day 1 as separately reviewable transactions.

@@ -341,7 +341,7 @@ readme_path.write_text(readme, encoding="utf-8")
 adr18_path = ROOT / "docs/decisions/ADR-018-expedition-setup-and-day1-pilot-runtime.md"
 adr18 = adr18_path.read_text(encoding="utf-8")
 if "Gate 9C implementation result" not in adr18:
-    marker = "## Implementation sequence\n"
+    marker = "## Consequences\n"
     note = """## Gate 9C implementation result
 
 Gate 9C implements the accepted deterministic initial-rotation boundary through `ADR-020`, one pure reducer, one specialized gateway executor and one atomic structural PostgreSQL wrapper. The canonical command now has empty payload, Captain-only authority and server-derived rules/seed. The production runtime registry remains unchanged until Gate 9E.

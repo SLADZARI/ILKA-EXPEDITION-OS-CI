@@ -109,7 +109,6 @@ export const COMMAND_CONTRACTS = {
   "generate_rotation": {
     "allowedActors": [
       "captain",
-      "system",
     ],
     "offlineAllowed": false,
   },

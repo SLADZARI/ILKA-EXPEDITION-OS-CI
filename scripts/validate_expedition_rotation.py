@@ -215,7 +215,7 @@ def main() -> int:
             "createExpeditionRotationRuntime",
             "isExpeditionRotationRuntime",
             '"SHA-256"',
-            "participants.participant_order" if False else "participant_order",
+            "participant_order",
             "lowest",
             'candidate.onboard_role_id !== "cook"',
             'event(input, 1, "rotation.generated"',

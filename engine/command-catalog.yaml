@@ -63,8 +63,8 @@ commands:
   offline_allowed: false
   emits: [participant.unbanned, rotation.recalculated]
 - command_type: generate_rotation
-  allowed_actors: [captain, system]
-  payload_required: [seed, rules_version]
+  allowed_actors: [captain]
+  payload_required: []
   emits: [rotation.generated, expedition.ready]
   offline_allowed: false
 - command_type: start_expedition
