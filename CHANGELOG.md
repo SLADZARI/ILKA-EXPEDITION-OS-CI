@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-21 — Gate 9A Expedition setup and Day 1 pilot contract
+
+- Accepted `ADR-018` for authenticated invitation-based Participant onboarding, deterministic setup readiness and one immutable Day 1 pilot runtime composition target.
+- Reused the existing `ilka.invitations`, Expedition membership, Participant and generic projection entities instead of introducing parallel identity or projection systems.
+- Defined reserved `invite_participant`, `accept_invitation` and `revoke_invitation` flows through the canonical `command-gateway`, including the second explicit pre-membership path for invitation acceptance.
+- Fixed raw invitation-token handling: 32-byte client-generated base64url secret, server-side SHA-256 persistence only, and no raw token or full email in events, projections, receipts, structured logs or public errors.
+- Fixed setup states `draft → ready → active`, zero pending invitations before rotation, a frozen ready team, `start_expedition` from ready only and `system_clock`-only Day 1 boundary processing.
+- Added the Captain-only `ExpeditionSetupView` JSON Schema for Participants, masked invitations, rotation, readiness and authoritative controls before a Calendar Day exists.
+- Defined provisional composite release `day1_pilot_v1` without registering it or mutating any existing Expedition runtime pin.
+- Added a protected Gate 9A validator and pytest coverage.
+
+Gate 9A is contract-only. It adds no executable command, canonical command/event catalog entry, permission grant, migration, private transaction, reducer, runtime bundle, runtime-release row, Edge Function behavior or cloud data. Gate 9B must synchronize commands, events, permissions and schemas only after `ADR-018` is protected on `main`.
+
 ## 2026-07-21 — Gate 8D development migration and deployment blocker
 
 - Applied reviewed migration `20260721124455 expedition_bootstrap_runtime_release` to development-only `VOYAGE`.
@@ -153,7 +166,7 @@ This development deployment does not add `command-gateway`, TypeScript reducers,
 - Added exact replay before current actor validation, preserving the original accepted or rejected receipt.
 - Added unpersisted request-hash mismatch rejection and stale stream-position conflict results.
 - Added persisted deterministic rejected receipts without event or projection version changes.
-- Added atomic accepted-command persistence for receipt, consecutive canonical events and projection upserts.
+- Added atomic accepted-command persistence for receipt, consecutive events and projection upserts.
 - Added actor-context and pinned runtime-release integrity checks without duplicating Engine permissions or reducers.
 - Added complete rollback coverage when projection persistence fails after receipt and event insertion.
 - Denied browser execution and direct `service_role` projection writes while granting only the private transaction entry point.
