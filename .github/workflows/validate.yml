@@ -8,7 +8,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   contracts-and-tests:
@@ -18,75 +18,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-
-      - name: Apply Gate 8D source records
-        if: github.event_name == 'pull_request' && github.head_ref == 'feat/gate-8d-bootstrap-release-deployment'
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          changelog = Path("CHANGELOG.md")
-          text = changelog.read_text(encoding="utf-8")
-          heading = "## 2026-07-21 — Gate 8D Expedition bootstrap release registration"
-          if heading not in text:
-              section = """## 2026-07-21 — Gate 8D Expedition bootstrap release registration
-
-          - Registered `expedition_bootstrap_v1` in the exact-match Engine runtime registry.
-          - Pinned the release to protected Gate 8C merge commit `6175902f32a73a08476111befcb9e9be36e219bf`.
-          - Pinned rules release `engine_v8_permissions_v7`, content release `ilka_mvp_12_day_v5` and reducer version `expedition_bootstrap_v1`.
-          - Preserved release-owned program policy at 12 days and one floating Recovery Day.
-          - Added an immutable `ilka.runtime_releases` migration, exact registry-match tests, pgTAP immutability checks and a protected Gate 8D validator.
-          - Added a deployment runbook requiring `ILKA_DEFAULT_RUNTIME_RELEASE_KEY=expedition_bootstrap_v1`, JWT verification and an authenticated development smoke bootstrap.
-
-          `expedition_bootstrap_v1` is bootstrap-only and is not a pilot runtime. A runtime-composition gate is required before invitations, Participants, rotation, Expedition start or Day commands can be used by a real Expedition. Remote migration, environment configuration, Edge Function deployment and smoke verification remain separate post-merge actions.
-
-          """
-              section = "\n".join(line[10:] if line.startswith("          ") else line for line in section.splitlines()) + "\n"
-              marker = "# Changelog\n\n"
-              if not text.startswith(marker):
-                  raise SystemExit("unexpected CHANGELOG header")
-              changelog.write_text(marker + section + text[len(marker):], encoding="utf-8")
-
-          adr = Path("docs/decisions/ADR-017-expedition-bootstrap-command.md")
-          adr_text = adr.read_text(encoding="utf-8")
-          registration_heading = "### Gate 8D immutable registration"
-          if registration_heading not in adr_text:
-              registration = """### Gate 8D immutable registration
-
-          Gate 8D registers the bootstrap-only release with exact metadata:
-
-          ```text
-          release_key: expedition_bootstrap_v1
-          git_commit_sha: 6175902f32a73a08476111befcb9e9be36e219bf
-          rules_release: engine_v8_permissions_v7
-          content_release: ilka_mvp_12_day_v5
-          reducer_version: expedition_bootstrap_v1
-          duration_days: 12
-          recovery_days_available: 1
-          ```
-
-          The protected Gate 8C implementation SHA is immutable and exact registry matching remains mandatory. The development environment selects this release only through `ILKA_DEFAULT_RUNTIME_RELEASE_KEY`.
-
-          This release is **bootstrap-only**. Because each Expedition is immutably pinned to its runtime release, it may be used only for the controlled Gate 8D smoke bootstrap. A separate runtime-composition gate must register the next executable release before invitations, Participants, rotation, Expedition start or Day commands are used by a real Expedition.
-
-          """
-              registration = "\n".join(line[10:] if line.startswith("          ") else line for line in registration.splitlines()) + "\n"
-              marker = "## Acceptance criteria\n"
-              if marker not in adr_text:
-                  raise SystemExit("ADR-017 acceptance marker missing")
-              adr.write_text(adr_text.replace(marker, registration + marker, 1), encoding="utf-8")
-          PY
-          if git diff --quiet -- CHANGELOG.md docs/decisions/ADR-017-expedition-bootstrap-command.md; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CHANGELOG.md docs/decisions/ADR-017-expedition-bootstrap-command.md
-          git commit -m "docs(gate8d): record bootstrap release registration"
-          git push origin HEAD:feat/gate-8d-bootstrap-release-deployment
 
       - name: Set up Python
         uses: actions/setup-python@v5
