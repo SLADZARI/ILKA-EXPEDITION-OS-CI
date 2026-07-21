@@ -63,21 +63,27 @@ select ok(
   'rotation wrapper has empty search_path'
 );
 
-select like(
-  pg_get_functiondef('private.generate_rotation(jsonb)'::regprocedure),
-  '%private.process_command(v_process_request)%',
+select ok(
+  position(
+    'private.process_command(v_process_request)'
+    in pg_get_functiondef('private.generate_rotation(jsonb)'::regprocedure)
+  ) > 0,
   'rotation wrapper delegates immutable persistence to private.process_command'
 );
 
-select unlike(
-  lower(pg_get_functiondef('private.generate_rotation(jsonb)'::regprocedure)),
-  '%insert into ilka.event_log%',
+select ok(
+  position(
+    'insert into ilka.event_log'
+    in lower(pg_get_functiondef('private.generate_rotation(jsonb)'::regprocedure))
+  ) = 0,
   'rotation wrapper does not insert directly into event_log'
 );
 
-select unlike(
-  lower(pg_get_functiondef('private.generate_rotation(jsonb)'::regprocedure)),
-  '%insert into ilka.projection_documents%',
+select ok(
+  position(
+    'insert into ilka.projection_documents'
+    in lower(pg_get_functiondef('private.generate_rotation(jsonb)'::regprocedure))
+  ) = 0,
   'rotation wrapper does not insert directly into projection_documents'
 );
 
