@@ -4,10 +4,7 @@
   "title": "PrivateRevokeInvitationRequest",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "invitation_transition",
-    "process_command_request"
-  ],
+  "required": ["invitation_transition", "process_command_request"],
   "properties": {
     "invitation_transition": {
       "type": "object",
@@ -20,21 +17,10 @@
         "reason"
       ],
       "properties": {
-        "invitation_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "expedition_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "expected_status": {
-          "const": "pending"
-        },
-        "revoked_by_profile_id": {
-          "type": "string",
-          "format": "uuid"
-        },
+        "invitation_id": {"type": "string", "format": "uuid"},
+        "expedition_id": {"type": "string", "format": "uuid"},
+        "expected_status": {"const": "pending"},
+        "revoked_by_profile_id": {"type": "string", "format": "uuid"},
         "reason": {
           "type": "string",
           "minLength": 1,
@@ -45,44 +31,19 @@
     },
     "process_command_request": {
       "allOf": [
-        {
-          "$ref": "./private-process-command-request.schema.json"
-        },
+        {"$ref": "./private-invitation-process-command-request.schema.json"},
         {
           "properties": {
-            "status": {
-              "const": "accepted"
-            },
-            "rejection": {
-              "type": "null"
-            },
             "command": {
               "properties": {
-                "command_type": {
-                  "const": "revoke_invitation"
-                },
-                "actor_role": {
-                  "const": "captain"
-                },
-                "day_number": {
-                  "type": "null"
-                },
-                "stage_id": {
-                  "type": "null"
-                },
-                "day_revision": {
-                  "type": "null"
-                }
+                "command_type": {"const": "revoke_invitation"},
+                "actor_role": {"const": "captain"}
               }
             },
             "actor_context": {
               "properties": {
-                "actor_role": {
-                  "const": "captain"
-                },
-                "participant_id": {
-                  "type": "null"
-                }
+                "actor_role": {"const": "captain"},
+                "participant_id": {"type": "null"}
               }
             },
             "events": {
@@ -91,26 +52,14 @@
               "prefixItems": [
                 {
                   "allOf": [
-                    {
-                      "$ref": "../../engine/event.schema.json"
-                    },
+                    {"$ref": "../../engine/event.schema.json"},
                     {
                       "properties": {
-                        "event_type": {
-                          "const": "invitation.revoked"
-                        },
-                        "actor_role": {
-                          "const": "captain"
-                        },
-                        "day_number": {
-                          "type": "null"
-                        },
-                        "stage_id": {
-                          "type": "null"
-                        },
-                        "day_revision": {
-                          "type": "null"
-                        }
+                        "event_type": {"const": "invitation.revoked"},
+                        "actor_role": {"const": "captain"},
+                        "day_number": {"type": "null"},
+                        "stage_id": {"type": "null"},
+                        "day_revision": {"type": "null"}
                       }
                     }
                   ]
@@ -123,24 +72,14 @@
               "prefixItems": [
                 {
                   "properties": {
-                    "operation": {
-                      "const": "upsert"
-                    },
-                    "projection_key": {
-                      "const": "expedition_setup_view"
-                    },
-                    "projection_type": {
-                      "const": "expedition_setup_view"
-                    },
-                    "subject_id": {
-                      "type": "null"
-                    },
+                    "operation": {"const": "upsert"},
+                    "projection_key": {"const": "expedition_setup_view"},
+                    "projection_type": {"const": "expedition_setup_view"},
+                    "subject_id": {"type": "null"},
                     "schema_id": {
                       "const": "https://ilka.local/schemas/expedition-setup-view.schema.json"
                     },
-                    "schema_version": {
-                      "const": "1"
-                    },
+                    "schema_version": {"const": "1"},
                     "projection": {
                       "$ref": "../../app/contracts/expedition-setup-view.schema.json"
                     }

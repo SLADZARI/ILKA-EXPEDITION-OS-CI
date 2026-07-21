@@ -164,6 +164,9 @@ jobs:
       - name: Validate Supabase Day 1 vertical contract
         run: python scripts/validate_supabase_day1_vertical.py
 
+      - name: Validate Expedition invitation persistence
+        run: python scripts/validate_expedition_invitation_persistence.py
+
       - name: Verify generated sources are committed
         shell: bash
         run: |

@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-invitation-process-command-request.schema.json",
+  "title": "PrivateInvitationProcessCommandRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expedition_id",
+    "command",
+    "actor_context",
+    "request_hash",
+    "expected_stream_position",
+    "status",
+    "events",
+    "projection_mutations",
+    "runtime_release_id",
+    "reducer_version",
+    "received_at",
+    "processed_at",
+    "rejection"
+  ],
+  "properties": {
+    "expedition_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command_id",
+        "command_type",
+        "issued_at",
+        "actor_id",
+        "actor_role",
+        "expedition_id",
+        "idempotency_key",
+        "day_number",
+        "stage_id",
+        "day_revision",
+        "payload"
+      ],
+      "properties": {
+        "command_id": {
+          "type": "string",
+          "pattern": "^cmd_[A-Za-z0-9_-]+$"
+        },
+        "command_type": {
+          "enum": [
+            "invite_participant",
+            "accept_invitation",
+            "revoke_invitation"
+          ]
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_role": {
+          "enum": [
+            "captain",
+            "participant"
+          ]
+        },
+        "expedition_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_]{0,127}$"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^cmd_[A-Za-z0-9_-]+$"
+        },
+        "day_number": {
+          "type": "null"
+        },
+        "stage_id": {
+          "type": "null"
+        },
+        "day_revision": {
+          "type": "null"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "maxProperties": 0
+        }
+      }
+    },
+    "actor_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auth_user_id",
+        "profile_id",
+        "membership_id",
+        "participant_id",
+        "actor_id",
+        "actor_role"
+      ],
+      "properties": {
+        "auth_user_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "profile_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "membership_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "participant_id": {
+          "type": "null"
+        },
+        "actor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_role": {
+          "enum": [
+            "captain",
+            "participant"
+          ]
+        }
+      }
+    },
+    "request_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "expected_stream_position": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "const": "accepted"
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../../engine/event.schema.json"
+      }
+    },
+    "projection_mutations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "projection_key",
+          "projection_type",
+          "subject_id",
+          "schema_id",
+          "schema_version",
+          "projection"
+        ],
+        "properties": {
+          "operation": {
+            "const": "upsert"
+          },
+          "projection_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(:[A-Za-z0-9_-]+)*$",
+            "maxLength": 240
+          },
+          "projection_type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "maxLength": 80
+          },
+          "subject_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "schema_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "schema_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "projection": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "runtime_release_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "reducer_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rejection": {
+      "type": "null"
+    }
+  }
+}

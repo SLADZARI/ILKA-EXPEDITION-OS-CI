@@ -210,9 +210,11 @@ def main() -> int:
         errors.append("read API migration must not grant raw ilka table access")
 
     api_doc = yaml.safe_load(API_DOC.read_text(encoding="utf-8"))
-    expected_functions = {"get_today_view", "get_captain_day_view", "get_command_receipt"}
-    if set(api_doc.get("functions", {})) != expected_functions:
-        errors.append("app/api/read-models.yaml function set must match Gate 6 API")
+    required_functions = {"get_today_view", "get_captain_day_view", "get_command_receipt"}
+    documented_functions = set(api_doc.get("functions", {}))
+    if not required_functions.issubset(documented_functions):
+        missing = sorted(required_functions - documented_functions)
+        errors.append(f"app/api/read-models.yaml is missing Gate 6 API functions: {missing}")
     if api_doc.get("security", {}).get("direct_internal_table_access") is not False:
         errors.append("read-model API must deny direct internal table access")
 

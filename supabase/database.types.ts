@@ -20,6 +20,10 @@ export type Database = {
         Returns: Json
       }
       get_command_receipt: { Args: { p_command_id: string }; Returns: Json }
+      get_expedition_setup_view: {
+        Args: { p_expedition_key: string }
+        Returns: Json
+      }
       get_today_view: { Args: { p_expedition_key: string }; Returns: Json }
     }
     Enums: {
@@ -718,6 +722,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: { Args: { p_request: Json }; Returns: Json }
       assert_expected_stream_position: {
         Args: { p_expected_stream_position: number; p_expedition_id: string }
         Returns: number
@@ -741,6 +746,7 @@ export type Database = {
           stream_position: number
         }[]
       }
+      invite_participant: { Args: { p_request: Json }; Returns: Json }
       process_command: { Args: { p_request: Json }; Returns: Json }
       resolve_actor_context: {
         Args: { p_auth_user_id: string; p_expedition_id: string }
@@ -751,6 +757,7 @@ export type Database = {
           profile_id: string
         }[]
       }
+      revoke_invitation: { Args: { p_request: Json }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

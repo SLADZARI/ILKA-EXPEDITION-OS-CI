@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-21 — Gate 9B2B invitation persistence
+
+- Added service-role-only atomic wrappers `private.invite_participant(jsonb)`, `private.accept_invitation(jsonb)` and `private.revoke_invitation(jsonb)`.
+- Preserved `private.process_command(jsonb)` as the only receipt, event and projection writer.
+- Added a secret-free nested invitation process contract with empty command payload and membership-attributed acceptance history.
+- Enforced command → Expedition → invitation identity → projection lock order, exact replay before terminal guards and rollback on version conflict.
+- Added verified Auth email matching, lowest-free Participant order, terminal invitation transitions and complete `ExpeditionSetupView` upserts.
+- Added Captain-only `api.get_expedition_setup_view(text)`, pgTAP coverage, generated database types and protected persistence validation.
+
+Gate 9B2B adds no reducer, command-gateway execution branch, runtime release, deployment, invitation delivery, expiration worker, rotation or pilot data. Gate 9B2C implements runtime preparation and public gateway execution.
+
 ## 2026-07-21 — Gate 9B2A invitation transaction contracts
 
 - Accepted `ADR-019` for the structural invitation transaction boundary extending `ADR-018`.
