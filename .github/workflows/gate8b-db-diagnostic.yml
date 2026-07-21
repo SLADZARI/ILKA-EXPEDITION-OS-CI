@@ -33,15 +33,14 @@ jobs:
           set +e
           supabase start --debug > /tmp/supabase-start-full.log 2>&1
           status=$?
-          tail -n 220 /tmp/supabase-start-full.log > /tmp/supabase-start-tail.log
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit 0
 
       - name: Upload startup diagnostic
         uses: actions/upload-artifact@v4
         with:
-          name: gate8b-supabase-start-diagnostic
-          path: /tmp/supabase-start-tail.log
+          name: gate8b-supabase-start-full-diagnostic
+          path: /tmp/supabase-start-full.log
           if-no-files-found: error
           retention-days: 1
 
