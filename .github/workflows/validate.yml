@@ -47,6 +47,9 @@ jobs:
       - name: Validate Expedition setup contract
         run: python scripts/validate_expedition_setup_contract.py
 
+      - name: Validate Expedition Day 1 start contract
+        run: python scripts/validate_expedition_day1_start_contract.py
+
       - name: Run test suite
         run: pytest -q
 
