@@ -1,4 +1,4 @@
-version: 9
+version: 10
 engine_id: ilka_expedition_engine
 expedition:
   duration_days: 12
@@ -106,7 +106,7 @@ commands:
   start_expedition:
     actor_roles: [captain]
     expedition_from: [ready]
-    guards: [captain_present, team_size_valid, rotation_exists, first_stage_resolvable]
+    guards: [captain_present, team_size_valid, rotation_exists, first_stage_resolvable, no_calendar_day_exists]
     emits: [expedition.started, stage.opened]
   request_stage_advance:
     actor_roles: [product_captain, captain]
@@ -130,7 +130,9 @@ commands:
     actor_roles: [system_clock]
     expedition_from: [active]
     guards: [local_boundary_reached, boundary_key_not_processed, no_active_day_for_target_date, current_stage_resolvable, scheduled_assignments_resolvable]
-    emits: [role_assignments.expired, task.overdue, day.started, role_assignments.activated, card_bundles.published]
+    emits: [day.started, role_assignments.activated, card_bundles.published]
+    conditional_emits:
+      previous_day_exists: [role_assignments.expired, task.overdue]
     failure_emits: [day.transition_failed]
   recover_day_transition:
     actor_roles: [captain, system]
@@ -271,7 +273,8 @@ commands:
     emits: [role_assignments.expired, stage.completed, expedition.completed]
 idempotency:
   command_key: command_id
-  boundary_key: day_boundary:<expedition_id>:<local_calendar_date>
+  command_invariant: idempotency_key_equals_command_id
+  boundary_command_id: cmd_day_boundary_<expedition_id>_<local_calendar_date_compact>
   duplicate_policy: return_original_result
   event_uniqueness: [event_id, expedition_id_command_id_event_type]
   forced_day_key: forced_day:<expedition_id>:<target_local_calendar_date>:<command_id>
@@ -286,6 +289,9 @@ invariants:
 - only_one_active_day
 - only_one_active_stage
 - normal_day_start_is_system_clock_only
+- idempotency_key_equals_command_id
+- day1_has_no_prior_day_expiry_or_overdue_events
+- day1_assignment_ids_are_participant_scoped
 - rotation_advances_on_day_started
 - closed_day_is_read_only
 - events_are_append_only
