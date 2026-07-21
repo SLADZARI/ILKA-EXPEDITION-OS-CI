@@ -253,17 +253,20 @@ function validateFrozenTeam(
     assignmentIds.some((participantId) => !activeIds.has(participantId))
   ) return "rotation_not_ready";
 
-  const productCaptainCount = view.rotation.assignments.filter((assignment) =>
-    assignment.product_role_id === policy.product_captain_role
-  ).length;
+  const productCaptainCount =
+    view.rotation.assignments.filter((assignment) =>
+      assignment.product_role_id === policy.product_captain_role
+    ).length;
   if (productCaptainCount !== 1) return "rotation_not_ready";
-  if (view.rotation.assignments.some((assignment) =>
-    ![policy.product_captain_role, policy.product_support_role].includes(
-      assignment.product_role_id,
-    ) ||
-    (assignment.onboard_role_id === policy.cook_role &&
-      assignment.product_role_id !== policy.product_support_role)
-  )) return "rotation_not_ready";
+  if (
+    view.rotation.assignments.some((assignment) =>
+      ![policy.product_captain_role, policy.product_support_role].includes(
+        assignment.product_role_id,
+      ) ||
+      (assignment.onboard_role_id === policy.cook_role &&
+        assignment.product_role_id !== policy.product_support_role)
+    )
+  ) return "rotation_not_ready";
 
   return null;
 }
@@ -298,10 +301,12 @@ async function reduceStart(
   }
   const actorRejection = validateCaptain(input);
   if (actorRejection) return actorRejection;
-  if (input.context.projections.some((document) =>
-    document.projection_type === "today_view" ||
-    document.projection_type === "captain_day_view"
-  )) {
+  if (
+    input.context.projections.some((document) =>
+      document.projection_type === "today_view" ||
+      document.projection_type === "captain_day_view"
+    )
+  ) {
     return rejected(
       "calendar_day_already_exists",
       "The Expedition already has authoritative Day projections.",
@@ -332,7 +337,10 @@ async function reduceStart(
     parsed.readiness.can_start_expedition !== true ||
     parsed.controls.start_expedition !== true
   ) {
-    return rejected("expedition_not_ready", "The setup projection is not ready to start.");
+    return rejected(
+      "expedition_not_ready",
+      "The setup projection is not ready to start.",
+    );
   }
   const frozenError = validateFrozenTeam(parsed, policy);
   if (frozenError) {
