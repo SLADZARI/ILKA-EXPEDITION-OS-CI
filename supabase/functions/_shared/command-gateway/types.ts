@@ -101,12 +101,41 @@ export interface RuntimeInput {
   received_at: string;
 }
 
+export interface BootstrapProgramPolicy {
+  duration_days: number;
+  recovery_days_available: number;
+}
+
+export interface BootstrapActorContext {
+  auth_user_id: string;
+  profile_id: string;
+  membership_id: string;
+  profile_status: "active" | "disabled";
+}
+
+export interface BootstrapRuntimeInput {
+  command: CommandEnvelope;
+  actor_role: "captain";
+  actor_id: string;
+  actor: BootstrapActorContext;
+  runtime_release: RuntimeRelease;
+  received_at: string;
+}
+
+export interface BootstrapRuntimeCapability {
+  readonly program: BootstrapProgramPolicy;
+  reduceCreateExpedition(
+    input: BootstrapRuntimeInput,
+  ): Promise<PreparedCommandResult>;
+}
+
 export interface RuntimeBundle {
   readonly release_key: string;
   readonly git_commit_sha: string;
   readonly rules_release: string;
   readonly content_release: string;
   readonly reducer_version: string;
+  readonly bootstrap?: BootstrapRuntimeCapability;
   resolveActorRole(input: RuntimeInput): Promise<ActorRole>;
   reduce(input: RuntimeInput): Promise<PreparedCommandResult>;
 }
