@@ -222,6 +222,24 @@ Gate 8D must then:
 4. deploy `command-gateway`;
 5. execute an authenticated live bootstrap smoke test without pilot data reuse.
 
+### Gate 8D immutable registration
+
+Gate 8D registers the bootstrap-only release with exact metadata:
+
+```text
+release_key: expedition_bootstrap_v1
+git_commit_sha: 6175902f32a73a08476111befcb9e9be36e219bf
+rules_release: engine_v8_permissions_v7
+content_release: ilka_mvp_12_day_v5
+reducer_version: expedition_bootstrap_v1
+duration_days: 12
+recovery_days_available: 1
+```
+
+The protected Gate 8C implementation SHA is immutable and exact registry matching remains mandatory. The development environment selects this release only through `ILKA_DEFAULT_RUNTIME_RELEASE_KEY`.
+
+This release is **bootstrap-only**. Because each Expedition is immutably pinned to its runtime release, it may be used only for the controlled Gate 8D smoke bootstrap. A separate runtime-composition gate must register the next executable release before invitations, Participants, rotation, Expedition start or Day commands are used by a real Expedition.
+
 ## Acceptance criteria
 
 - `create_expedition` uses the existing public command gateway;
