@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-22 — Gate 9D1 Expedition start and Day 1 contracts
+
+- Accepted `ADR-021` for the `start_expedition → process_day_boundary → Day 1 projections` boundary.
+- Reconciled `start_expedition` as Captain-only, ready-only, empty-payload and online-only without creating a Calendar Day.
+- Fixed the Day 1 event order to `day.started → role_assignments.activated → card_bundles.published`; prior-day expiry and overdue events are now conditional.
+- Reconciled deterministic boundary identity with the global `idempotency_key == command_id` invariant.
+- Defined the trusted HMAC `system_clock` branch while preserving denial of human system-role claims and platform JWT verification.
+- Fixed deterministic assignment, Card Bundle and Participant-scoped task-blocker identities.
+- Fixed catch-up temporal semantics so `boundary_at` preserves the planned boundary while system events use trusted gateway time and cannot precede `expedition.started`.
+- Added protected static validation and pytest coverage.
+
+Gate 9D1 is contract-only. It adds no reducer, executor, PostgreSQL wrapper, migration, runtime registration, secret, scheduler, cloud deployment, frontend implementation or pilot data. Gate 9D2 implements `start_expedition`; Gate 9D3 implements the trusted Day 1 boundary; Gate 9D4 closes fixtures and the complete vertical.
+
 ## 2026-07-21 — Gate 9C deterministic initial rotation
 
 - Accepted `ADR-020` and synchronized `generate_rotation` as a Captain-only, online-only command with exact empty payload.
