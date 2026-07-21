@@ -29,8 +29,28 @@ jobs:
           migration = Path('supabase/migrations/20260721103000_expedition_bootstrap_transaction.sql')
           text = migration.read_text(encoding='utf-8')
           text = text.replace(
-              '  select receipt.*, expedition.expedition_key\n',
-              '  select receipt, expedition.expedition_key\n',
+              '  v_existing_receipt ilka.command_receipts%rowtype;\n  v_existing_expedition_key text;\n',
+              '  v_existing_receipt record;\n',
+              1,
+          )
+          old = '''  select receipt, expedition.expedition_key
+            into v_existing_receipt, v_existing_expedition_key
+            from ilka.command_receipts as receipt
+          '''
+          new = '''  select
+              receipt.request_hash as request_hash,
+              receipt.actor_auth_user_id as actor_auth_user_id,
+              expedition.expedition_key as expedition_key
+            into v_existing_receipt
+            from ilka.command_receipts as receipt
+          '''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'into v_existing_receipt, v_existing_expedition_key' in text:
+              raise SystemExit('unexpected replay select formatting')
+          text = text.replace(
+              'and v_existing_expedition_key = v_expedition_key then',
+              'and v_existing_receipt.expedition_key = v_expedition_key then',
               1,
           )
           migration.write_text(text, encoding='utf-8')
@@ -66,5 +86,5 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "test(gate8b): align bootstrap transaction gate"
+          git commit -m "fix(gate8b): use one replay record target"
           git push origin HEAD:feat/expedition-bootstrap-transaction
