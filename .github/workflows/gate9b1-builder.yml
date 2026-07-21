@@ -1,0 +1,72 @@
+name: Gate 9B1 one-shot builder
+
+on:
+  push:
+    branches:
+      - feat/gate-9b1-canonical-setup-contracts
+
+permissions:
+  contents: write
+
+jobs:
+  build-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/gate-9b1-canonical-setup-contracts
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install repository dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Apply Gate 9B1 canonical contract changes
+        run: python scripts/apply_gate9b1_contract.py
+
+      - name: Generate command gateway contract
+        run: python scripts/generate_supabase_command_gateway_contract.py
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format generated gateway contract
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Generate frontend command contracts
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run generate:contracts
+
+      - name: Validate canonical and Gate 9B1 contracts
+        run: |
+          python scripts/validate_repository.py .
+          python scripts/validate_expedition_setup_contract.py
+          pytest -q tests/test_expedition_setup_contract.py
+
+      - name: Remove one-shot builder
+        run: git rm scripts/apply_gate9b1_contract.py .github/workflows/gate9b1-builder.yml
+
+      - name: Commit generated Gate 9B1 branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(gate9b1): publish canonical Expedition setup contracts"
+          git push origin HEAD:feat/gate-9b1-canonical-setup-contracts
