@@ -34,29 +34,24 @@ jobs:
           from pathlib import Path
           path = Path('scripts/patch_gate9c_sources.py')
           text = path.read_text(encoding='utf-8')
-          old = '''if "    rotationExecutor,\n" not in index:
+          start_marker = 'if "    rotationExecutor,\\n" not in index:'
+          end_marker = 'index_path.write_text(index, encoding="utf-8")'
+          start = text.find(start_marker)
+          end = text.find(end_marker, start)
+          if start < 0 or end < 0:
+              raise SystemExit(f'index marker boundaries missing: start={start}, end={end}')
+          block = '''if "  rotationExecutor,\\n" not in index:
               index = replace_once(
                   index,
-                  "    invitationExecutor,\n"
-                  "  );\n",
-                  "    invitationExecutor,\n"
-                  "    rotationExecutor,\n"
-                  "  );\n",
+                  "  invitationExecutor,\\n"
+                  ");\\n",
+                  "  invitationExecutor,\\n"
+                  "  rotationExecutor,\\n"
+                  ");\\n",
                   "index handler arguments",
-              )'''
-          new = '''if "  rotationExecutor,\n" not in index:
-              index = replace_once(
-                  index,
-                  "  invitationExecutor,\n"
-                  ");\n",
-                  "  invitationExecutor,\n"
-                  "  rotationExecutor,\n"
-                  ");\n",
-                  "index handler arguments",
-              )'''
-          if text.count(old) != 1:
-              raise SystemExit(f'index marker correction count: {text.count(old)}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+              )
+          '''
+          path.write_text(text[:start] + block + text[end:], encoding='utf-8')
 
       - name: Apply canonical source synchronization
         shell: bash
