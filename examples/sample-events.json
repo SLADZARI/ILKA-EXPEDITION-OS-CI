@@ -173,6 +173,24 @@
     "correction_of": null
   },
   {
+    "event_id": "evt_0007_ready",
+    "event_type": "expedition.ready",
+    "occurred_at": "2026-07-18T05:10:00+03:00",
+    "recorded_at": "2026-07-18T05:10:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0007",
+    "idempotency_key": "cmd_0007",
+    "schema_version": 2,
+    "payload": {
+      "rotation_id": "rotation_demo_2026_01"
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
     "event_id": "evt_0008",
     "event_type": "expedition.started",
     "occurred_at": "2026-07-18T05:15:00+03:00",

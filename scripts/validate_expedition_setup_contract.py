@@ -23,6 +23,7 @@ WORKFLOW = ROOT / ".github/workflows/validate.yml"
 CHANGELOG = ROOT / "CHANGELOG.md"
 SETUP_COMMAND_EXAMPLES = ROOT / "examples/sample-expedition-setup-commands.json"
 SETUP_EVENT_EXAMPLES = ROOT / "examples/sample-expedition-setup-events.json"
+MAIN_EVENT_EXAMPLES = ROOT / "examples/sample-events.json"
 
 SETUP_COMMANDS = {"invite_participant", "accept_invitation", "revoke_invitation"}
 SETUP_EVENTS = {"invitation.created", "invitation.accepted", "invitation.revoked", "expedition.ready"}
@@ -52,7 +53,7 @@ def main() -> int:
     required = (
         ADR, ARCH, SETUP_SCHEMA, COMMAND_SCHEMA, EVENT_SCHEMA, COMMANDS, EVENTS,
         ENGINE, PERMISSIONS, APP_COMMANDS, RUNTIME_REGISTRY, WORKFLOW, CHANGELOG,
-        SETUP_COMMAND_EXAMPLES, SETUP_EVENT_EXAMPLES,
+        SETUP_COMMAND_EXAMPLES, SETUP_EVENT_EXAMPLES, MAIN_EVENT_EXAMPLES,
     )
     for path in required:
         if not path.is_file():
@@ -207,6 +208,28 @@ def main() -> int:
     serialized_events = json.dumps(event_examples, sort_keys=True)
     if "invitation_token" in serialized_events or "token_hash" in serialized_events or "anna@example.test" in serialized_events:
         errors.append("setup event examples expose raw invitation identity or secret")
+
+    def validate_rotation_ready_pair(values: list[dict], label: str) -> None:
+        for index, item in enumerate(values):
+            if item.get("event_type") != "expedition.ready":
+                continue
+            if index == 0:
+                errors.append(f"{label}: expedition.ready has no preceding rotation.generated")
+                continue
+            previous = values[index - 1]
+            if previous.get("event_type") != "rotation.generated":
+                errors.append(f"{label}: expedition.ready must immediately follow rotation.generated")
+                continue
+            if previous.get("command_id") != item.get("command_id"):
+                errors.append(f"{label}: rotation.generated and expedition.ready must share command_id")
+            if previous.get("payload", {}).get("rotation_id") != item.get("payload", {}).get("rotation_id"):
+                errors.append(f"{label}: rotation.generated and expedition.ready must share rotation_id")
+
+    validate_rotation_ready_pair(event_examples, "setup event examples")
+    validate_rotation_ready_pair(
+        json.loads(MAIN_EVENT_EXAMPLES.read_text(encoding="utf-8")),
+        "main event examples",
+    )
 
     registry = RUNTIME_REGISTRY.read_text(encoding="utf-8")
     if "day1_pilot_v1" in registry:
