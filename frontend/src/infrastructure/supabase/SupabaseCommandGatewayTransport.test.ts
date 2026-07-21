@@ -142,12 +142,12 @@ describe('SupabaseCommandGatewayTransport', () => {
     if (delivery.kind === 'retryable_error') expect(delivery.error.code).toBe('network_unavailable');
   });
 
-  it('does not accept malformed success data', async () => {
+  it('keeps malformed success data retryable', async () => {
     const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ request_id: 'request_05', data: {} }), { status: 200 }));
 
     const delivery = await transport(fetchImpl).dispatch(command());
 
-    expect(delivery.kind).toBe('terminal_error');
-    if (delivery.kind === 'terminal_error') expect(delivery.error.code).toBe('invalid_gateway_response');
+    expect(delivery.kind).toBe('retryable_error');
+    if (delivery.kind === 'retryable_error') expect(delivery.error.code).toBe('invalid_gateway_response');
   });
 });
