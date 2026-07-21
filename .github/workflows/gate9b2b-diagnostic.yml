@@ -1,0 +1,38 @@
+name: Gate 9B2B pgTAP diagnostic
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  invitation-pgtap:
+    if: github.head_ref == 'feat/gate-9b2b-invitation-persistence'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Run invitation pgTAP with compact failure log
+        shell: bash
+        run: |
+          supabase start >/tmp/supabase-start.log 2>&1
+          if ! supabase test db supabase/tests/invitation_transactions.test.sql >/tmp/gate9b2b-pgtap.log 2>&1; then
+            tail -n 100 /tmp/gate9b2b-pgtap.log
+            exit 1
+          fi
+          tail -n 20 /tmp/gate9b2b-pgtap.log
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup >/dev/null 2>&1 || true
