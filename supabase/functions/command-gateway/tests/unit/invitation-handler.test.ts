@@ -181,7 +181,10 @@ Deno.test("gateway returns runtime_release_unavailable when invitation executor 
   const response = await handler(post(command("invite_participant")));
   assertEquals(response.status, 503);
   const payload = await body(response);
-  assertEquals((payload.error as Record<string, unknown>).code, "runtime_release_unavailable");
+  assertEquals(
+    (payload.error as Record<string, unknown>).code,
+    "runtime_release_unavailable",
+  );
 });
 
 Deno.test("gateway maps stable InvitationExecutor failures", async () => {

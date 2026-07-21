@@ -107,7 +107,7 @@ def main() -> int:
         executor,
         (
             "createInvitationExecutor",
-            'crypto.subtle.digest("SHA-256"',
+            '"SHA-256"',
             "invitation_ttl_hours * 60 * 60 * 1000",
             "loadActiveProfile",
             "loadAcceptanceCandidate",

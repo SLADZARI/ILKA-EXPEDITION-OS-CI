@@ -1,8 +1,6 @@
 import { AuthServiceError } from "./auth.ts";
 import type { BootstrapExecutor } from "./bootstrap.ts";
 import type { InvitationExecutor } from "./invitation.ts";
-import type { InvitationExecutor } from "./invitation.ts";
-import type { InvitationExecutor } from "./invitation.ts";
 import { commandRequestHash } from "./canonical-json.ts";
 import {
   COMMAND_CONTRACTS,

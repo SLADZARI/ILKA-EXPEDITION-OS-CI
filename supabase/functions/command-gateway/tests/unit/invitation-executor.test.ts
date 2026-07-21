@@ -131,18 +131,16 @@ function context(
     projection_version: projectionVersion,
     runtime_release: release,
     actor,
-    projections: projectionVersion === 0
-      ? []
-      : [{
-        projection_key: "expedition_setup_view",
-        projection_type: "expedition_setup_view",
-        subject_id: null,
-        schema_id: EXPEDITION_SETUP_VIEW_SCHEMA_ID,
-        schema_version: "1",
-        projection: baseView(),
-        projection_version: projectionVersion,
-        source_stream_position: 2,
-      }],
+    projections: projectionVersion === 0 ? [] : [{
+      projection_key: "expedition_setup_view",
+      projection_type: "expedition_setup_view",
+      subject_id: null,
+      schema_id: EXPEDITION_SETUP_VIEW_SCHEMA_ID,
+      schema_version: "1",
+      projection: baseView(),
+      projection_version: projectionVersion,
+      source_stream_position: 2,
+    }],
   };
 }
 

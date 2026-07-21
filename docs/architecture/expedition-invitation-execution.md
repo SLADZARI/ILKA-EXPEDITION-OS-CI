@@ -131,6 +131,8 @@ participant_key: null
 
 The SQL wrapper creates the membership before `private.process_command`, then creates the Participant and marks the invitation accepted in the same transaction.
 
+The enforced acceptance order remains `membership → process_command → Participant → invitation accepted`.
+
 ## Secret handling
 
 Public tokens are exactly 43 unpadded base64url characters representing 32 random bytes.

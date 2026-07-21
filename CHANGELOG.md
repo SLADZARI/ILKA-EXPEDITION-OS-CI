@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-21 — Gate 9B2C invitation execution
+
+- Added pure `invite_participant`, `accept_invitation` and `revoke_invitation` reducers producing canonical invitation events and one complete `ExpeditionSetupView`.
+- Added `InvitationExecutor`, verified Auth email context, SHA-256 token hashing, server-derived 168-hour expiry and internal invitation/membership/Participant identity preparation.
+- Added the explicit pre-membership `accept_invitation` gateway branch while preserving authentication, Profile ownership, exact replay and runtime pinning.
+- Added command-specific private request validation and direct calls only to the Gate 9B2B atomic wrappers.
+- Added unit and direct PostgreSQL integration coverage for invite, acceptance, revocation, secret isolation, actor guards and setup readiness.
+- Kept the production runtime registry unchanged pending the protected composite `day1_pilot_v1` release.
+
+Gate 9B2C adds no SQL migration, runtime release registration, frontend, deployment, invitation delivery, expiration worker, rotation or pilot data.
+
 ## 2026-07-21 — Gate 9B2B invitation persistence
 
 - Added service-role-only atomic wrappers `private.invite_participant(jsonb)`, `private.accept_invitation(jsonb)` and `private.revoke_invitation(jsonb)`.

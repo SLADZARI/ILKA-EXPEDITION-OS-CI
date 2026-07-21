@@ -22,6 +22,8 @@
 9B2C — gateway executors and reducers
 ```
 
+Gate 9B2A published three private request schemas and added no SQL migration, reducer, gateway execution branch or read API.
+
 Gate 9B2A published private request schemas, lock semantics, identity rules and stable errors. Gate 9B2B implemented structural persistence wrappers and the Captain setup read API. Gate 9B2C implements pure reducers, trusted adapters and the public invitation gateway branches without changing SQL persistence or registering a production runtime release.
 
 ### Structural wrappers

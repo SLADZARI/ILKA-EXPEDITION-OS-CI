@@ -17,7 +17,8 @@ import type {
 const DB_URL = Deno.env.get("SUPABASE_DB_URL");
 
 Deno.test({
-  name: "invitation executor persists invite, pre-membership acceptance and revoke atomically",
+  name:
+    "invitation executor persists invite, pre-membership acceptance and revoke atomically",
   ignore: !DB_URL,
   async fn() {
     const connectionString = DB_URL!;

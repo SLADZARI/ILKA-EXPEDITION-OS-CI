@@ -279,11 +279,14 @@ Deno.test("revoke_invitation marks one pending invitation terminal", async () =>
 
   assertEquals(prepared.status, "accepted");
   assertEquals(prepared.events[0].event_type, "invitation.revoked");
-  const invitations = prepared.projection_mutations[0].projection.invitations as
-    Array<Record<string, JsonValue>>;
+  const invitations = prepared.projection_mutations[0].projection.invitations as Array<
+    Record<string, JsonValue>
+  >;
   assertEquals(invitations[0].status, "revoked");
-  const team = prepared.projection_mutations[0].projection.team as
-    Record<string, JsonValue>;
+  const team = prepared.projection_mutations[0].projection.team as Record<
+    string,
+    JsonValue
+  >;
   assertEquals(team.pending_invitation_count, 0);
 });
 
