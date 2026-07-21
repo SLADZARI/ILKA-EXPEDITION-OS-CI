@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-start-expedition-request.schema.json",
+  "title": "PrivateStartExpeditionRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expedition_transition",
+    "process_command_request"
+  ],
+  "properties": {
+    "expedition_transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expedition_id",
+        "expected_status",
+        "next_status",
+        "stage_id",
+        "rotation_id",
+        "rules_version"
+      ],
+      "properties": {
+        "expedition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_status": {
+          "const": "ready"
+        },
+        "next_status": {
+          "const": "active"
+        },
+        "stage_id": {
+          "const": "onboarding"
+        },
+        "rotation_id": {
+          "type": "string",
+          "pattern": "^rotation_[a-f0-9]{32}$"
+        },
+        "rules_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "process_command_request": {
+      "$ref": "./private-process-command-request.schema.json"
+    }
+  }
+}
