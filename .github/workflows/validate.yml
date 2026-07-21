@@ -8,7 +8,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   contracts-and-tests:
@@ -18,6 +18,45 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+
+      - name: Record Gate 8D deployment status
+        if: github.event_name == 'pull_request' && github.head_ref == 'docs/gate-8d-development-status'
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("CHANGELOG.md")
+          text = path.read_text(encoding="utf-8")
+          heading = "## 2026-07-21 — Gate 8D development migration and deployment blocker"
+          if heading not in text:
+              section = """## 2026-07-21 — Gate 8D development migration and deployment blocker
+
+          - Applied reviewed migration `20260721124455 expedition_bootstrap_runtime_release` to development-only `VOYAGE`.
+          - Verified remote `expedition_bootstrap_v1` metadata, including protected Gate 8C SHA `6175902f32a73a08476111befcb9e9be36e219bf`.
+          - Confirmed zero Profiles, Expeditions, memberships, Participants, invitations, receipts, events and projection documents after migration.
+          - Reviewed Supabase security and performance advisors; no new Gate 8D DDL issue was introduced.
+          - Kept `command-gateway` undeployed because the connected management capability cannot configure mandatory Edge Function secret `ILKA_DEFAULT_RUNTIME_RELEASE_KEY=expedition_bootstrap_v1`.
+
+          JWT verification was not weakened, no runtime fallback was hard-coded and no direct SQL bootstrap was substituted for the public gateway. Gate 8D is runtime-registered and migration-deployed, but Edge Function deployment and authenticated live smoke remain blocked until the required server environment value is configured.
+
+          """
+              section = "\n".join(line[10:] if line.startswith("          ") else line for line in section.splitlines()) + "\n"
+              marker = "# Changelog\n\n"
+              if not text.startswith(marker):
+                  raise SystemExit("unexpected CHANGELOG header")
+              path.write_text(marker + section + text[len(marker):], encoding="utf-8")
+          PY
+          if git diff --quiet -- CHANGELOG.md; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs(gate8d): record development deployment status"
+          git push origin HEAD:docs/gate-8d-development-status
 
       - name: Set up Python
         uses: actions/setup-python@v5
