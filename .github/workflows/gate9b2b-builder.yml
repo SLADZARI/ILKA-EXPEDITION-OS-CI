@@ -34,6 +34,9 @@ jobs:
           supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
           supabase stop --no-backup
 
+      - name: Patch implementation architecture
+        run: python scripts/patch_gate9b2b_architecture.py
+
       - name: Add Gate 9B2B changelog entry
         shell: python
         run: |
@@ -65,7 +68,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add supabase/database.types.ts CHANGELOG.md
+          git add supabase/database.types.ts CHANGELOG.md docs/architecture/expedition-invitation-transactions.md
           if git diff --cached --quiet; then
             exit 0
           fi
