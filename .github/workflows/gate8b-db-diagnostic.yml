@@ -26,8 +26,14 @@ jobs:
           version: 2.101.0
           github-token: ${{ github.token }}
 
-      - name: Start local Supabase with debug output
-        run: supabase start --debug
+      - name: Start local Supabase with compact debug tail
+        shell: bash
+        run: |
+          set +e
+          supabase start --debug > /tmp/supabase-start.log 2>&1
+          status=$?
+          tail -n 180 /tmp/supabase-start.log
+          exit "$status"
 
       - name: Stop local Supabase
         if: always()
