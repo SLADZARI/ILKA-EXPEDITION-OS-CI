@@ -155,7 +155,6 @@ function databaseFailure(error: unknown): StartExecutionOutcome {
   const message = error instanceof Error ? error.message : String(error);
   const stableCodes = [
     "active_captain_membership_required",
-    "actor_spoing_detected",
     "actor_spoofing_detected",
     "permission_denied",
     "expedition_not_found",
@@ -360,7 +359,11 @@ export function createStartExecutor(
       if (
         typeof rotation !== "object" || rotation === null || Array.isArray(rotation)
       ) {
-        return failure(500, "runtime_contract_invalid", "The start rotation is invalid.");
+        return failure(
+          500,
+          "runtime_contract_invalid",
+          "The start rotation is invalid.",
+        );
       }
       const rotationRecord = rotation as JsonObject;
       const rotationId = rotationRecord.rotation_id;
