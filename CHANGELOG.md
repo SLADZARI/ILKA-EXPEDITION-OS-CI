@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-07-21 — Gate 7 offline synchronization and reconciliation
+
+- Accepted `ADR-016` for canonical offline command delivery and authoritative projection reconciliation.
+- Split the umbrella implementation into bounded subgates 7A command contract, 7B queue persistence, 7C Supabase transport, 7D Sync Engine and 7E Participant integration.
+- Corrected frontend idempotency so every generated command uses `idempotency_key == command_id`.
+- Extended IndexedDB queue records with attempt, settlement, stable error and compact receipt metadata while preserving the original command body.
+- Added authenticated `command-gateway` HTTP transport and authoritative `api.get_today_view(...)` loader with response and identity guards.
+- Added sequential FIFO, single-flight synchronization with accepted/replay, rejected, conflict, retryable and authentication outcome mapping.
+- Required authoritative TodayView refetch before accepted commands become `synced`; rejected/conflict results never apply domain state optimistically.
+- Added Participant startup, online-event and online-enqueue synchronization triggers.
+- Kept stream conflicts terminal for the current FIFO cycle and retained pending commands after retryable/auth failures.
+- Kept the service worker free of background command submission and retained settled queue records until a separate retention decision.
+- Added generated CommandResult types, transport/queue/synchronizer tests and a protected Gate 7 static contract validator.
+
+Gate 7 adds no database migration, new server reducer, Auth UI, Realtime, Background Sync API, automatic Day 1 or cloud seed data. Live execution still requires deployment of `command-gateway`, authenticated session composition and a bootstrapped Expedition with authoritative projections.
+
 ## 2026-07-20 — Gate 6 development deployment
 
 - Applied reviewed read-model API migration `20260720223150 day1_read_model_api` to development-only `VOYAGE`.
