@@ -26,34 +26,30 @@ jobs:
           validator_path = Path('scripts/validate_expedition_rotation.py')
           validator = validator_path.read_text(encoding='utf-8')
           validator = validator.replace('import re\n', '', 1)
-          old_runtime_marker = '''            "participant_order",
-              "lowest",
-              'candidate.onboard_role_id !== "cook"','''
-          new_runtime_marker = '''            "participant_order",
-              "const productCaptain = withOnboardRole.find",
-              'candidate.onboard_role_id !== "cook"','''
-          if validator.count(old_runtime_marker) != 1:
-              raise SystemExit(f'runtime marker replacement count: {validator.count(old_runtime_marker)}')
-          validator = validator.replace(old_runtime_marker, new_runtime_marker, 1)
 
-          old_generated = '''    generated = GENERATED_CONTRACT.read_text(encoding="utf-8")
-              if not re.search(
-                  r'"generate_rotation":\\s*\\{\\s*"allowedActors":\\s*\\[\\s*"captain"\\s*\\]',
-                  generated,
-                  re.S,
-              ):
-                  errors.append("generated gateway contract must make rotation Captain-only")
-          '''
-          new_generated = '''    generated = GENERATED_CONTRACT.read_text(encoding="utf-8")
+          runtime_marker = '            "lowest",\n'
+          runtime_replacement = '            "const productCaptain = withOnboardRole.find",\n'
+          if runtime_marker in validator:
+              validator = validator.replace(runtime_marker, runtime_replacement, 1)
+          elif runtime_replacement not in validator:
+              raise SystemExit('runtime implementation marker missing')
+
+          generated_start_marker = '    generated = GENERATED_CONTRACT.read_text(encoding="utf-8")\n'
+          database_type_marker = '    if "generate_rotation: { Args: { p_request: Json }; Returns: Json }" not in DATABASE_TYPES.read_text(encoding="utf-8"):\n'
+          generated_start = validator.find(generated_start_marker)
+          generated_end = validator.find(database_type_marker, generated_start)
+          if generated_start < 0 or generated_end < 0:
+              raise SystemExit(f'generated validator boundaries missing: start={generated_start}, end={generated_end}')
+          generated_block = '''    generated = GENERATED_CONTRACT.read_text(encoding="utf-8")
               rotation_start = generated.find('"generate_rotation": {')
               rotation_end = generated.find("\\n  },", rotation_start)
               rotation_block = generated[rotation_start:rotation_end] if rotation_start >= 0 and rotation_end >= 0 else ""
               if '"allowedActors": [' not in rotation_block or '"captain"' not in rotation_block or '"system"' in rotation_block:
                   errors.append("generated gateway contract must make rotation Captain-only")
+
           '''
-          if validator.count(old_generated) != 1:
-              raise SystemExit(f'generated contract replacement count: {validator.count(old_generated)}')
-          validator_path.write_text(validator.replace(old_generated, new_generated, 1), encoding='utf-8')
+          validator = validator[:generated_start] + generated_block + validator[generated_end:]
+          validator_path.write_text(validator, encoding='utf-8')
 
           types_path = Path('supabase/database.types.ts')
           types = types_path.read_text(encoding='utf-8')
