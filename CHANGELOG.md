@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-21 — Gate 8D development migration and deployment blocker
+
+- Applied reviewed migration `20260721124455 expedition_bootstrap_runtime_release` to development-only `VOYAGE`.
+- Verified remote `expedition_bootstrap_v1` metadata, including protected Gate 8C SHA `6175902f32a73a08476111befcb9e9be36e219bf`.
+- Confirmed zero Profiles, Expeditions, memberships, Participants, invitations, receipts, events and projection documents after migration.
+- Reviewed Supabase security and performance advisors; no new Gate 8D DDL issue was introduced.
+- Kept `command-gateway` undeployed because the connected management capability cannot configure mandatory Edge Function secret `ILKA_DEFAULT_RUNTIME_RELEASE_KEY=expedition_bootstrap_v1`.
+
+JWT verification was not weakened, no runtime fallback was hard-coded and no direct SQL bootstrap was substituted for the public gateway. Gate 8D is runtime-registered and migration-deployed, but Edge Function deployment and authenticated live smoke remain blocked until the required server environment value is configured.
+
 ## 2026-07-21 — Gate 8D Expedition bootstrap release registration
 
 - Registered `expedition_bootstrap_v1` in the exact-match Engine runtime registry.
