@@ -93,7 +93,25 @@ jobs:
         run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 
       - name: Typecheck Gate 9C runtime and gateway
-        run: deno check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/rotation-*.test.ts supabase/functions/command-gateway/tests/integration/rotation-execution.test.ts supabase/functions/_shared/engine-runtime/expedition-rotation-v1.ts
+        shell: bash
+        run: |
+          if ! deno check \
+            --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway/index.ts \
+            supabase/functions/command-gateway/tests/unit/rotation-*.test.ts \
+            supabase/functions/command-gateway/tests/integration/rotation-execution.test.ts \
+            supabase/functions/_shared/engine-runtime/expedition-rotation-v1.ts \
+            > /tmp/gate9c-typecheck.log 2>&1; then
+            tail -n 200 /tmp/gate9c-typecheck.log > gate9c-typecheck-error.txt
+            cat gate9c-typecheck-error.txt
+            rm -f gate9c-source-sync-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore(gate9c): capture rotation typecheck errors"
+            git push origin HEAD:feat/gate-9c-deterministic-rotation
+            exit 1
+          fi
 
       - name: Run Gate 9C unit tests
         run: deno test --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit/rotation-*.test.ts
@@ -131,7 +149,7 @@ jobs:
       - name: Commit synchronized permanent sources
         shell: bash
         run: |
-          rm -f gate9c-source-sync-error.txt
+          rm -f gate9c-source-sync-error.txt gate9c-typecheck-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
