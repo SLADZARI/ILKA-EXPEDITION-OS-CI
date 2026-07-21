@@ -17,34 +17,19 @@ ROLE_RULES = ROOT / "engine/role-rotation-rules.yaml"
 ROLES = ROOT / "engine/roles-catalog.yaml"
 ONBOARDING = ROOT / "stages/01_onboarding.yaml"
 APP_COMMANDS = ROOT / "app/api/commands.yaml"
-SETUP_SCHEMA = ROOT / "app/contracts/expedition-setup-view.schema.json"
-TODAY_SCHEMA = ROOT / "app/contracts/today-view.schema.json"
-CAPTAIN_SCHEMA = ROOT / "app/contracts/captain-day-view.schema.json"
-COMMAND_SCHEMA = ROOT / "schemas/command.schema.json"
-EVENT_SCHEMA = ROOT / "engine/event.schema.json"
-CARD_SCHEMA = ROOT / "schemas/card.schema.json"
 RUNTIME_REGISTRY = ROOT / "supabase/functions/_shared/command-gateway/runtime-registry.ts"
 WORKFLOW = ROOT / ".github/workflows/validate.yml"
-
+SCHEMAS = (
+    ROOT / "schemas/command.schema.json",
+    ROOT / "engine/event.schema.json",
+    ROOT / "schemas/card.schema.json",
+    ROOT / "app/contracts/expedition-setup-view.schema.json",
+    ROOT / "app/contracts/today-view.schema.json",
+    ROOT / "app/contracts/captain-day-view.schema.json",
+)
 REQUIRED = (
-    ADR,
-    ARCH,
-    COMMANDS,
-    ENGINE,
-    PERMISSIONS,
-    PIPELINE,
-    ROLE_RULES,
-    ROLES,
-    ONBOARDING,
-    APP_COMMANDS,
-    SETUP_SCHEMA,
-    TODAY_SCHEMA,
-    CAPTAIN_SCHEMA,
-    COMMAND_SCHEMA,
-    EVENT_SCHEMA,
-    CARD_SCHEMA,
-    RUNTIME_REGISTRY,
-    WORKFLOW,
+    ADR, ARCH, COMMANDS, ENGINE, PERMISSIONS, PIPELINE, ROLE_RULES,
+    ROLES, ONBOARDING, APP_COMMANDS, RUNTIME_REGISTRY, WORKFLOW, *SCHEMAS,
 )
 
 
@@ -61,11 +46,8 @@ def require(text: str, values: tuple[str, ...], label: str, errors: list[str]) -
             errors.append(f"{label}: missing {value}")
 
 
-def command(items: list[dict], command_type: str) -> dict:
-    return next(
-        (item for item in items if item.get("command_type") == command_type),
-        {},
-    )
+def find_command(items: list[dict], command_type: str) -> dict:
+    return next((item for item in items if item.get("command_type") == command_type), {})
 
 
 def main() -> int:
@@ -93,6 +75,9 @@ def main() -> int:
             "x-ilka-system-timestamp",
             "x-ilka-system-signature",
             "HMAC-SHA256",
+            "occurred_at = trusted gateway received_at",
+            "recorded_at = trusted gateway received_at",
+            "cannot appear to have occurred before the accepted `expedition.started`",
             "private.start_expedition(jsonb)",
             "private.process_day_boundary(jsonb)",
             "<participant_key>:<task_id>",
@@ -109,87 +94,81 @@ def main() -> int:
             "ExpeditionSetupView.ready",
             "Human start command path",
             "Trusted system clock path",
-            "constant time",
+            "constant time comparison",
             "loadSystemContext",
             "Assignment instances",
             "Card Bundles",
             "Projection construction",
+            "boundary_at = scheduled local boundary instant",
+            "occurred_at = trusted gateway received_at",
+            "catch-up events never appear before `expedition.started`",
             "private.process_command(jsonb)",
             "Conflict and replay matrix",
         ),
         "Day 1 architecture",
         errors,
     )
+    if "Domain `occurred_at` is `boundary_at`" in architecture:
+        errors.append("architecture retains invalid catch-up occurred_at semantics")
 
     commands = yaml.safe_load(COMMANDS.read_text(encoding="utf-8"))
     if commands.get("idempotency_key") != "command_id":
-        errors.append("command catalog global idempotency must remain command_id")
+        errors.append("global idempotency must remain command_id")
     items = commands.get("commands", [])
 
-    start = command(items, "start_expedition")
-    if start.get("allowed_actors") != ["captain"]:
-        errors.append("start_expedition must be Captain-only")
-    if start.get("payload_required") != []:
-        errors.append("start_expedition payload must remain empty")
-    if start.get("emits") != ["expedition.started", "stage.opened"]:
-        errors.append("start_expedition event order drifted")
-    if start.get("offline_allowed") is not False:
-        errors.append("start_expedition must remain online-only")
+    start = find_command(items, "start_expedition")
+    expected_start = {
+        "allowed_actors": ["captain"],
+        "payload_required": [],
+        "emits": ["expedition.started", "stage.opened"],
+        "offline_allowed": False,
+    }
+    for key, expected in expected_start.items():
+        if start.get(key) != expected:
+            errors.append(f"start_expedition {key} drifted")
 
-    boundary = command(items, "process_day_boundary")
-    if boundary.get("allowed_actors") != ["system_clock"]:
-        errors.append("process_day_boundary must be system_clock-only")
-    if boundary.get("payload_required") != ["local_calendar_date", "boundary_at"]:
-        errors.append("process_day_boundary payload contract drifted")
-    if boundary.get("command_id_template") != "cmd_day_boundary_<expedition_id>_<local_calendar_date_compact>":
-        errors.append("deterministic boundary command ID template drifted")
-    if boundary.get("idempotency_key") != "command_id":
-        errors.append("boundary idempotency key must equal command_id")
-    if boundary.get("transport") != "trusted_system_clock":
-        errors.append("boundary must use trusted_system_clock transport")
-    if boundary.get("browser_api_allowed") is not False:
-        errors.append("browser must not submit process_day_boundary")
-    if boundary.get("emits") != [
-        "day.started",
-        "role_assignments.activated",
-        "card_bundles.published",
-    ]:
-        errors.append("Day 1 base event order drifted")
-    conditional = boundary.get("conditional_emits", {})
-    if conditional.get("previous_day_exists") != [
-        "role_assignments.expired",
-        "task.overdue",
+    boundary = find_command(items, "process_day_boundary")
+    expected_boundary = {
+        "allowed_actors": ["system_clock"],
+        "payload_required": ["local_calendar_date", "boundary_at"],
+        "command_id_template": "cmd_day_boundary_<expedition_id>_<local_calendar_date_compact>",
+        "idempotency_key": "command_id",
+        "transport": "trusted_system_clock",
+        "browser_api_allowed": False,
+        "emits": ["day.started", "role_assignments.activated", "card_bundles.published"],
+        "offline_allowed": False,
+    }
+    for key, expected in expected_boundary.items():
+        if boundary.get(key) != expected:
+            errors.append(f"process_day_boundary {key} drifted")
+    if boundary.get("conditional_emits", {}).get("previous_day_exists") != [
+        "role_assignments.expired", "task.overdue"
     ]:
         errors.append("prior-day events must be conditional")
-    if boundary.get("offline_allowed") is not False:
-        errors.append("process_day_boundary must remain server-only")
 
     engine = yaml.safe_load(ENGINE.read_text(encoding="utf-8"))
     engine_commands = engine.get("commands", {})
     engine_start = engine_commands.get("start_expedition", {})
     if engine_start.get("actor_roles") != ["captain"]:
-        errors.append("game engine start_expedition actor drifted")
+        errors.append("Engine start actor drifted")
     if engine_start.get("expedition_from") != ["ready"]:
-        errors.append("game engine start_expedition must be ready-only")
+        errors.append("Engine start must be ready-only")
     if engine_start.get("emits") != ["expedition.started", "stage.opened"]:
-        errors.append("game engine start event order drifted")
+        errors.append("Engine start event order drifted")
     if "no_calendar_day_exists" not in engine_start.get("guards", []):
-        errors.append("start_expedition must guard against an existing Calendar Day")
+        errors.append("Engine start Calendar Day guard missing")
 
     engine_boundary = engine_commands.get("process_day_boundary", {})
     if engine_boundary.get("actor_roles") != ["system_clock"]:
-        errors.append("game engine boundary actor drifted")
+        errors.append("Engine boundary actor drifted")
     if engine_boundary.get("emits") != [
-        "day.started",
-        "role_assignments.activated",
-        "card_bundles.published",
+        "day.started", "role_assignments.activated", "card_bundles.published"
     ]:
-        errors.append("game engine Day 1 event order drifted")
+        errors.append("Engine Day 1 event order drifted")
     if engine_boundary.get("conditional_emits", {}).get("previous_day_exists") != [
-        "role_assignments.expired",
-        "task.overdue",
+        "role_assignments.expired", "task.overdue"
     ]:
-        errors.append("game engine prior-day events must remain conditional")
+        errors.append("Engine prior-day events must remain conditional")
 
     idempotency = engine.get("idempotency", {})
     if idempotency.get("command_invariant") != "idempotency_key_equals_command_id":
@@ -213,79 +192,72 @@ def main() -> int:
     captain = set(roles.get("captain", {}).get("can", []))
     system_clock = set(roles.get("system_clock", {}).get("can", []))
     if "start_expedition" not in captain:
-        errors.append("Captain start_expedition permission missing")
+        errors.append("Captain start permission missing")
     if "process_day_boundary" in captain:
-        errors.append("Captain must not own process_day_boundary")
+        errors.append("Captain must not own normal boundary")
     if system_clock != {"process_day_boundary"}:
-        errors.append("system_clock permission must be exactly process_day_boundary")
+        errors.append("system_clock permission drifted")
     restrictions = permissions.get("restrictions", {})
     if restrictions.get("normal_day_start") != "system_clock_only":
         errors.append("normal day start restriction drifted")
     if restrictions.get("captain_cannot_impersonate_system_clock") is not True:
-        errors.append("Captain system_clock impersonation restriction missing")
+        errors.append("Captain impersonation restriction missing")
 
     pipeline = yaml.safe_load(PIPELINE.read_text(encoding="utf-8"))
     stages = pipeline.get("stages", [])
     if not stages or stages[0].get("id") != "onboarding":
-        errors.append("pipeline first Stage must remain onboarding")
+        errors.append("first Stage must remain onboarding")
     if pipeline.get("stage_progression", {}).get("card_bundles_publish_on") != "day.started":
         errors.append("Card Bundles must publish on day.started")
 
     onboarding = yaml.safe_load(ONBOARDING.read_text(encoding="utf-8"))
-    if onboarding.get("stage_id") != "onboarding":
-        errors.append("Day 1 Stage file must remain onboarding")
-    card_refs = onboarding.get("card_refs", {})
-    if not card_refs.get("shared"):
-        errors.append("onboarding shared Card Bundle refs missing")
-    if set(card_refs.get("by_product_role", {})) != {"product_captain", "product_support"}:
-        errors.append("onboarding product-role Card Bundle refs drifted")
-    expected_onboard = {"navigation", "mooring", "order", "cook", "product_focus"}
-    if set(card_refs.get("by_onboard_role", {})) != expected_onboard:
-        errors.append("onboarding onboard-role Card Bundle refs drifted")
+    refs = onboarding.get("card_refs", {})
+    if onboarding.get("stage_id") != "onboarding" or not refs.get("shared"):
+        errors.append("onboarding Card Bundle source incomplete")
+    if set(refs.get("by_product_role", {})) != {"product_captain", "product_support"}:
+        errors.append("product-role card refs drifted")
+    if set(refs.get("by_onboard_role", {})) != {
+        "navigation", "mooring", "order", "cook", "product_focus"
+    }:
+        errors.append("onboard-role card refs drifted")
+
+    role_rules = yaml.safe_load(ROLE_RULES.read_text(encoding="utf-8"))
+    if role_rules.get("rotation", {}).get("participant_order_source") != "participants.participant_order":
+        errors.append("Participant ordering source drifted")
+    role_catalog = yaml.safe_load(ROLES.read_text(encoding="utf-8"))
+    product_roles = {item.get("id") for item in role_catalog.get("product_roles", [])}
+    if not {"product_captain", "product_support"} <= product_roles:
+        errors.append("Day 1 product roles unresolved")
 
     app = yaml.safe_load(APP_COMMANDS.read_text(encoding="utf-8"))
     day1 = app.get("expedition_day1_start", {})
     if day1.get("source_of_truth") != "docs/decisions/ADR-021-start-expedition-and-day1-boundary.md":
-        errors.append("app transport must point to ADR-021")
+        errors.append("app transport source must be ADR-021")
     if day1.get("implementation_status") != "contracts_only_gate_9d1":
-        errors.append("Gate 9D1 app status must remain contract-only")
-    app_start = day1.get("start_expedition", {})
-    if app_start.get("creates_calendar_day") is not False:
-        errors.append("start_expedition transport must not create a Calendar Day")
+        errors.append("Gate 9D1 status must remain contract-only")
+    if day1.get("start_expedition", {}).get("creates_calendar_day") is not False:
+        errors.append("start transport must not create Day")
     app_boundary = day1.get("process_day_boundary", {})
     if app_boundary.get("browser_api_allowed") is not False:
-        errors.append("app transport must deny browser boundary execution")
+        errors.append("browser boundary execution must remain denied")
     if app_boundary.get("day1_events") != [
-        "day.started",
-        "role_assignments.activated",
-        "card_bundles.published",
+        "day.started", "role_assignments.activated", "card_bundles.published"
     ]:
-        errors.append("app Day 1 event projection drifted")
+        errors.append("app Day 1 event order drifted")
     headers = day1.get("system_clock_headers", {})
     if headers.get("timestamp") != "x-ilka-system-timestamp":
-        errors.append("system timestamp header drifted")
+        errors.append("timestamp header drifted")
     if headers.get("signature") != "x-ilka-system-signature":
-        errors.append("system signature header drifted")
+        errors.append("signature header drifted")
     if headers.get("constant_time_compare_required") is not True:
-        errors.append("system signature must require constant-time comparison")
+        errors.append("constant-time comparison requirement missing")
     if day1.get("participant_task_blocker_key") != "<participant_key>:<task_id>":
-        errors.append("Participant-scoped task blocker contract drifted")
+        errors.append("Participant task blocker key drifted")
 
-    role_rules = yaml.safe_load(ROLE_RULES.read_text(encoding="utf-8"))
-    if role_rules.get("rotation", {}).get("participant_order_source") != "participants.participant_order":
-        errors.append("Day 1 assignments must retain Participant order source")
-    roles_catalog = yaml.safe_load(ROLES.read_text(encoding="utf-8"))
-    product_roles = {item.get("id") for item in roles_catalog.get("product_roles", [])}
-    if not {"product_captain", "product_support"} <= product_roles:
-        errors.append("Day 1 product roles are not resolvable")
-
-    registry = RUNTIME_REGISTRY.read_text(encoding="utf-8")
-    if "day1_pilot_v1" in registry:
+    if "day1_pilot_v1" in RUNTIME_REGISTRY.read_text(encoding="utf-8"):
         errors.append("Gate 9D1 must not register day1_pilot_v1")
-
-    workflow = WORKFLOW.read_text(encoding="utf-8")
-    if "python scripts/validate_expedition_day1_start_contract.py" not in workflow:
-        errors.append("protected CI does not execute Gate 9D1 validator")
+    if "python scripts/validate_expedition_day1_start_contract.py" not in WORKFLOW.read_text(encoding="utf-8"):
+        errors.append("protected CI does not run Gate 9D1 validator")
 
     if errors:
         return report(errors)
