@@ -216,7 +216,7 @@ Deno.test({
         contextDatabase: gatewayDatabase,
         schemas: createSchemaValidator(),
         runtimes: new StaticRuntimeRegistry([runtime]),
-        now: () => new Date("2026-07-21T21:05:00Z"),
+        now: () => new Date("2026-07-21T21:05:03Z"),
         uuid: () => {
           const value = ids[idIndex++];
           if (!value) throw new Error("integration_uuid_sequence_exhausted");
