@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-bootstrap-expedition-request.schema.json",
+  "title": "PrivateBootstrapExpeditionRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expedition",
+    "captain_membership",
+    "process_command_request"
+  ],
+  "properties": {
+    "expedition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "expedition_key",
+        "name",
+        "timezone",
+        "day_boundary_local_time",
+        "duration_days",
+        "recovery_days_available",
+        "runtime_release_id",
+        "created_by_profile_id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expedition_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_]{0,127}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "day_boundary_local_time": {
+          "type": "string",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "duration_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        },
+        "recovery_days_available": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "runtime_release_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "created_by_profile_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "captain_membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "profile_id", "role", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "profile_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "role": {
+          "const": "captain"
+        },
+        "status": {
+          "const": "active"
+        }
+      }
+    },
+    "process_command_request": {
+      "allOf": [
+        {
+          "$ref": "./private-process-command-request.schema.json"
+        },
+        {
+          "properties": {
+            "expected_stream_position": {
+              "const": 0
+            },
+            "status": {
+              "const": "accepted"
+            },
+            "projection_mutations": {
+              "maxItems": 0
+            },
+            "rejection": {
+              "type": "null"
+            },
+            "command": {
+              "properties": {
+                "command_type": {
+                  "const": "create_expedition"
+                },
+                "actor_role": {
+                  "const": "captain"
+                },
+                "day_number": {
+                  "type": "null"
+                },
+                "stage_id": {
+                  "type": "null"
+                },
+                "day_revision": {
+                  "type": "null"
+                }
+              }
+            },
+            "actor_context": {
+              "properties": {
+                "actor_role": {
+                  "const": "captain"
+                },
+                "participant_id": {
+                  "type": "null"
+                }
+              }
+            },
+            "events": {
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "../../engine/event.schema.json"
+                  },
+                  {
+                    "properties": {
+                      "event_type": {
+                        "const": "expedition.created"
+                      },
+                      "actor_role": {
+                        "const": "captain"
+                      },
+                      "day_number": {
+                        "type": "null"
+                      },
+                      "stage_id": {
+                        "type": "null"
+                      },
+                      "day_revision": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

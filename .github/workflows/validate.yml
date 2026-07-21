@@ -35,6 +35,9 @@ jobs:
       - name: Validate canonical repository
         run: python scripts/validate_repository.py .
 
+      - name: Validate Expedition bootstrap contract
+        run: python scripts/validate_expedition_bootstrap_contract.py
+
       - name: Run test suite
         run: pytest -q
 
