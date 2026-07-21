@@ -1,0 +1,59 @@
+name: Gate 9B2C integration diagnostic
+
+on:
+  push:
+    branches:
+      - feat/gate-9b2c-invitation-execution
+
+permissions:
+  contents: write
+
+jobs:
+  integration:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/gate-9b2c-invitation-execution
+          token: ${{ github.token }}
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Run invitation integration and persist failure
+        shell: bash
+        run: |
+          supabase start >/tmp/supabase-start.log 2>&1
+          supabase db reset >/tmp/supabase-reset.log 2>&1
+          db_url="$(supabase status -o json | jq -r '.DB_URL')"
+          if ! SUPABASE_DB_URL="$db_url" deno test --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            --allow-env=SUPABASE_DB_URL \
+            --allow-net=127.0.0.1:54322 \
+            supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts \
+            >/tmp/gate9b2c-integration.log 2>&1; then
+            tail -n 220 /tmp/gate9b2c-integration.log > gate9b2c-integration-error.txt
+            cat gate9b2c-integration-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add gate9b2c-integration-error.txt
+            git commit -m "chore(gate9b2c): capture integration error"
+            git push origin HEAD:feat/gate-9b2c-invitation-execution
+            exit 1
+          fi
+          rm -f gate9b2c-integration-error.txt
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup >/dev/null 2>&1 || true
