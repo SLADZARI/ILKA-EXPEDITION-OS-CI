@@ -55,31 +55,28 @@
     "event_type": "rotation.generated",
     "occurred_at": "2026-07-21T17:00:00+02:00",
     "recorded_at": "2026-07-21T17:00:01+02:00",
-    "actor_id": "captain_01",
+    "actor_id": "member_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
     "actor_role": "captain",
     "expedition_id": "ilka_setup_demo",
     "command_id": "cmd_setup_rotation_01",
     "idempotency_key": "cmd_setup_rotation_01",
     "schema_version": 1,
     "payload": {
-      "rotation_id": "rotation_ilka_setup_demo_v1",
-      "seed": "ilka_setup_demo:participant_order:v1",
+      "rotation_id": "rotation_0123456789abcdef0123456789abcdef",
+      "seed": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       "rules_version": 2,
       "assignments": [
         {
-          "assignment_id": "assignment_11111111111111111111111111111111",
           "participant_id": "participant_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           "product_role_id": "product_captain",
           "onboard_role_id": "navigation"
         },
         {
-          "assignment_id": "assignment_22222222222222222222222222222222",
           "participant_id": "participant_cccccccccccccccccccccccccccccccc",
           "product_role_id": "product_support",
           "onboard_role_id": "mooring"
         },
         {
-          "assignment_id": "assignment_33333333333333333333333333333333",
           "participant_id": "participant_dddddddddddddddddddddddddddddddd",
           "product_role_id": "product_support",
           "onboard_role_id": "order"
@@ -92,14 +89,14 @@
     "event_type": "expedition.ready",
     "occurred_at": "2026-07-21T17:00:00+02:00",
     "recorded_at": "2026-07-21T17:00:01+02:00",
-    "actor_id": "captain_01",
+    "actor_id": "member_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
     "actor_role": "captain",
     "expedition_id": "ilka_setup_demo",
     "command_id": "cmd_setup_rotation_01",
     "idempotency_key": "cmd_setup_rotation_01",
     "schema_version": 1,
     "payload": {
-      "rotation_id": "rotation_ilka_setup_demo_v1"
+      "rotation_id": "rotation_0123456789abcdef0123456789abcdef"
     }
   },
   {

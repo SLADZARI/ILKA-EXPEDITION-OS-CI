@@ -1,12 +1,21 @@
 version: 2
 rotation:
   mode: sequential
-  participant_order_source: expedition_membership_order
+  participant_order_source: participants.participant_order
   advance_trigger: day.started
   preview_days: 3
   deterministic: true
-  seed_fields: [expedition_id, participant_order]
+  rules_version: 2
+  seed_fields: [expedition_key, rotation_rules_version, participant_id, participant_order]
 onboard_role_cycle: [navigation, mooring, order, cook, product_focus]
+initial_rotation:
+  stage_id: onboarding
+  participant_order_source: participants.participant_order
+  product_captain_selection: lowest_participant_order_not_cook
+  product_captain_role: product_captain
+  default_product_role: product_support
+  cook_product_role: product_support
+  assignment_scope: initial_day_1
 assignment_constraints:
   exactly_one_onboard_role_per_participant: true
   exactly_one_product_role_per_participant: true

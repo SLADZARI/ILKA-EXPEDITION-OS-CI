@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-21 — Gate 9C deterministic initial rotation
+
+- Accepted `ADR-020` and synchronized `generate_rotation` as a Captain-only, online-only command with exact empty payload.
+- Added a pure deterministic rotation reducer using stable `participants.participant_order`, the sequential onboard cycle and one compatible Day 1 Product Captain.
+- Added server-derived SHA-256 seed and stable `rotation_<32 hex>` identity; Cook always receives `product_support`.
+- Added `RotationExecutor`, private request validation and service-role-only `private.generate_rotation(jsonb)`.
+- Preserved `private.process_command(jsonb)` as the only receipt/event/projection writer and atomically transitioned `ilka.expeditions.status` from `draft` to `ready`.
+- Added unit, pgTAP, full gateway/PostgreSQL integration and protected static validation coverage.
+
+Gate 9C adds one reviewed local migration but no rotation table, production runtime registration, cloud migration application, Edge Function deployment, frontend, Day 1 boundary or pilot data.
+
 ## 2026-07-21 — Gate 9B2C invitation execution
 
 - Added pure `invite_participant`, `accept_invitation` and `revoke_invitation` reducers producing canonical invitation events and one complete `ExpeditionSetupView`.

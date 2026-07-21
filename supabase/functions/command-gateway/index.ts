@@ -5,6 +5,8 @@ import { PostgresGatewayDatabase } from "../_shared/command-gateway/database.ts"
 import { createCommandGatewayHandler } from "../_shared/command-gateway/handler.ts";
 import { PostgresInvitationDatabase } from "../_shared/command-gateway/invitation-database.ts";
 import { createInvitationExecutor } from "../_shared/command-gateway/invitation.ts";
+import { PostgresRotationDatabase } from "../_shared/command-gateway/rotation-database.ts";
+import { createRotationExecutor } from "../_shared/command-gateway/rotation.ts";
 import { commandGatewayRuntimeRegistry } from "../_shared/command-gateway/runtime-registry.ts";
 import { createSchemaValidator } from "../_shared/command-gateway/schema-validation.ts";
 
@@ -33,6 +35,7 @@ const connectionString = requiredEnv("SUPABASE_DB_URL");
 const database = new PostgresGatewayDatabase(connectionString);
 const bootstrapDatabase = new PostgresBootstrapDatabase(connectionString);
 const invitationDatabase = new PostgresInvitationDatabase(connectionString);
+const rotationDatabase = new PostgresRotationDatabase(connectionString);
 const schemas = createSchemaValidator();
 const auth = createSupabaseAuthVerifier({
   baseUrl: supabaseUrl,
@@ -58,6 +61,14 @@ const invitationExecutor = createInvitationExecutor({
   uuid: () => crypto.randomUUID(),
 });
 
+const rotationExecutor = createRotationExecutor({
+  database: rotationDatabase,
+  contextDatabase: database,
+  schemas,
+  runtimes: commandGatewayRuntimeRegistry,
+  now,
+});
+
 const handler = createCommandGatewayHandler(
   {
     auth,
@@ -70,6 +81,7 @@ const handler = createCommandGatewayHandler(
   },
   bootstrapExecutor,
   invitationExecutor,
+  rotationExecutor,
 );
 
 Deno.serve(handler);

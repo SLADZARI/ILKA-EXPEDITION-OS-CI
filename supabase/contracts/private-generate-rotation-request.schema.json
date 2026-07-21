@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-generate-rotation-request.schema.json",
+  "title": "PrivateGenerateRotationRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expedition_transition",
+    "process_command_request"
+  ],
+  "properties": {
+    "expedition_transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expedition_id",
+        "expected_status",
+        "next_status",
+        "rotation_id",
+        "rules_version"
+      ],
+      "properties": {
+        "expedition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_status": {
+          "const": "draft"
+        },
+        "next_status": {
+          "const": "ready"
+        },
+        "rotation_id": {
+          "type": "string",
+          "pattern": "^rotation_[a-f0-9]{32}$"
+        },
+        "rules_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "process_command_request": {
+      "$ref": "./private-process-command-request.schema.json"
+    }
+  }
+}

@@ -170,6 +170,9 @@ jobs:
       - name: Validate Expedition invitation execution
         run: python scripts/validate_expedition_invitation_execution.py
 
+      - name: Validate Expedition rotation
+        run: python scripts/validate_expedition_rotation.py
+
       - name: Verify generated sources are committed
         shell: bash
         run: |

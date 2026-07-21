@@ -37,5 +37,18 @@
       "invitation_id": "invitation_22222222222222222222222222222222",
       "reason": "Participant cannot join the expedition."
     }
+  },
+  {
+    "command_id": "cmd_setup_rotation_01",
+    "command_type": "generate_rotation",
+    "issued_at": "2026-07-21T17:00:00+02:00",
+    "actor_id": "member_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "actor_role": "captain",
+    "expedition_id": "ilka_setup_demo",
+    "idempotency_key": "cmd_setup_rotation_01",
+    "day_number": null,
+    "stage_id": null,
+    "day_revision": null,
+    "payload": {}
   }
 ]

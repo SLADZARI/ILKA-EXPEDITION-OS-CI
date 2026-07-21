@@ -207,6 +207,18 @@ Gate 9B2C invitation execution is complete locally under accepted `ADR-019`:
 
 The production runtime registry remains unchanged. Gate 9E will compose and pin the protected `day1_pilot_v1` runtime before migration application, gateway deployment and pilot smoke.
 
+Gate 9C deterministic initial rotation is complete locally under accepted `ADR-020`:
+
+- `generate_rotation` is Captain-only, online-only and accepts no browser assignment, seed or rules fields;
+- active Participants are ordered only by stable `participants.participant_order`;
+- the pure runtime assigns the sequential onboard cycle, exactly one compatible Product Captain and `product_support` to Cook;
+- SHA-256 seed and `rotation_<32 hex>` identity are server-derived from the pinned policy and authoritative team;
+- accepted generation appends `rotation.generated → expedition.ready`, replaces the complete `ExpeditionSetupView` and atomically transitions the Expedition from `draft` to `ready`;
+- `private.generate_rotation(jsonb)` delegates receipt, events and projection writes to `private.process_command(jsonb)` and no rotation table is introduced;
+- unit, pgTAP and complete gateway/PostgreSQL integration coverage is protected in CI.
+
+The production runtime registry remains unchanged. Gate 9D implements `start_expedition` and Day 1 boundary; Gate 9E composes, pins and deploys the protected `day1_pilot_v1` release.
+
 ## Run the Day 1 prototype
 
 ```bash
@@ -243,6 +255,7 @@ python scripts/validate_frontend_offline_sync.py
 python scripts/validate_expedition_bootstrap_contract.py
 python scripts/validate_expedition_bootstrap_transaction.py
 python scripts/validate_expedition_invitation_execution.py
+python scripts/validate_expedition_rotation.py
 pytest -q
 cd frontend
 npm ci

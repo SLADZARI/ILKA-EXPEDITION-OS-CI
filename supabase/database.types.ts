@@ -746,6 +746,7 @@ export type Database = {
           stream_position: number
         }[]
       }
+      generate_rotation: { Args: { p_request: Json }; Returns: Json }
       invite_participant: { Args: { p_request: Json }; Returns: Json }
       process_command: { Args: { p_request: Json }; Returns: Json }
       resolve_actor_context: {

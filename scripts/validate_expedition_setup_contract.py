@@ -26,6 +26,7 @@ SETUP_EVENT_EXAMPLES = ROOT / "examples/sample-expedition-setup-events.json"
 MAIN_EVENT_EXAMPLES = ROOT / "examples/sample-events.json"
 
 SETUP_COMMANDS = {"invite_participant", "accept_invitation", "revoke_invitation"}
+SETUP_COMMAND_EXAMPLE_TYPES = SETUP_COMMANDS | {"generate_rotation"}
 SETUP_EVENTS = {"invitation.created", "invitation.accepted", "invitation.revoked", "expedition.ready"}
 FORBIDDEN_SECRET_FIELDS = {"email", "email_normalized", "token", "invitation_token", "token_hash"}
 
@@ -202,8 +203,8 @@ def main() -> int:
         errors.append(f"ExpeditionSetupView leaks invitation fields: {sorted(leaked_projection)}")
 
     command_examples = json.loads(SETUP_COMMAND_EXAMPLES.read_text(encoding="utf-8"))
-    if {item.get("command_type") for item in command_examples} != SETUP_COMMANDS:
-        errors.append("setup command examples must cover all three commands")
+    if {item.get("command_type") for item in command_examples} != SETUP_COMMAND_EXAMPLE_TYPES:
+        errors.append("setup command examples must cover invitation commands and generate_rotation")
     event_examples = json.loads(SETUP_EVENT_EXAMPLES.read_text(encoding="utf-8"))
     serialized_events = json.dumps(event_examples, sort_keys=True)
     if "invitation_token" in serialized_events or "token_hash" in serialized_events or "anna@example.test" in serialized_events:
