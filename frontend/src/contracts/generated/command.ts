@@ -51,9 +51,7 @@ export type unban_participantPayload = {
   [key: string]: unknown;
 };
 export type generate_rotationPayload = {
-  "seed": string | number;
-  "rules_version": number | string;
-  [key: string]: unknown;
+
 };
 export type start_expeditionPayload = {
   [key: string]: unknown;
