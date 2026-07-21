@@ -52,12 +52,14 @@ jobs:
 
           executor_path = Path('supabase/functions/_shared/command-gateway/invitation.ts')
           executor = executor_path.read_text(encoding='utf-8')
-          old = '''      try {
+          old = '''      let result: ProcessCommandResult;
+              try {
                 result = await persist(dependencies.database, commandType, outerRequest);
               } catch (error) {
                 return databaseFailure(error);
               }'''
-          new = '''      try {
+          new = '''      let result: ProcessCommandResult;
+              try {
                 result = await persist(dependencies.database, commandType, outerRequest);
               } catch (error) {
                 throw error;
