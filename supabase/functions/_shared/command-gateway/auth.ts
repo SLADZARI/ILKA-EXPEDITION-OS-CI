@@ -41,12 +41,21 @@ export function createSupabaseAuthVerifier(
       if (!response.ok) throw new AuthServiceError();
 
       const body = await response.json().catch(() => null) as
-        | { id?: unknown }
+        | {
+          id?: unknown;
+          email?: unknown;
+          email_confirmed_at?: unknown;
+        }
         | null;
       if (!body || typeof body.id !== "string" || body.id.length === 0) {
         throw new AuthServiceError("invalid_auth_service_response");
       }
-      return { id: body.id };
+      return {
+        id: body.id,
+        email: typeof body.email === "string" ? body.email : null,
+        email_verified: typeof body.email_confirmed_at === "string" &&
+          body.email_confirmed_at.length > 0,
+      };
     },
   };
 }
