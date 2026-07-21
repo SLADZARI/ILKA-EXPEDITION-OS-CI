@@ -31,15 +31,34 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies and validate generated sources
+      - name: Install dependencies
         working-directory: frontend
+        run: npm ci
+      - name: Generate frontend contracts
+        working-directory: frontend
+        run: npm run generate:contracts
+      - name: Validate generated sources and capture output
+        id: validate
+        continue-on-error: true
+        working-directory: frontend
+        shell: bash
         run: |
-          npm ci
-          npm run generate:contracts
-          npm run validate:sources
+          set -o pipefail
+          npm run validate:sources 2>&1 | tee gate9b1-frontend-validator.log
+      - name: Upload frontend validator output
+        if: steps.validate.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9b1-frontend-validator-output
+          path: frontend/gate9b1-frontend-validator.log
+      - name: Stop after frontend validator diagnostic
+        if: steps.validate.outcome == 'failure'
+        run: exit 1
       - name: Remove one-shot frontend compatibility builder
+        if: steps.validate.outcome == 'success'
         run: git rm scripts/apply_gate9b1_frontend_compat.py .github/workflows/gate9b1-frontend-compat.yml
       - name: Commit final frontend compatibility update
+        if: steps.validate.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
