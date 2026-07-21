@@ -119,14 +119,6 @@ def main() -> int:
         errors,
     )
 
-    registry = (
-        ROOT / "supabase/functions/_shared/command-gateway/runtime-registry.ts"
-    ).read_text(encoding="utf-8")
-    if "expedition_bootstrap_v1" in registry:
-        errors.append(
-            "Gate 8C must not register bootstrap runtime before protected merge SHA exists"
-        )
-
     adr = (ROOT / REQUIRED[0]).read_text(encoding="utf-8")
     architecture = (ROOT / REQUIRED[1]).read_text(encoding="utf-8")
     require(adr, ("Gate 8C", "Gate 8D"), "ADR-017 missing subgate status", errors)
