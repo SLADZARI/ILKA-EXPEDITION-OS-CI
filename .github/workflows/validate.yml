@@ -167,6 +167,9 @@ jobs:
       - name: Validate Expedition invitation persistence
         run: python scripts/validate_expedition_invitation_persistence.py
 
+      - name: Validate Expedition invitation execution
+        run: python scripts/validate_expedition_invitation_execution.py
+
       - name: Verify generated sources are committed
         shell: bash
         run: |
