@@ -1,0 +1,94 @@
+name: Gate 9C source synchronization
+
+on:
+  push:
+    branches:
+      - feat/gate-9c-deterministic-rotation
+
+permissions:
+  contents: write
+
+jobs:
+  synchronize:
+    if: github.event.head_commit.message == 'chore(gate9c): run source sync'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout Gate 9C branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/gate-9c-deterministic-rotation
+          token: ${{ github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install validation dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Apply canonical source synchronization
+        run: python scripts/patch_gate9c_sources.py
+
+      - name: Generate command gateway contract
+        run: python scripts/generate_supabase_command_gateway_contract.py
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format Gate 9C TypeScript
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+
+      - name: Typecheck Gate 9C runtime and gateway
+        run: deno check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/rotation-*.test.ts supabase/functions/command-gateway/tests/integration/rotation-execution.test.ts supabase/functions/_shared/engine-runtime/expedition-rotation-v1.ts
+
+      - name: Run Gate 9C unit tests
+        run: deno test --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit/rotation-*.test.ts
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Start and rebuild local Supabase
+        run: |
+          supabase start
+          supabase db reset
+
+      - name: Generate database types
+        run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+
+      - name: Run database tests
+        run: supabase test db
+
+      - name: Run Gate 9C PostgreSQL integration
+        shell: bash
+        run: |
+          db_url="$(supabase status -o json | jq -r '.DB_URL')"
+          SUPABASE_DB_URL="$db_url" deno test --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            --allow-env=SUPABASE_DB_URL \
+            --allow-net=127.0.0.1:54322 \
+            supabase/functions/command-gateway/tests/integration/rotation-execution.test.ts
+
+      - name: Validate Gate 9C contract
+        run: python scripts/validate_expedition_rotation.py
+
+      - name: Commit synchronized permanent sources
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(gate9c): synchronize deterministic rotation sources"
+          git push origin HEAD:feat/gate-9c-deterministic-rotation
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
