@@ -24,7 +24,7 @@ Deno.test({
     const eventId = "evt_bootstrap_integration_01_01";
     const requestHash = "d".repeat(64);
 
-    let profileId: string;
+    let profileId: string | null = null;
     try {
       await fixture.queryArray`
         insert into ilka.runtime_releases (
@@ -57,12 +57,14 @@ Deno.test({
       const profile = await fixture.queryObject<{ id: string }>`
         select id from ilka.profiles where auth_user_id = ${authUserId}::uuid
       `;
-      profileId = profile.rows[0]?.id;
-      assertExists(profileId);
+      const resolvedProfileId = profile.rows[0]?.id;
+      assertExists(resolvedProfileId);
+      profileId = resolvedProfileId;
     } finally {
       fixture.release();
       await fixturePool.end();
     }
+    assertExists(profileId);
 
     const bootstrapDatabase = new PostgresBootstrapDatabase(connectionString);
     const gatewayDatabase = new PostgresGatewayDatabase(connectionString);
