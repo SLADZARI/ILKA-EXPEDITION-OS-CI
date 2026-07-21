@@ -68,18 +68,7 @@ jobs:
           path.write_text(text, encoding='utf-8')
 
       - name: Apply canonical source synchronization
-        shell: bash
-        run: |
-          if ! python scripts/patch_gate9c_sources.py > /tmp/gate9c-source-sync.log 2>&1; then
-            tail -n 120 /tmp/gate9c-source-sync.log > gate9c-source-sync-error.txt
-            cat gate9c-source-sync-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add scripts/patch_gate9c_sources.py gate9c-source-sync-error.txt
-            git commit -m "chore(gate9c): capture source sync guard failure"
-            git push origin HEAD:feat/gate-9c-deterministic-rotation
-            exit 1
-          fi
+        run: python scripts/patch_gate9c_sources.py
 
       - name: Generate command gateway contract
         run: python scripts/generate_supabase_command_gateway_contract.py
@@ -92,26 +81,42 @@ jobs:
       - name: Format Gate 9C TypeScript
         run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 
-      - name: Typecheck Gate 9C runtime and gateway
+      - name: Commit synchronized sources before diagnostics
         shell: bash
         run: |
-          if ! deno check \
+          rm -f gate9c-source-sync-error.txt gate9c-typecheck-error.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(gate9c): synchronize deterministic rotation sources"
+          git push origin HEAD:feat/gate-9c-deterministic-rotation
+
+      - name: Typecheck Gate 9C runtime and gateway
+        id: typecheck
+        continue-on-error: true
+        shell: bash
+        run: |
+          deno check \
             --config supabase/functions/command-gateway/deno.json \
             supabase/functions/command-gateway/index.ts \
             supabase/functions/command-gateway/tests/unit/rotation-*.test.ts \
             supabase/functions/command-gateway/tests/integration/rotation-execution.test.ts \
             supabase/functions/_shared/engine-runtime/expedition-rotation-v1.ts \
-            > /tmp/gate9c-typecheck.log 2>&1; then
-            tail -n 200 /tmp/gate9c-typecheck.log > gate9c-typecheck-error.txt
-            cat gate9c-typecheck-error.txt
-            rm -f gate9c-source-sync-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "chore(gate9c): capture rotation typecheck errors"
-            git push origin HEAD:feat/gate-9c-deterministic-rotation
-            exit 1
-          fi
+            > gate9c-typecheck-error.txt 2>&1
+
+      - name: Upload typecheck diagnostic
+        if: steps.typecheck.outcome != 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9c-typecheck-error
+          path: gate9c-typecheck-error.txt
+          if-no-files-found: error
+
+      - name: Stop on typecheck failure
+        if: steps.typecheck.outcome != 'success'
+        run: |
+          tail -n 200 gate9c-typecheck-error.txt
+          exit 1
 
       - name: Run Gate 9C unit tests
         run: deno test --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit/rotation-*.test.ts
@@ -146,15 +151,17 @@ jobs:
       - name: Validate Gate 9C contract
         run: python scripts/validate_expedition_rotation.py
 
-      - name: Commit synchronized permanent sources
+      - name: Commit generated database types
         shell: bash
         run: |
-          rm -f gate9c-source-sync-error.txt gate9c-typecheck-error.txt
+          rm -f gate9c-typecheck-error.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat(gate9c): synchronize deterministic rotation sources"
-          git push origin HEAD:feat/gate-9c-deterministic-rotation
+          git add supabase/database.types.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(gate9c): refresh generated database types"
+            git push origin HEAD:feat/gate-9c-deterministic-rotation
+          fi
 
       - name: Stop local Supabase
         if: always()
