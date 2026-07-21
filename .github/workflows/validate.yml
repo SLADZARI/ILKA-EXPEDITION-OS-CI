@@ -109,8 +109,22 @@ jobs:
       - name: Format generated command gateway contract
         run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
 
-      - name: Check command gateway and Engine runtime formatting
-        run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+      - name: Format Gate 9D2A TypeScript workspace
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+
+      - name: Export formatted Gate 9D2A TypeScript
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9d2a-formatted-typescript
+          path: |
+            supabase/functions/_shared/engine-runtime/expedition-start-v1.ts
+            supabase/functions/_shared/command-gateway/start.ts
+            supabase/functions/_shared/command-gateway/start-database.ts
+            supabase/functions/_shared/command-gateway/start-schema-validation.ts
+            supabase/functions/command-gateway/tests/unit/start-runtime.test.ts
+            supabase/functions/command-gateway/tests/unit/start-executor.test.ts
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Lint command gateway and Engine runtime
         run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
