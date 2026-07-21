@@ -161,13 +161,13 @@
 [0m[32mDownload[0m https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz
 [0m[32mDownload[0m https://registry.npmjs.org/ajv-formats/-/ajv-formats-3.0.1.tgz
 [0m[32mDownload[0m https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz
-[0m[32mDownload[0m https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz
-[0m[32mDownload[0m https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz
 [0m[32mDownload[0m https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.4.tgz
-[0m[32mInitialize[0m json-schema-traverse@1.0.0
+[0m[32mDownload[0m https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz
+[0m[32mDownload[0m https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz
 [0m[32mInitialize[0m require-from-string@2.0.2
-[0m[32mInitialize[0m ajv-formats@3.0.1
 [0m[32mInitialize[0m fast-deep-equal@3.1.3
+[0m[32mInitialize[0m json-schema-traverse@1.0.0
+[0m[32mInitialize[0m ajv-formats@3.0.1
 [0m[32mInitialize[0m fast-uri@3.1.4
 [0m[32mInitialize[0m ajv@8.20.0
 [0m[32mCheck[0m supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts
@@ -177,10 +177,19 @@ invitation executor persists invite, pre-membership acceptance and revoke atomic
 [0m[1m[37m[41m ERRORS [0m
 
 invitation executor persists invite, pre-membership acceptance and revoke atomically [0m[38;5;245m=> ./supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts:19:6[0m
-[0m[1m[31merror[0m: Error: acceptance_outcome:{"status":503,"code":"invitation_persistence_unavailable","message":"The invitation command could not be committed.","retryable":true}
-      throw new Error(`acceptance_outcome:${JSON.stringify({
-[0m[31m            ^[0m
-    at [0m[1m[3mfn[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/command-gateway/tests/integration/invitation-execution.test.ts[0m:[0m[33m276[0m:[0m[33m13[0m)
+[0m[1m[31merror[0m: PostgresError: new row for relation "event_log" violates check constraint "event_log_recorded_after_occurred"
+          error = new PostgresError(
+[0m[31m                  ^[0m
+    at [0m[1m[3mConnection.#preparedQuery[0m ([0m[36mhttps://jsr.io/@db/postgres/0.19.5/connection/connection.ts[0m:[0m[33m907[0m:[0m[33m19[0m)
+    at async [0m[1m[3mConnection.query[0m ([0m[36mhttps://jsr.io/@db/postgres/0.19.5/connection/connection.ts[0m:[0m[33m994[0m:[0m[33m18[0m)
+    at async [0m[1m[3mPoolClient.#executeQuery[0m ([0m[36mhttps://jsr.io/@db/postgres/0.19.5/client.ts[0m:[0m[33m271[0m:[0m[33m12[0m)
+    at async [0m[1m[3mPoolClient.queryObject[0m ([0m[36mhttps://jsr.io/@db/postgres/0.19.5/client.ts[0m:[0m[33m464[0m:[0m[33m12[0m)
+    at async [0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/_shared/command-gateway/invitation-database.ts[0m:[0m[33m179[0m:[0m[33m17[0m
+    at async [0m[1m[3mwithServiceRole[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/_shared/command-gateway/invitation-database.ts[0m:[0m[33m64[0m:[0m[33m20[0m)
+    at async [0m[1m[3mPostgresInvitationDatabase.#call[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/_shared/command-gateway/invitation-database.ts[0m:[0m[33m171[0m:[0m[33m12[0m)
+    at async [0m[1m[3mPostgresInvitationDatabase.acceptInvitation[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/_shared/command-gateway/invitation-database.ts[0m:[0m[33m158[0m:[0m[33m12[0m)
+    at async [0m[1m[3mpersist[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/_shared/command-gateway/invitation.ts[0m:[0m[33m367[0m:[0m[33m12[0m)
+    at async [0m[1m[3mObject.execute[0m ([0m[2m[38;5;245mfile:///home/runner/work/ILKA-EXPEDITION-OS-CI/ILKA-EXPEDITION-OS-CI/[0m[0m[36msupabase/functions/_shared/command-gateway/invitation.ts[0m:[0m[33m789[0m:[0m[33m18[0m)
 
 [0m[1m[37m[41m FAILURES [0m
 
