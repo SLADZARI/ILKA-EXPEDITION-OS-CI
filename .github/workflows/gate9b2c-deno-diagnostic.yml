@@ -1,0 +1,47 @@
+name: Gate 9B2C Deno diagnostic
+
+on:
+  push:
+    branches:
+      - feat/gate-9b2c-invitation-execution
+
+permissions:
+  contents: write
+
+jobs:
+  deno-check:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/gate-9b2c-invitation-execution
+          token: ${{ github.token }}
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run Deno check and persist failure
+        shell: bash
+        run: |
+          if ! deno check --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway/index.ts \
+            supabase/functions/command-gateway/tests/unit/*.ts \
+            supabase/functions/command-gateway/tests/integration/*.ts \
+            supabase/functions/_shared/engine-runtime/*.ts \
+            > /tmp/gate9b2c-deno.log 2>&1; then
+            tail -n 240 /tmp/gate9b2c-deno.log > gate9b2c-deno-error.txt
+            cat gate9b2c-deno-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add gate9b2c-deno-error.txt
+            git commit -m "chore(gate9b2c): capture Deno type errors"
+            git push origin HEAD:feat/gate-9b2c-invitation-execution
+            exit 1
+          fi
+          rm -f gate9b2c-deno-error.txt
