@@ -61,6 +61,9 @@ jobs:
         working-directory: frontend
         run: npm run validate:sources
 
+      - name: Validate frontend offline synchronization contract
+        run: python scripts/validate_frontend_offline_sync.py
+
       - name: Validate service worker syntax
         run: node --check frontend/public/sw.js
 

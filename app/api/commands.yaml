@@ -1,17 +1,20 @@
-version: 7
+version: 8
 kind: transport_projection
 source_of_truth: engine/command-catalog.yaml
 generated_from: engine/command-catalog.yaml
 purpose: API transport and offline delivery hints only; business rules remain in the Engine catalog.
 transport:
-  endpoint: /commands
+  endpoint: /functions/v1/command-gateway
   method: POST
+  authentication: supabase_bearer_session
   request_schema: ../../schemas/command.schema.json
-  idempotency_header: Idempotency-Key
-idempotency: command_id
-server_only_commands:
-- process_day_boundary
-- publish_rating_snapshot
+  success_data_schema: ../../supabase/contracts/private-process-command-result.schema.json
+  response_envelope:
+    success: [request_id, data]
+    error: [request_id, error]
+  idempotency: command_id
+  idempotency_header: none
+  rule: command.idempotency_key_must_equal_command_id
 offline_delivery:
   queueable_commands:
   - acknowledge_card
@@ -29,7 +32,38 @@ offline_delivery:
   - synced
   - conflict
   - rejected
-  retry_policy: idempotent_by_command_id
+  retry_policy: exact_stored_command_by_command_id
+  ordering: fifo_sequential
+  single_flight: true
+  triggers:
+  - participant_app_start_online
+  - command_enqueued_online
+  - browser_online
+  - explicit_retry_pending
+  outcome_mapping:
+    accepted_or_replayed:
+      queue_status: synced
+      refetch: api.get_today_view
+    persisted_rejection:
+      queue_status: rejected
+      refetch: api.get_today_view
+    stream_conflict:
+      queue_status: conflict
+      refetch: api.get_today_view
+      stop_fifo_cycle: true
+    retryable_transport_error:
+      queue_status: pending
+      increment_attempts: true
+      stop_fifo_cycle: true
+    authentication_unavailable:
+      queue_status: pending
+      stop_fifo_cycle: true
+  authoritative_reconciliation:
+    projection: TodayView
+    rule: receipt_never_mutates_domain_fields_client_side
+server_only_commands:
+- process_day_boundary
+- publish_rating_snapshot
 server_confirmation_required:
 - advance_stage
 - override_stage_advance

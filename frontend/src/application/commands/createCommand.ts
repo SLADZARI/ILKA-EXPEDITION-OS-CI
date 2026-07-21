@@ -30,7 +30,7 @@ export function createCommand<K extends CommandType>(
     actor_id: context.actor_id,
     actor_role: context.actor_role as ActorRole,
     expedition_id: context.expedition_id,
-    idempotency_key: `${context.expedition_id}:${commandType}:${commandId}`,
+    idempotency_key: commandId,
     day_number: context.day_number ?? null,
     stage_id: context.stage_id ?? null,
     device_id: context.device_id ?? null,

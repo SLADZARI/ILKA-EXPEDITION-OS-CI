@@ -15,6 +15,7 @@ import {
   type QueuedCommand,
 } from '../application/offline/OfflineCommandQueue';
 import { CommandDispatcher } from '../application/commands/CommandDispatcher';
+import { OfflineCommandSynchronizer } from '../application/sync/OfflineCommandSynchronizer';
 import { createAcknowledgeCardCommand, createCompleteTaskCommand, createStartTaskCommand } from '../application/commands/task';
 import { createCloseExpeditionCommand } from '../application/commands/closeExpedition';
 import { TodayScreen } from '../screens/participant/TodayScreen';
@@ -42,9 +43,27 @@ function upsertQueuedCommand(items: QueuedCommand[], queued: QueuedCommand): Que
 }
 
 function ParticipantApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode: 'participant' }> }) {
-  const authoritative = bootstrap.today;
+  const [authoritative, setAuthoritative] = useState(bootstrap.today);
   const [queuedCommands, setQueuedCommands] = useState<QueuedCommand[]>([]);
   const [connectivity, setConnectivity] = useState<ConnectivityState>(currentConnectivity);
+
+  useEffect(() => setAuthoritative(bootstrap.today), [bootstrap.today]);
+
+  const synchronizer = useMemo(() => {
+    const runtime = bootstrap.sync_runtime;
+    if (!runtime) return null;
+    return new OfflineCommandSynchronizer({
+      queue,
+      transport: runtime.command_transport,
+      projection_loader: runtime.projection_loader,
+      participant_id: bootstrap.actor_id,
+      expedition_key: bootstrap.today.expedition_id,
+      is_online: runtime.is_online,
+      now: runtime.now,
+      on_queue_changed: setQueuedCommands,
+      on_projection: setAuthoritative,
+    });
+  }, [bootstrap.actor_id, bootstrap.sync_runtime, bootstrap.today.expedition_id]);
 
   useEffect(() => {
     let active = true;
@@ -64,6 +83,10 @@ function ParticipantApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode
     };
   }, []);
 
+  useEffect(() => {
+    if (synchronizer && connectivity === 'online') void synchronizer.sync();
+  }, [connectivity, synchronizer]);
+
   const data = useMemo(
     () => applyParticipantCommandOverlay(authoritative, queuedCommands, connectivity),
     [authoritative, connectivity, queuedCommands],
@@ -75,11 +98,17 @@ function ParticipantApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode
     { id: 'gamification', label: 'XP', icon: 'star', hidden: !bootstrap.gamification },
   ], [bootstrap.gamification, data.decision_vote, data.product_role]);
   const [route, setRoute] = useState(navigation.find((item) => !item.hidden)?.id ?? 'today');
-  const context = { actor_id: bootstrap.actor_id, actor_role: 'participant' as const, expedition_id: data.expedition_id,
-    day_number: data.day.number, stage_id: data.stage.stage_id };
+  const context = {
+    actor_id: bootstrap.actor_id,
+    actor_role: 'participant' as const,
+    expedition_id: data.expedition_id,
+    day_number: data.day.number,
+    stage_id: data.stage.stage_id,
+  };
   const dispatch = (command: OfflineQueueableCommand) => {
     void participantDispatcher.dispatch(command).then((result) => {
       setQueuedCommands((items) => upsertQueuedCommand(items, result.queued));
+      if (synchronizer && currentConnectivity() === 'online') void synchronizer.sync();
     });
   };
   let content;
@@ -102,8 +131,14 @@ function CaptainApp({ bootstrap }: { bootstrap: Extract<AppBootstrap, { mode: 'c
     { id: 'recovery', label: 'Recovery', icon: 'calendar', hidden: !data.controls.activate_recovery_day },
   ], [data.controls.activate_recovery_day, data.controls.advance_stage, data.controls.override_stage_advance]);
   const [route, setRoute] = useState('overview');
-  const context = { actor_id: bootstrap.actor_id, actor_role: 'captain' as const, expedition_id: data.expedition_id,
-    day_number: data.day.number, stage_id: data.stage.stage_id, day_revision: data.day.revision };
+  const context = {
+    actor_id: bootstrap.actor_id,
+    actor_role: 'captain' as const,
+    expedition_id: data.expedition_id,
+    day_number: data.day.number,
+    stage_id: data.stage.stage_id,
+    day_revision: data.day.revision,
+  };
   let content;
   if (route === 'stage') content = <StageControlScreen data={data} stages={stagePathFixture} dispatcher={captainDispatcher} context={context} />;
   else if (route === 'recovery') content = <RecoveryDayScreen data={data} dispatcher={captainDispatcher} context={context} />;

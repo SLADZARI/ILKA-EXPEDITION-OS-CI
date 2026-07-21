@@ -162,6 +162,18 @@ Gate 6 implementation is complete locally under accepted `ADR-015`:
 
 The exact `day1_complete_task_v1` runtime bundle is registered against protected reducer commit `edbfc911e9bcfddfb87a4adb6b39d21e1a5f2617`. Development `VOYAGE` now contains remote migrations `20260720223150 day1_read_model_api` and `20260720223210 day1_complete_task_runtime_release`. The three authenticated read functions and immutable runtime metadata are deployed, while all identity/history/projection tables remain empty. Cloud command execution is still blocked because `command-gateway` is not deployed without the `SUPABASE_ACCESS_TOKEN` GitHub secret.
 
+Gate 7 offline synchronization is complete locally under accepted `ADR-016` as one umbrella composed of five bounded subgates:
+
+- **7A — Canonical command contract:** frontend commands now use `idempotency_key == command_id`, retries preserve the exact stored command, and `CommandResult` is generated from the canonical Supabase result schema;
+- **7B — Offline queue persistence:** IndexedDB stores attempts, last-attempt/settlement timestamps, stable error metadata and compact immutable receipt snapshots without rewriting the canonical command;
+- **7C — Supabase transport:** authenticated HTTP adapters submit commands to `command-gateway`, load `api.get_today_view(...)`, classify auth/network/terminal failures and reject malformed or mismatched responses;
+- **7D — Sync Engine:** one single-flight FIFO cycle submits pending commands sequentially and maps accepted/replay, rejected, conflict and retryable outcomes;
+- **7E — Participant integration:** app startup, online transition and online enqueue trigger synchronization; domain state changes only after an authoritative TodayView refetch.
+
+Conflict stops later FIFO delivery, retryable/auth failures remain `pending`, settled records remain attributable in IndexedDB, and the service worker remains shell-cache-only. Gate 7 adds no client reducer, no new server reducer, no database migration, no Realtime and no automatic Day 1 bootstrap.
+
+The complete local `complete_task` path is now transport-ready, but live cloud execution still requires deployment of `command-gateway`, authenticated session composition and an actual bootstrapped Expedition/Participant/TodayView.
+
 ## Run the Day 1 prototype
 
 ```bash
@@ -194,6 +206,7 @@ From the repository root:
 ```bash
 python scripts/generate_supabase_command_gateway_contract.py
 python scripts/validate_repository.py .
+python scripts/validate_frontend_offline_sync.py
 pytest -q
 cd frontend
 npm ci
