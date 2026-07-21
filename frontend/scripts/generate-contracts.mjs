@@ -53,6 +53,11 @@ async function generateSimple(relativeInput, outputName, exportName) {
 await generateSimple('app/contracts/today-view.schema.json', 'today-view', 'TodayView');
 await generateSimple('app/contracts/captain-day-view.schema.json', 'captain-day-view', 'CaptainDayView');
 await generateSimple('schemas/gamification.schema.json', 'gamification-view', 'GamificationView');
+await generateSimple(
+  'supabase/contracts/private-process-command-result.schema.json',
+  'command-result',
+  'CommandResult',
+);
 
 const offlinePath = 'app/contracts/offline-command.schema.json';
 const offlineSchema = JSON.parse(await readFile(path.join(repo, offlinePath), 'utf8'));
