@@ -143,7 +143,12 @@ def main() -> int:
         "synchronizer missing outcome behavior",
         errors,
     )
-    if sync.find("await this.loadProjection()") > sync.find("status: 'synced'"):
+    accepted_start = sync.find("if (result.outcome === 'accepted')")
+    accepted_end = sync.find("if (result.outcome === 'rejected')", accepted_start)
+    accepted_block = sync[accepted_start:accepted_end] if accepted_start >= 0 and accepted_end > accepted_start else ""
+    if not accepted_block:
+        errors.append("synchronizer missing accepted outcome block")
+    elif accepted_block.find("await this.loadProjection()") > accepted_block.find("status: 'synced'"):
         errors.append("accepted command must refetch projection before becoming synced")
 
     gateway = GATEWAY.read_text(encoding="utf-8")
@@ -155,7 +160,8 @@ def main() -> int:
             "authentication_required",
             "retryable_error",
             "terminal_error",
-            "receipt identity does not match",
+            "invalidSuccessResponse",
+            "malformed result data",
         ),
         "command gateway transport missing boundary",
         errors,
@@ -214,12 +220,13 @@ def main() -> int:
         tests,
         (
             "canonical idempotency key",
-            "accepted command synced only after authoritative projection refetch",
+            "authoritative projection refetch",
             "stops FIFO delivery after a stream conflict",
             "keeps retryable failures pending",
             "is single-flight",
             "projection_identity_mismatch",
             "persists accepted receipt metadata",
+            "keeps malformed success data retryable",
         ),
         "Gate 7 tests missing scenario",
         errors,
