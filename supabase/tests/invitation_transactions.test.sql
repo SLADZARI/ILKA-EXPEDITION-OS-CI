@@ -510,7 +510,7 @@ select results_eq(
   array['invitation.accepted'::text, 'participant.added'::text],
   'acceptance event order is invitation.accepted then participant.added'
 );
-select is((select actor_id from ilka.event_log where command_id = 'cmd_gate9b2b_accept_a' order by stream_position limit 1), 'member_96000000000000000000000000000001', 'acceptance history uses membership actor');
+select is((select event_json ->> 'actor_id' from ilka.event_log where command_id = 'cmd_gate9b2b_accept_a' order by stream_position limit 1), 'member_96000000000000000000000000000001', 'acceptance history uses membership actor');
 select is((select actor_participant_id from ilka.command_receipts where command_id = 'cmd_gate9b2b_accept_a'), null::uuid, 'acceptance receipt does not pretend Participant existed before persistence');
 select results_eq(
   $$
@@ -969,7 +969,7 @@ select is(
 );
 select is(
   api.get_expedition_setup_view('missing_gate9b2b')::text,
-  null,
+  null::text,
   'unknown Expedition returns null without identity enumeration'
 );
 

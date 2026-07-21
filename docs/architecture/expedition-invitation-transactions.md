@@ -122,7 +122,7 @@ The wrapper resolves:
 ```text
 auth_user_id
 active profile_id
-verified normalized Auth email
+verified normalized Auth email (`email_verified = true`)
 pending invitation by UUID + Expedition + SHA-256 hash
 lowest free participant_order from 1 through 5
 ```
@@ -160,6 +160,8 @@ participant.added
 ```
 
 Only after accepted persistence does the wrapper create the Participant. If Participant insertion or invitation transition fails, the membership, receipt, events and projection roll back with it.
+
+The enforced structural order is `membership → process_command → Participant → invitation accepted`.
 
 ## `private.revoke_invitation(jsonb)`
 
