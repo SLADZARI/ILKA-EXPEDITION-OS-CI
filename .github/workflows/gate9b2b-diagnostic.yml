@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   invitation-pgtap:
@@ -14,8 +14,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Checkout
+      - name: Checkout feature branch
         uses: actions/checkout@v4
+        with:
+          ref: feat/gate-9b2b-invitation-persistence
+          token: ${{ github.token }}
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
@@ -23,15 +26,23 @@ jobs:
           version: 2.101.0
           github-token: ${{ github.token }}
 
-      - name: Run invitation pgTAP with compact failure log
+      - name: Run invitation pgTAP and persist failure tail
         shell: bash
         run: |
           supabase start >/tmp/supabase-start.log 2>&1
           if ! supabase test db supabase/tests/invitation_transactions.test.sql >/tmp/gate9b2b-pgtap.log 2>&1; then
-            tail -n 100 /tmp/gate9b2b-pgtap.log
+            tail -n 120 /tmp/gate9b2b-pgtap.log > gate9b2b-pgtap-error.txt
+            cat gate9b2b-pgtap-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add gate9b2b-pgtap-error.txt
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(gate9b2b): capture pgTAP diagnostic"
+              git push origin HEAD:feat/gate-9b2b-invitation-persistence
+            fi
             exit 1
           fi
-          tail -n 20 /tmp/gate9b2b-pgtap.log
+          rm -f gate9b2b-pgtap-error.txt
 
       - name: Stop local Supabase
         if: always()
