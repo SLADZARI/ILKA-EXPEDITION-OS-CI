@@ -1,0 +1,44 @@
+name: Gate 9B2C source patch
+
+on:
+  push:
+    branches:
+      - feat/gate-9b2c-invitation-execution
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/gate-9b2c-invitation-execution
+          token: ${{ github.token }}
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Apply deterministic patch
+        run: python scripts/patch_gate9b2c_gateway.py
+
+      - name: Format invitation sources
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime supabase/functions/command-gateway/index.ts
+
+      - name: Commit patched sources
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime supabase/functions/command-gateway/index.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "feat(gate9b2c): route invitation execution"
+          git push origin HEAD:feat/gate-9b2c-invitation-execution
