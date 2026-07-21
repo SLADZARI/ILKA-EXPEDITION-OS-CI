@@ -1,5 +1,6 @@
 import { AuthServiceError } from "./auth.ts";
 import type { BootstrapExecutor } from "./bootstrap.ts";
+import type { InvitationExecutor } from "./invitation.ts";
 import { commandRequestHash } from "./canonical-json.ts";
 import {
   COMMAND_CONTRACTS,
@@ -183,6 +184,7 @@ function responseStatus(result: ProcessCommandResult): number {
 export function createCommandGatewayHandler(
   dependencies: GatewayDependencies,
   bootstrapExecutor?: BootstrapExecutor,
+  invitationExecutor?: InvitationExecutor,
 ): (request: Request) => Promise<Response> {
   return async (request: Request): Promise<Response> => {
     const requestId = dependencies.requestId();
@@ -424,6 +426,63 @@ export function createCommandGatewayHandler(
           requestId,
           "bootstrap_persistence_unavailable",
           "The Expedition could not be created.",
+          true,
+          origin,
+          true,
+        );
+      }
+
+      if (!outcome.ok) {
+        return errorResponse(
+          outcome.status,
+          requestId,
+          outcome.code,
+          outcome.message,
+          outcome.retryable,
+          origin,
+          true,
+          outcome.details,
+        );
+      }
+
+      return jsonResponse(
+        responseStatus(outcome.result),
+        { request_id: requestId, data: outcome.result },
+        origin,
+        true,
+      );
+    }
+
+    if (
+      command.command_type === "invite_participant" ||
+      command.command_type === "accept_invitation" ||
+      command.command_type === "revoke_invitation"
+    ) {
+      if (!invitationExecutor) {
+        return errorResponse(
+          503,
+          requestId,
+          "runtime_release_unavailable",
+          "The Expedition's pinned invitation runtime is unavailable.",
+          true,
+          origin,
+          true,
+        );
+      }
+
+      let outcome;
+      try {
+        outcome = await invitationExecutor.execute({
+          command,
+          auth_user: authUser,
+          request_hash: requestHash,
+        });
+      } catch {
+        return errorResponse(
+          503,
+          requestId,
+          "invitation_persistence_unavailable",
+          "The invitation command could not be committed.",
           true,
           origin,
           true,

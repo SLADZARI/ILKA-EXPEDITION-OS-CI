@@ -196,6 +196,17 @@ Gate 8A established the contract. Gate 8B now implements the local atomic Postgr
 
 Gate 8B remains local and undeployed. The bootstrap reducer and `command-gateway` pre-membership branch remain Gate 8C; Auth/UI and live aggregate creation remain later subgates.
 
+Gate 9B2C invitation execution is complete locally under accepted `ADR-019`:
+
+- `invite_participant`, `accept_invitation` and `revoke_invitation` use one specialized `InvitationExecutor` before the generic membership gateway path;
+- acceptance verifies confirmed Supabase Auth email and active Profile ownership before preparing the new membership actor;
+- raw invitation tokens are SHA-256 hashed and never enter events, projections, receipts or the secret-free nested command payload;
+- the pure invitation runtime produces canonical ordered events and one complete `ExpeditionSetupView` replacement;
+- atomic writes remain delegated to the three Gate 9B2B PostgreSQL wrappers;
+- protected unit and direct PostgreSQL integration tests cover invite, acceptance and revocation.
+
+The production runtime registry remains unchanged. Gate 9E will compose and pin the protected `day1_pilot_v1` runtime before migration application, gateway deployment and pilot smoke.
+
 ## Run the Day 1 prototype
 
 ```bash
@@ -231,6 +242,7 @@ python scripts/validate_repository.py .
 python scripts/validate_frontend_offline_sync.py
 python scripts/validate_expedition_bootstrap_contract.py
 python scripts/validate_expedition_bootstrap_transaction.py
+python scripts/validate_expedition_invitation_execution.py
 pytest -q
 cd frontend
 npm ci
