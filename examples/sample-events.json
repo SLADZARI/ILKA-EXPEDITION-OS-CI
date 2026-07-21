@@ -33,7 +33,8 @@
     "schema_version": 2,
     "payload": {
       "participant_id": "participant_01",
-      "display_name": "Anna"
+      "display_name": "Anna",
+      "participant_order": 1
     },
     "device_id": null,
     "sync_status": "synced",
@@ -52,7 +53,8 @@
     "schema_version": 2,
     "payload": {
       "participant_id": "participant_02",
-      "display_name": "Boris"
+      "display_name": "Boris",
+      "participant_order": 2
     },
     "device_id": null,
     "sync_status": "synced",
@@ -71,7 +73,8 @@
     "schema_version": 2,
     "payload": {
       "participant_id": "participant_03",
-      "display_name": "Daria"
+      "display_name": "Daria",
+      "participant_order": 3
     },
     "device_id": null,
     "sync_status": "synced",
@@ -90,7 +93,8 @@
     "schema_version": 2,
     "payload": {
       "participant_id": "participant_04",
-      "display_name": "Ivan"
+      "display_name": "Ivan",
+      "participant_order": 4
     },
     "device_id": null,
     "sync_status": "synced",
@@ -109,7 +113,8 @@
     "schema_version": 2,
     "payload": {
       "participant_id": "participant_05",
-      "display_name": "Maria"
+      "display_name": "Maria",
+      "participant_order": 5
     },
     "device_id": null,
     "sync_status": "synced",
@@ -162,6 +167,24 @@
           "onboard_role_id": "product_focus"
         }
       ]
+    },
+    "device_id": null,
+    "sync_status": "synced",
+    "correction_of": null
+  },
+  {
+    "event_id": "evt_0007_ready",
+    "event_type": "expedition.ready",
+    "occurred_at": "2026-07-18T05:10:00+03:00",
+    "recorded_at": "2026-07-18T05:10:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "command_id": "cmd_0007",
+    "idempotency_key": "cmd_0007",
+    "schema_version": 2,
+    "payload": {
+      "rotation_id": "rotation_demo_2026_01"
     },
     "device_id": null,
     "sync_status": "synced",

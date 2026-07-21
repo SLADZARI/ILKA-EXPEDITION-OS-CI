@@ -25,8 +25,8 @@ def test_completion_command_event_and_counts_are_synchronized():
     events = load_yaml("engine/event-catalog.yaml")["events"]
     command_ids = {item["command_type"] for item in commands}
     event_ids = {item["event_type"] for item in events}
-    assert len(command_ids) == 36
-    assert len(event_ids) == 48
+    assert len(command_ids) == 39
+    assert len(event_ids) == 52
     assert "close_expedition" in command_ids
     assert "expedition.completed" in event_ids
     assert set(load_json("schemas/command.schema.json")["properties"]["command_type"]["enum"]) == command_ids

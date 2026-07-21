@@ -1,4 +1,4 @@
-version: 8
+version: 9
 engine_id: ilka_expedition_engine
 expedition:
   duration_days: 12
@@ -46,6 +46,11 @@ aggregate_states:
   participant:
   - active
   - banned
+  invitation:
+  - pending
+  - accepted
+  - revoked
+  - expired
   decision:
   - draft
   - vote_open
@@ -62,10 +67,25 @@ commands:
     expedition_from: [null]
     emits: [expedition.created]
   add_participant:
-    actor_roles: [captain]
-    expedition_from: [draft, ready]
-    guards: [team_capacity_available, participant_not_already_added]
+    actor_roles: []
+    expedition_from: []
+    guards: [legacy_non_public_command]
     emits: [participant.added]
+  invite_participant:
+    actor_roles: [captain]
+    expedition_from: [draft]
+    guards: [team_capacity_available, normalized_email_not_active_member, no_pending_invitation_for_email, invitation_token_valid]
+    emits: [invitation.created]
+  accept_invitation:
+    actor_roles: [participant]
+    expedition_from: [draft]
+    guards: [authenticated_active_profile, invitation_token_matches_pending, invitation_not_expired, auth_email_matches_invitation, profile_not_already_member, participant_order_available]
+    emits: [invitation.accepted, participant.added]
+  revoke_invitation:
+    actor_roles: [captain]
+    expedition_from: [draft]
+    guards: [invitation_is_pending, revocation_reason_present, no_concurrent_invitation_terminal_transition]
+    emits: [invitation.revoked]
   ban_participant:
     actor_roles: [captain]
     expedition_from: [draft, ready, active, suspended]
@@ -80,12 +100,12 @@ commands:
     emits: [participant.unbanned, rotation.recalculated]
   generate_rotation:
     actor_roles: [captain, system]
-    expedition_from: [draft, ready, active]
-    guards: [team_size_valid, participant_order_defined]
-    emits: [rotation.generated]
+    expedition_from: [draft]
+    guards: [team_size_valid, participant_order_defined, no_pending_invitations, rotation_not_generated]
+    emits: [rotation.generated, expedition.ready]
   start_expedition:
     actor_roles: [captain]
-    expedition_from: [draft, ready]
+    expedition_from: [ready]
     guards: [captain_present, team_size_valid, rotation_exists, first_stage_resolvable]
     emits: [expedition.started, stage.opened]
   request_stage_advance:
@@ -294,6 +314,11 @@ invariants:
 - rewind_does_not_change_product_stage
 - superseded_revision_commands_conflict
 - final_stage_has_no_next_stage
+- participant_membership_is_created_only_by_accepted_invitation
+- invitation_tokens_are_never_persisted_in_plaintext
+- invitation_terminal_transitions_are_serialized
+- ready_setup_is_frozen
+- rotation_requires_zero_pending_invitations
 - final_stage_completes_only_with_close_expedition
 - expedition_completion_requires_final_day_closed
 - expedition_completion_is_captain_only

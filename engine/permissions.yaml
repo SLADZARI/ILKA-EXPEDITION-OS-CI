@@ -1,9 +1,10 @@
-version: 7
+version: 8
 roles:
   captain:
     can:
     - create_expedition
-    - add_participant
+    - invite_participant
+    - revoke_invitation
     - generate_rotation
     - start_expedition
     - recover_day_transition
@@ -58,6 +59,7 @@ roles:
     - finalize_product_decision
   participant:
     can:
+    - accept_invitation
     - accept_role
     - complete_task
     - add_note
@@ -132,3 +134,10 @@ restrictions:
   expedition_close_requires_final_day_closed: true
   final_stage_has_no_next_stage: true
   completed_expedition_operational_commands: read_only
+  participant_onboarding_requires_accepted_invitation: true
+  add_participant_external_api_allowed: false
+  setup_commands_online_only: true
+  invitation_tokens_server_hashed: true
+  invitation_events_and_projections_use_masked_email_only: true
+  product_captain_has_no_setup_membership_authority: true
+  ready_setup_is_frozen: true

@@ -52,24 +52,31 @@ def main() -> int:
     if errors:
         return report(errors)
 
+    # The immutable bootstrap release remains pinned to Engine v8 / Permissions v7.
+    # Current canonical files may advance in later protected gates and must not be
+    # mistaken for mutable metadata of the already registered release.
     engine = yaml.safe_load((ROOT / "engine/game-engine.yaml").read_text(encoding="utf-8"))
     permissions = yaml.safe_load(
         (ROOT / "engine/permissions.yaml").read_text(encoding="utf-8")
     )
     pipeline = yaml.safe_load((ROOT / "engine/pipeline.yaml").read_text(encoding="utf-8"))
 
-    if engine.get("version") != 8:
-        errors.append("bootstrap release rules metadata must pin game-engine version 8")
+    engine_version = engine.get("version")
+    if not isinstance(engine_version, int) or engine_version < 8:
+        errors.append("current game-engine must not predate bootstrap-pinned version 8")
     if engine.get("expedition", {}).get("duration_days") != 12:
         errors.append("game-engine duration must remain 12 days")
     if engine.get("expedition", {}).get("recovery_days_available") != 1:
         errors.append("game-engine must retain one Recovery Day")
-    if permissions.get("version") != 7:
-        errors.append("bootstrap release rules metadata must pin permissions version 7")
+
+    permissions_version = permissions.get("version")
+    if not isinstance(permissions_version, int) or permissions_version < 7:
+        errors.append("current permissions must not predate bootstrap-pinned version 7")
     if "create_expedition" not in permissions.get("roles", {}).get("captain", {}).get(
         "can", []
     ):
         errors.append("Captain permission to create_expedition is missing")
+
     if pipeline.get("pipeline_id") != "ilka_mvp_12_day" or pipeline.get("version") != 5:
         errors.append("bootstrap content release must pin ilka_mvp_12_day version 5")
     if pipeline.get("duration_days") != 12:

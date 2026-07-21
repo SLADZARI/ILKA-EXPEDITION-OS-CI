@@ -51,10 +51,12 @@ def main():
         "schemas/gamification.schema.json", "cards/manifest.yaml", "app/api/commands.yaml",
         "app/api/day-projection.yaml", "app/contracts/offline-command.schema.json",
         "app/contracts/today-view.schema.json", "app/contracts/captain-day-view.schema.json",
+        "app/contracts/expedition-setup-view.schema.json",
         "app/contracts/gamification-view.schema.json", "examples/sample-commands.json",
         "examples/sample-events.json", "examples/sample-super-admin-events.json",
         "examples/sample-decision-events.json", "examples/sample-app-events.json",
-        "examples/sample-gamification-events.json",
+        "examples/sample-gamification-events.json", "examples/sample-expedition-setup-commands.json",
+        "examples/sample-expedition-setup-events.json",
     ]
     for relative in required_files:
         if not (root / relative).exists():
@@ -262,6 +264,7 @@ def main():
         card_schema, stage_schema, command_schema, event_schema, offline_schema,
         load_json(root / "app/contracts/today-view.schema.json"),
         load_json(root / "app/contracts/captain-day-view.schema.json"),
+        load_json(root / "app/contracts/expedition-setup-view.schema.json"),
         gamification_schema, load_json(root / "app/contracts/gamification-view.schema.json"),
     ):
         try:
@@ -269,15 +272,17 @@ def main():
         except Exception as exc:
             errors.append(f"invalid JSON Schema {schema.get('$id', schema.get('title'))}: {exc}")
 
-    for index, command in enumerate(load_json(root / "examples/sample-commands.json")):
-        for error in schema_errors(command_schema, command):
-            errors.append(f"examples/sample-commands.json[{index}]: {error.message}")
-        if command.get("command_type") not in catalog_commands:
-            errors.append(f"sample command uses unknown type {command.get('command_type')}")
+    for command_filename in ("sample-commands.json", "sample-expedition-setup-commands.json"):
+        for index, command in enumerate(load_json(root / "examples" / command_filename)):
+            for error in schema_errors(command_schema, command):
+                errors.append(f"examples/{command_filename}[{index}]: {error.message}")
+            if command.get("command_type") not in catalog_commands:
+                errors.append(f"{command_filename}: unknown command type {command.get('command_type')}")
 
     for filename in (
         "sample-events.json", "sample-super-admin-events.json", "sample-decision-events.json",
         "sample-app-events.json", "sample-gamification-events.json",
+        "sample-expedition-setup-events.json",
     ):
         for index, event in enumerate(load_json(root / "examples" / filename)):
             for error in schema_errors(event_schema, event):

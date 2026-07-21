@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-21 — Gate 9B1 canonical Expedition setup contracts
+
+- Published canonical online-only `invite_participant`, `accept_invitation` and `revoke_invitation` commands under accepted `ADR-018`.
+- Marked `add_participant` as legacy non-public and excluded it from generated public gateway actor metadata.
+- Added append-only `invitation.created`, `invitation.accepted`, `invitation.revoked` and `expedition.ready` events.
+- Added `participant_order` to the authoritative `participant.added` event contract.
+- Fixed initial `generate_rotation` to `draft` with zero pending invitations and ordered `rotation.generated → expedition.ready`; fixed `start_expedition` to `ready` only.
+- Added strict token, invitation identity and privacy JSON Schema constraints, canonical examples and protected validation.
+
+Gate 9B1 adds no SQL migration, private transaction, reducer, gateway execution branch, read API, runtime bundle, immutable runtime release or cloud data. Gate 9B2 implements invitation persistence and `ExpeditionSetupView` transport.
+
 ## 2026-07-21 — Gate 9A Expedition setup and Day 1 pilot contract
 
 - Accepted `ADR-018` for authenticated invitation-based Participant onboarding, deterministic setup readiness and one immutable Day 1 pilot runtime composition target.

@@ -1,0 +1,121 @@
+[
+  {
+    "event_id": "evt_setup_invite_01_01",
+    "event_type": "invitation.created",
+    "occurred_at": "2026-07-21T16:00:00+02:00",
+    "recorded_at": "2026-07-21T16:00:01+02:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_setup_demo",
+    "command_id": "cmd_setup_invite_01",
+    "idempotency_key": "cmd_setup_invite_01",
+    "schema_version": 1,
+    "payload": {
+      "invitation_id": "invitation_11111111111111111111111111111111",
+      "email_hint": "a***@example.test",
+      "role": "participant",
+      "expires_at": "2026-07-28T16:00:00+02:00"
+    }
+  },
+  {
+    "event_id": "evt_setup_accept_01_01",
+    "event_type": "invitation.accepted",
+    "occurred_at": "2026-07-21T16:05:00+02:00",
+    "recorded_at": "2026-07-21T16:05:01+02:00",
+    "actor_id": "member_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "actor_role": "participant",
+    "expedition_id": "ilka_setup_demo",
+    "command_id": "cmd_setup_accept_01",
+    "idempotency_key": "cmd_setup_accept_01",
+    "schema_version": 1,
+    "payload": {
+      "invitation_id": "invitation_11111111111111111111111111111111",
+      "participant_id": "participant_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  {
+    "event_id": "evt_setup_accept_01_02",
+    "event_type": "participant.added",
+    "occurred_at": "2026-07-21T16:05:00+02:00",
+    "recorded_at": "2026-07-21T16:05:01+02:00",
+    "actor_id": "member_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "actor_role": "participant",
+    "expedition_id": "ilka_setup_demo",
+    "command_id": "cmd_setup_accept_01",
+    "idempotency_key": "cmd_setup_accept_01",
+    "schema_version": 1,
+    "payload": {
+      "participant_id": "participant_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "display_name": "Anna",
+      "participant_order": 1
+    }
+  },
+  {
+    "event_id": "evt_setup_rotation_01_01",
+    "event_type": "rotation.generated",
+    "occurred_at": "2026-07-21T17:00:00+02:00",
+    "recorded_at": "2026-07-21T17:00:01+02:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_setup_demo",
+    "command_id": "cmd_setup_rotation_01",
+    "idempotency_key": "cmd_setup_rotation_01",
+    "schema_version": 1,
+    "payload": {
+      "rotation_id": "rotation_ilka_setup_demo_v1",
+      "seed": "ilka_setup_demo:participant_order:v1",
+      "rules_version": 2,
+      "assignments": [
+        {
+          "assignment_id": "assignment_11111111111111111111111111111111",
+          "participant_id": "participant_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "product_role_id": "product_captain",
+          "onboard_role_id": "navigation"
+        },
+        {
+          "assignment_id": "assignment_22222222222222222222222222222222",
+          "participant_id": "participant_cccccccccccccccccccccccccccccccc",
+          "product_role_id": "product_support",
+          "onboard_role_id": "mooring"
+        },
+        {
+          "assignment_id": "assignment_33333333333333333333333333333333",
+          "participant_id": "participant_dddddddddddddddddddddddddddddddd",
+          "product_role_id": "product_support",
+          "onboard_role_id": "order"
+        }
+      ]
+    }
+  },
+  {
+    "event_id": "evt_setup_rotation_01_02",
+    "event_type": "expedition.ready",
+    "occurred_at": "2026-07-21T17:00:00+02:00",
+    "recorded_at": "2026-07-21T17:00:01+02:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_setup_demo",
+    "command_id": "cmd_setup_rotation_01",
+    "idempotency_key": "cmd_setup_rotation_01",
+    "schema_version": 1,
+    "payload": {
+      "rotation_id": "rotation_ilka_setup_demo_v1"
+    }
+  },
+  {
+    "event_id": "evt_setup_revoke_02_01",
+    "event_type": "invitation.revoked",
+    "occurred_at": "2026-07-21T16:10:00+02:00",
+    "recorded_at": "2026-07-21T16:10:01+02:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_setup_demo",
+    "command_id": "cmd_setup_revoke_02",
+    "idempotency_key": "cmd_setup_revoke_02",
+    "schema_version": 1,
+    "payload": {
+      "invitation_id": "invitation_22222222222222222222222222222222",
+      "reason": "Participant cannot join the expedition."
+    }
+  }
+]
