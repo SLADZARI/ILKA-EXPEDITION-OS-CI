@@ -25,7 +25,23 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Run Deno check and persist failure
+      - name: Apply focused type correction
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('supabase/functions/command-gateway/tests/unit/invitation-executor.test.ts')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              '  const payload = type === "invite_participant"',
+              '  const payload: Record<string, JsonValue> = type === "invite_participant"',
+              1,
+          )
+          path.write_text(text, encoding='utf-8')
+
+      - name: Format corrected test
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit/invitation-executor.test.ts
+
+      - name: Run Deno check and commit result
         shell: bash
         run: |
           if ! deno check --frozen \
@@ -37,11 +53,18 @@ jobs:
             > /tmp/gate9b2c-deno.log 2>&1; then
             tail -n 240 /tmp/gate9b2c-deno.log > gate9b2c-deno-error.txt
             cat gate9b2c-deno-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add gate9b2c-deno-error.txt
-            git commit -m "chore(gate9b2c): capture Deno type errors"
+            outcome="chore(gate9b2c): refresh Deno type errors"
+          else
+            rm -f gate9b2c-deno-error.txt
+            outcome="fix(gate9b2c): type invitation test payload"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A gate9b2c-deno-error.txt supabase/functions/command-gateway/tests/unit/invitation-executor.test.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "$outcome"
             git push origin HEAD:feat/gate-9b2c-invitation-execution
+          fi
+          if [[ -f gate9b2c-deno-error.txt ]]; then
             exit 1
           fi
-          rm -f gate9b2c-deno-error.txt
