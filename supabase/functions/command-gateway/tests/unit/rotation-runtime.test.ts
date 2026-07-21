@@ -9,6 +9,7 @@ import type {
   CommandEnvelope,
   GatewayExecutionContext,
   JsonValue,
+  PreparedCommandResult,
   ProjectionDocument,
   RuntimeInput,
 } from "../../../_shared/command-gateway/types.ts";
@@ -189,6 +190,29 @@ function input(
   };
 }
 
+function eventPayload(
+  prepared: PreparedCommandResult,
+  eventIndex = 0,
+): Record<string, JsonValue> {
+  const currentEvent = prepared.events[eventIndex];
+  assertExists(currentEvent);
+  const payload = currentEvent.payload;
+  if (payload === null || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error(`rotation_test_event_payload_invalid:${eventIndex}`);
+  }
+  return payload;
+}
+
+function rotationAssignments(
+  prepared: PreparedCommandResult,
+): Array<Record<string, JsonValue>> {
+  const assignments = eventPayload(prepared).assignments;
+  if (!Array.isArray(assignments)) {
+    throw new Error("rotation_test_assignments_missing");
+  }
+  return assignments as Array<Record<string, JsonValue>>;
+}
+
 Deno.test("three Participants receive deterministic initial roles", async () => {
   const prepared = await runtime.reduce(input(setupView(3)));
   assertEquals(prepared.status, "accepted");
@@ -196,10 +220,7 @@ Deno.test("three Participants receive deterministic initial roles", async () => 
     "rotation.generated",
     "expedition.ready",
   ]);
-  const assignments = prepared.events[0].payload.assignments as Array<
-    Record<string, JsonValue>
-  >;
-  assertEquals(assignments, [
+  assertEquals(rotationAssignments(prepared), [
     {
       participant_id: "participant_00000000000000000000000000000001",
       product_role_id: "product_captain",
@@ -221,9 +242,7 @@ Deno.test("three Participants receive deterministic initial roles", async () => 
 Deno.test("four Participants assign Cook only product_support", async () => {
   const prepared = await runtime.reduce(input(setupView(4)));
   assertEquals(prepared.status, "accepted");
-  const assignments = prepared.events[0].payload.assignments as Array<
-    Record<string, JsonValue>
-  >;
+  const assignments = rotationAssignments(prepared);
   const cook = assignments.find((assignment) => assignment.onboard_role_id === "cook");
   assertExists(cook);
   assertEquals(cook.product_role_id, "product_support");
@@ -237,9 +256,7 @@ Deno.test("four Participants assign Cook only product_support", async () => {
 Deno.test("five Participants cover the complete onboard cycle", async () => {
   const prepared = await runtime.reduce(input(setupView(5)));
   assertEquals(prepared.status, "accepted");
-  const assignments = prepared.events[0].payload.assignments as Array<
-    Record<string, JsonValue>
-  >;
+  const assignments = rotationAssignments(prepared);
   assertEquals(assignments.map((assignment) => assignment.onboard_role_id), [
     "navigation",
     "mooring",
@@ -263,11 +280,10 @@ Deno.test("five Participants cover the complete onboard cycle", async () => {
 Deno.test("same authoritative input produces the same seed and rotation id", async () => {
   const first = await runtime.reduce(input(setupView(5)));
   const second = await runtime.reduce(input(setupView(5)));
-  assertEquals(first.events[0].payload.seed, second.events[0].payload.seed);
-  assertEquals(
-    first.events[0].payload.rotation_id,
-    second.events[0].payload.rotation_id,
-  );
+  const firstPayload = eventPayload(first);
+  const secondPayload = eventPayload(second);
+  assertEquals(firstPayload.seed, secondPayload.seed);
+  assertEquals(firstPayload.rotation_id, secondPayload.rotation_id);
 });
 
 Deno.test("fewer than three Participants is rejected", async () => {
