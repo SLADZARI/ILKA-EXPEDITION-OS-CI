@@ -22,9 +22,7 @@
 9B2C — gateway executors and reducers
 ```
 
-Gate 9B2A published three private request schemas, transaction and lock semantics, Auth email requirements, projection preconditions, error mapping and protected validation. It added no SQL migration, reducer, gateway execution branch or read API.
-
-Gate 9B2B implements persistence only. Gate 9B2C remains responsible for public gateway execution, runtime reducers and public error translation.
+Gate 9B2A published private request schemas, lock semantics, identity rules and stable errors. Gate 9B2B implemented structural persistence wrappers and the Captain setup read API. Gate 9B2C implements pure reducers, trusted adapters and the public invitation gateway branches without changing SQL persistence or registering a production runtime release.
 
 ### Structural wrappers
 
@@ -75,7 +73,7 @@ The Expedition lock serializes team capacity and lowest-free `participant_order`
 
 ### Replay before mutable guards
 
-Each wrapper checks the existing receipt before reading terminal invitation state:
+The public gateway and every wrapper check the existing receipt before mutable invitation state:
 
 - exact `command_id`, Expedition, request hash and authenticated actor returns the stored result;
 - request-hash mismatch creates no domain writes;
@@ -93,7 +91,7 @@ verified normalized Auth email
 no existing Expedition membership
 ```
 
-The command payload cannot claim authoritative email. The raw token is hashed before constructing the private request, and private structural fields carry only lowercase SHA-256 hex.
+The Supabase Auth verifier retains `email` and derives `email_verified` from `email_confirmed_at`. The command payload cannot claim authoritative email. The raw token is hashed before constructing the private request, and private structural fields carry only lowercase SHA-256 hex.
 
 ### Atomic acceptance ordering
 
@@ -138,7 +136,7 @@ schema_version: 1
 sync_status: synced
 ```
 
-`expected_projection_version` must equal the projection version produced by the accepted command. The projection contains masked invitation identity only.
+`expected_projection_version` equals the projection version produced by the accepted command. The first invite may initialize the projection at version zero; acceptance and revocation require an existing compatible projection. Projection content and readiness are owned by the pinned Engine runtime, not SQL or UI.
 
 ### Captain read transport
 
@@ -150,11 +148,84 @@ api.get_expedition_setup_view(p_expedition_key text) returns jsonb
 
 It requires `auth.uid()` and an active Captain membership. It returns only the exact `expedition_setup_view` projection document and returns `null` when the Expedition or projection is unavailable. Participant, Product Captain, Shore Operator and anonymous callers receive no setup projection authority.
 
+### Gate 9B2C execution boundary
+
+Gate 9B2C introduces one specialized `InvitationExecutor` and one pure invitation runtime implementation.
+
+The gateway order is:
+
+```text
+canonical validation
+→ Auth verification
+→ request hash
+→ receipt replay check
+→ Expedition bootstrap branch
+→ invitation branch
+→ generic membership command branch
+```
+
+All three invitation commands use the specialized branch. `accept_invitation` is the only pre-membership gateway path in this gate. It bypasses only the generic active-membership requirement; it does not bypass authentication, active Profile verification, confirmed-email matching, exact runtime loading or canonical validation.
+
+The executor performs trusted preparation only:
+
+- trim/lowercase email normalization;
+- 43-character base64url token validation;
+- SHA-256 token hashing;
+- server-derived `expires_at = received_at + 168 hours`;
+- internal invitation, membership and Participant UUID generation;
+- lowest-free Participant order lookup;
+- exact pinned runtime selection;
+- canonical event and projection validation;
+- command-specific private request validation;
+- stable public error translation.
+
+It calls exactly one structural wrapper and never calls generic `processCommand` directly.
+
+### Pure invitation runtime
+
+The runtime implements only:
+
+```text
+invite_participant
+accept_invitation
+revoke_invitation
+```
+
+It receives a trusted secret-free structural operation and emits:
+
+```text
+invite_participant:
+  invitation.created
+
+accept_invitation:
+  invitation.accepted
+  participant.added
+
+revoke_invitation:
+  invitation.revoked
+```
+
+It also produces one complete `ExpeditionSetupView`, recalculating team capacity, deterministic Participant order, blockers, Captain controls and readiness. It performs no database or network access.
+
+The runtime policy is fixed for the pilot contract:
+
+```text
+team_size_min: 3
+team_size_max: 5
+invitation_ttl_hours: 168
+```
+
+### Production release boundary
+
+Gate 9B2C intentionally does not modify `commandGatewayRuntimeRegistry`, insert an immutable `runtime_releases` row or deploy the Edge Function. The pure runtime is implementation material for the future composite `day1_pilot_v1` bundle.
+
+The production runtime registry remains unchanged until Gate 9E pins the protected composite implementation SHA. This prevents independently composed reducers from being selected dynamically at request time.
+
 ### Conflict and failure behavior
 
 A stale stream position returned by `private.process_command` becomes `version_conflict` in the structural wrapper so any prior identity mutation rolls back. Any failure after `private.process_command` also rolls back its receipt, events and projection because the call remains inside the same PostgreSQL transaction.
 
-The public gateway mapping remains Gate 9B2C. SQL text, raw tokens, token hashes and full invitation emails are never returned in public errors or structured logs.
+Pre-persistence Auth, email, token, actor, runtime, state and projection failures write nothing. Unknown SQL errors collapse to `invitation_persistence_unavailable`. SQL text, raw tokens, token hashes and full invitation emails are never returned in public errors or structured logs.
 
 ## Consequences
 
@@ -164,7 +235,9 @@ The public gateway mapping remains Gate 9B2C. SQL text, raw tokens, token hashes
 - Exact replay is independent of current invitation terminal state.
 - Acceptance and revocation have one terminal winner.
 - Browser roles cannot execute private wrappers or query internal tables.
-- Gate 9B2B remains persistence-only and does not register a runtime or expose new public write transport.
+- Event and projection content remain Engine-owned.
+- `accept_invitation` has one explicit authenticated pre-membership route.
+- Gate 9B2C adds no migration, runtime registration, deployment or pilot data.
 
 ## Rejected alternatives
 
@@ -188,9 +261,17 @@ Rejected because raw invitation tokens must never reach persisted receipt/event/
 
 Rejected because event content and projection shape remain runtime- and schema-owned.
 
+### Route acceptance through the generic active-membership gateway path
+
+Rejected because successful acceptance creates the membership it would require.
+
+### Register the invitation runtime independently
+
+Rejected because `ADR-018` requires one exact composite runtime release for the full Day 1 pilot command set.
+
 ## Acceptance criteria
 
-Gate 9B2B is accepted when:
+Gate 9B2B persistence is accepted when:
 
 - the three wrappers are `SECURITY DEFINER`, use empty `search_path` and are executable only by `service_role`;
 - exact replay creates no duplicate invitation, membership, Participant, event or projection version;
@@ -200,7 +281,19 @@ Gate 9B2B is accepted when:
 - identity mutations roll back when `private.process_command` rejects or conflicts;
 - wrappers never insert directly into receipt, event or projection tables;
 - `api.get_expedition_setup_view(text)` is Captain-only;
-- no raw token, token hash or full email appears in event or projection persistence;
-- migrations rebuild cleanly, pgTAP and database lint pass, generated types are current and protected CI is green.
+- no raw token, token hash or full email appears in event or projection persistence.
 
-Gate 9B2B does not add reducers, gateway execution branches, runtime registration, deployment, invitation delivery, expiration processing, rotation or pilot data.
+Gate 9B2C execution is accepted when:
+
+- receipt replay remains before invitation current-state and membership checks;
+- the Auth verifier provides confirmed email context without trusting the command payload;
+- raw tokens are hashed before private request construction;
+- the nested command payload is exactly `{}`;
+- the pure runtime produces schema-valid ordered events and one complete setup projection;
+- acceptance uses a membership actor with `participant_id = null`;
+- wrong-email, unverified-email, expired, terminal and actor-spoofing failures write nothing;
+- the executor invokes only the three Gate 9B2B wrappers;
+- direct PostgreSQL integration covers invite, accept and revoke;
+- protected formatting, lint, typecheck, unit, pgTAP, integration and static validation are green;
+- the production runtime registry remains unchanged;
+- no migration, deployment, invitation delivery, expiration worker, rotation or pilot data is added.
