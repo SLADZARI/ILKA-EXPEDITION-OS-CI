@@ -1,0 +1,34 @@
+name: Gate 8B database diagnostic
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/gate8b-db-diagnostic.yml"
+      - "supabase/migrations/20260721103000_expedition_bootstrap_transaction.sql"
+      - "supabase/tests/expedition_bootstrap_transaction.test.sql"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Gate 8B branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/expedition-bootstrap-transaction
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Start local Supabase with debug output
+        run: supabase start --debug
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
