@@ -1,0 +1,88 @@
+name: Gate 8B status docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/gate8b-docs-patch.yml"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "supabase/migrations/20260721103000_expedition_bootstrap_transaction.sql"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Gate 8B branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/expedition-bootstrap-transaction
+
+      - name: Record Gate 8B implementation status
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          before = 'Gate 8A is contract-only. The transaction migration, bootstrap reducer, gateway implementation, runtime release registration and live deployment remain separate subgates.'
+          after = '''Gate 8A established the contract. Gate 8B now implements the local atomic PostgreSQL transaction:
+
+          - `private.bootstrap_expedition(jsonb)` validates active Profile ownership, IANA timezone, canonical actor identity and immutable runtime pinning;
+          - command-ID and Expedition-key advisory locks serialize replay and key collisions;
+          - the transaction inserts one draft Expedition and one active Captain membership;
+          - existing triggers initialize stream/projection heads, and existing `private.process_command(jsonb)` persists the accepted receipt plus one prepared `expedition.created` event;
+          - successful bootstrap ends at stream position `1` and projection version `0`;
+          - exact replay, idempotency mismatch, duplicate key, disabled Profile, missing runtime and rollback behavior are covered by pgTAP;
+          - no Participant, invitation or projection document is created.
+
+          Gate 8B remains local and undeployed. The bootstrap reducer and `command-gateway` pre-membership branch remain Gate 8C; Auth/UI and live aggregate creation remain later subgates.'''
+          after = '\n'.join(line[10:] if line.startswith('          ') else line for line in after.splitlines())
+          if 'Gate 8B now implements the local atomic PostgreSQL transaction' not in text:
+              if before not in text:
+                  raise SystemExit('README Gate 8A status marker not found')
+              text = text.replace(before, after, 1)
+          if 'python scripts/validate_expedition_bootstrap_transaction.py' not in text:
+              text = text.replace(
+                  'python scripts/validate_expedition_bootstrap_contract.py\n',
+                  'python scripts/validate_expedition_bootstrap_contract.py\npython scripts/validate_expedition_bootstrap_transaction.py\n',
+                  1,
+              )
+          readme.write_text(text, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text(encoding='utf-8')
+          heading = '## 2026-07-21 — Gate 8B Expedition bootstrap transaction\n'
+          section = '''## 2026-07-21 — Gate 8B Expedition bootstrap transaction
+
+          - Added server-only `private.bootstrap_expedition(jsonb)` as the atomic aggregate-initialization wrapper accepted by `ADR-017`.
+          - Added fixed command-ID and Expedition-key advisory locking before reusing the existing Expedition lock inside `private.process_command(jsonb)`.
+          - Added exact replay for the original authenticated actor and deterministic command-ID/request-hash and Expedition-key collision errors.
+          - Added active Profile, IANA timezone, Captain identity, immutable runtime-release and prepared event/request consistency checks.
+          - Reused existing Expedition triggers for stream/projection head creation and delegated receipt/event persistence to `private.process_command(jsonb)`.
+          - Fixed the accepted postcondition at one draft Expedition, one active Captain membership, stream position `1`, projection version `0`, one receipt and one `expedition.created` event.
+          - Added pgTAP coverage for accepted bootstrap, exact replay, idempotency mismatch, duplicate key, disabled Profile, invalid timezone, missing runtime and full rollback after a process-command failure.
+          - Added generated database types and a protected Gate 8B transaction validator.
+
+          This subgate adds no reducer, public gateway behavior, runtime registration change, Auth/UI, invitation, Participant, rotation, Day 1, projection document, cloud migration or pilot data.
+
+          '''
+          section = '\n'.join(line[10:] if line.startswith('          ') else line for line in section.splitlines()) + '\n'
+          if heading not in text:
+              text = text.replace('# Changelog\n\n', '# Changelog\n\n' + section, 1)
+          changelog.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit status documentation
+        run: |
+          git add README.md CHANGELOG.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs(gate8b): record bootstrap transaction implementation"
+          git push origin HEAD:feat/expedition-bootstrap-transaction
