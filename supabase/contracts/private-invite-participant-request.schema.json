@@ -4,10 +4,7 @@
   "title": "PrivateInviteParticipantRequest",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "invitation",
-    "process_command_request"
-  ],
+  "required": ["invitation", "process_command_request"],
   "properties": {
     "invitation": {
       "type": "object",
@@ -22,77 +19,38 @@
         "expires_at"
       ],
       "properties": {
-        "id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "expedition_id": {
-          "type": "string",
-          "format": "uuid"
-        },
+        "id": {"type": "string", "format": "uuid"},
+        "expedition_id": {"type": "string", "format": "uuid"},
         "email_normalized": {
           "type": "string",
           "format": "email",
           "minLength": 3,
           "maxLength": 254
         },
-        "role": {
-          "const": "participant"
-        },
+        "role": {"const": "participant"},
         "token_hash": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
         },
-        "invited_by_membership_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "expires_at": {
-          "type": "string",
-          "format": "date-time"
-        }
+        "invited_by_membership_id": {"type": "string", "format": "uuid"},
+        "expires_at": {"type": "string", "format": "date-time"}
       }
     },
     "process_command_request": {
       "allOf": [
-        {
-          "$ref": "./private-process-command-request.schema.json"
-        },
+        {"$ref": "./private-invitation-process-command-request.schema.json"},
         {
           "properties": {
-            "status": {
-              "const": "accepted"
-            },
-            "rejection": {
-              "type": "null"
-            },
             "command": {
               "properties": {
-                "command_type": {
-                  "const": "invite_participant"
-                },
-                "actor_role": {
-                  "const": "captain"
-                },
-                "day_number": {
-                  "type": "null"
-                },
-                "stage_id": {
-                  "type": "null"
-                },
-                "day_revision": {
-                  "type": "null"
-                }
+                "command_type": {"const": "invite_participant"},
+                "actor_role": {"const": "captain"}
               }
             },
             "actor_context": {
               "properties": {
-                "actor_role": {
-                  "const": "captain"
-                },
-                "participant_id": {
-                  "type": "null"
-                }
+                "actor_role": {"const": "captain"},
+                "participant_id": {"type": "null"}
               }
             },
             "events": {
@@ -101,26 +59,14 @@
               "prefixItems": [
                 {
                   "allOf": [
-                    {
-                      "$ref": "../../engine/event.schema.json"
-                    },
+                    {"$ref": "../../engine/event.schema.json"},
                     {
                       "properties": {
-                        "event_type": {
-                          "const": "invitation.created"
-                        },
-                        "actor_role": {
-                          "const": "captain"
-                        },
-                        "day_number": {
-                          "type": "null"
-                        },
-                        "stage_id": {
-                          "type": "null"
-                        },
-                        "day_revision": {
-                          "type": "null"
-                        }
+                        "event_type": {"const": "invitation.created"},
+                        "actor_role": {"const": "captain"},
+                        "day_number": {"type": "null"},
+                        "stage_id": {"type": "null"},
+                        "day_revision": {"type": "null"}
                       }
                     }
                   ]
@@ -133,24 +79,14 @@
               "prefixItems": [
                 {
                   "properties": {
-                    "operation": {
-                      "const": "upsert"
-                    },
-                    "projection_key": {
-                      "const": "expedition_setup_view"
-                    },
-                    "projection_type": {
-                      "const": "expedition_setup_view"
-                    },
-                    "subject_id": {
-                      "type": "null"
-                    },
+                    "operation": {"const": "upsert"},
+                    "projection_key": {"const": "expedition_setup_view"},
+                    "projection_type": {"const": "expedition_setup_view"},
+                    "subject_id": {"type": "null"},
                     "schema_id": {
                       "const": "https://ilka.local/schemas/expedition-setup-view.schema.json"
                     },
-                    "schema_version": {
-                      "const": "1"
-                    },
+                    "schema_version": {"const": "1"},
                     "projection": {
                       "$ref": "../../app/contracts/expedition-setup-view.schema.json"
                     }
