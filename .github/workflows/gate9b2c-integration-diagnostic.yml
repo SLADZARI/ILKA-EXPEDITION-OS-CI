@@ -1,4 +1,4 @@
-name: Gate 9B2C integration diagnostic
+name: Gate 9B2C integration correction
 
 on:
   pull_request:
@@ -29,64 +29,42 @@ jobs:
           version: 2.101.0
           github-token: ${{ github.token }}
 
-      - name: Expose safe internal persistence diagnostic
+      - name: Correct trusted server receipt time
         shell: python
         run: |
-          import re
           from pathlib import Path
+          path = Path('supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts')
+          text = path.read_text(encoding='utf-8')
+          old = 'now: () => new Date("2026-07-21T21:05:00Z"),'
+          new = 'now: () => new Date("2026-07-21T21:05:03Z"),'
+          if text.count(old) != 1:
+              raise SystemExit(f'integration clock replacement count: {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
 
-          test_path = Path('supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts')
-          text = test_path.read_text(encoding='utf-8')
-          text = text.replace(
-              '      assertEquals(accepted.ok, true);',
-              '''      if (!accepted.ok) {
-                throw new Error(`acceptance_outcome:${JSON.stringify({
-                  status: accepted.status,
-                  code: accepted.code,
-                  message: accepted.message,
-                  retryable: accepted.retryable,
-                  details: accepted.details,
-                })}`);
-              }''',
-              1,
-          )
-          test_path.write_text(text, encoding='utf-8')
-
-          executor_path = Path('supabase/functions/_shared/command-gateway/invitation.ts')
-          executor = executor_path.read_text(encoding='utf-8')
-          executor, count = re.subn(
-              r'} catch \(error\) \{\n\s+return databaseFailure\(error\);\n\s+\}',
-              '} catch (error) {\n        throw error;\n      }',
-              executor,
-              count=1,
-          )
-          if count != 1:
-              raise SystemExit(f'persistence diagnostic replacement count: {count}')
-          executor_path.write_text(executor, encoding='utf-8')
-
-      - name: Run invitation integration and persist failure
+      - name: Run corrected invitation integration
         shell: bash
         run: |
           supabase start >/tmp/supabase-start.log 2>&1
           supabase db reset >/tmp/supabase-reset.log 2>&1
           db_url="$(supabase status -o json | jq -r '.DB_URL')"
-          if ! SUPABASE_DB_URL="$db_url" deno test \
+          SUPABASE_DB_URL="$db_url" deno test --frozen \
             --config supabase/functions/command-gateway/deno.json \
             --allow-env=SUPABASE_DB_URL \
             --allow-net=127.0.0.1:54322 \
-            supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts \
-            >/tmp/gate9b2c-integration.log 2>&1; then
-            tail -n 220 /tmp/gate9b2c-integration.log > gate9b2c-integration-error.txt
-            cat gate9b2c-integration-error.txt
-            git checkout -- supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts supabase/functions/_shared/command-gateway/invitation.ts
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add gate9b2c-integration-error.txt
-            git commit -m "chore(gate9b2c): capture persistence diagnostic"
-            git push origin HEAD:feat/gate-9b2c-invitation-execution
-            exit 1
-          fi
+            supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts
+
+      - name: Commit corrected fixture and remove diagnostic
+        shell: bash
+        run: |
           rm -f gate9b2c-integration-error.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A gate9b2c-integration-error.txt supabase/functions/command-gateway/tests/integration/invitation-execution.test.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "test(gate9b2c): align receipt time after issued commands"
+          git push origin HEAD:feat/gate-9b2c-invitation-execution
 
       - name: Stop local Supabase
         if: always()
