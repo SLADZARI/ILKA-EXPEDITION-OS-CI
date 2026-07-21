@@ -9,7 +9,7 @@ permissions:
 jobs:
   generated-diff:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,6 +26,25 @@ jobs:
 
       - name: Generate command gateway contract
         run: python scripts/generate_supabase_command_gateway_contract.py
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Generate design-system sources
+        working-directory: frontend
+        run: npm run generate:design
+
+      - name: Generate frontend contracts
+        working-directory: frontend
+        run: npm run generate:contracts
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
