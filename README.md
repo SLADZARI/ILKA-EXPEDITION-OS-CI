@@ -174,6 +174,18 @@ Conflict stops later FIFO delivery, retryable/auth failures remain `pending`, se
 
 The complete local `complete_task` path is now transport-ready, but live cloud execution still requires deployment of `command-gateway`, authenticated session composition and an actual bootstrapped Expedition/Participant/TodayView.
 
+
+Gate 8A Expedition bootstrap contract is accepted under `ADR-017`:
+
+- `create_expedition` remains on the single public `command-gateway` transport;
+- only this command uses a pre-membership authenticated Profile path;
+- the server selects and pins `ILKA_DEFAULT_RUNTIME_RELEASE_KEY`;
+- `private.bootstrap_expedition(jsonb)` will atomically create the draft Expedition, active Captain membership, stream/projection heads, accepted receipt and `expedition.created` event;
+- accepted bootstrap ends at stream position `1` and projection version `0`;
+- no Participant, invitation, rotation, Day, Stage, assignment, Card Bundle or projection document is created by this gate.
+
+Gate 8A is contract-only. The transaction migration, bootstrap reducer, gateway implementation, runtime release registration and live deployment remain separate subgates.
+
 ## Run the Day 1 prototype
 
 ```bash
@@ -207,6 +219,7 @@ From the repository root:
 python scripts/generate_supabase_command_gateway_contract.py
 python scripts/validate_repository.py .
 python scripts/validate_frontend_offline_sync.py
+python scripts/validate_expedition_bootstrap_contract.py
 pytest -q
 cd frontend
 npm ci

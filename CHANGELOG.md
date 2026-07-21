@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-21 — Gate 8A Expedition bootstrap contract
+
+- Accepted `ADR-017` for executing canonical `create_expedition` through the existing authenticated `command-gateway` rather than a second public bootstrap endpoint.
+- Defined the one pre-membership path: authenticated active Profile becomes the new Expedition Captain only after atomic commit.
+- Fixed server-side runtime selection through `ILKA_DEFAULT_RUNTIME_RELEASE_KEY`; the browser cannot select or silently upgrade the Expedition runtime.
+- Defined `private.bootstrap_expedition(jsonb)` as a structural wrapper around existing immutable command persistence.
+- Defined exact initial state: draft Expedition, one active Captain membership, stream position `1`, projection version `0`, one accepted receipt and one `expedition.created` event.
+- Added the private bootstrap request JSON Schema, architecture contract, API transport projection and protected Gate 8A validator.
+- Explicitly excluded Participants, invitations, rotation, Expedition start, Day 1, Stage opening, assignments, Card Bundles and read projections.
+
+This subgate changes contracts and architecture only. It adds no migration, reducer implementation, Edge Function behavior, runtime release row, cloud Expedition or pilot data.
+
 ## 2026-07-21 — Gate 7 offline synchronization and reconciliation
 
 - Accepted `ADR-016` for canonical offline command delivery and authoritative projection reconciliation.
