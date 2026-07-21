@@ -135,7 +135,7 @@ select ok(
 );
 select ok(
   (
-    select p.prosecdef and p.proconfig = array['search_path=']::text[]
+    select p.prosecdef and p.proconfig @> array['search_path=""']::text[]
     from pg_proc as p
     join pg_namespace as n on n.oid = p.pronamespace
     where n.nspname = 'private'

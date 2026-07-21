@@ -718,6 +718,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bootstrap_expedition: { Args: { p_request: Json }; Returns: Json }
       assert_expected_stream_position: {
         Args: { p_expected_stream_position: number; p_expedition_id: string }
         Returns: number

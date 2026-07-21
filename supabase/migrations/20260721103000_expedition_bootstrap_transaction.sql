@@ -219,7 +219,7 @@ begin
     pg_catalog.hashtextextended('ilka:expedition-key:' || v_expedition_key, 0)
   );
 
-  select receipt.*, expedition.expedition_key
+  select receipt, expedition.expedition_key
   into v_existing_receipt, v_existing_expedition_key
   from ilka.command_receipts as receipt
   join ilka.expeditions as expedition on expedition.id = receipt.expedition_id
