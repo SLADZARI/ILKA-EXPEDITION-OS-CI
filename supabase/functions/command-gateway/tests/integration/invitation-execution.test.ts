@@ -353,7 +353,7 @@ Deno.test({
           projection_json: Record<string, JsonValue>;
           projection_version: number;
         }>`
-          select projection_json, projection_version
+          select projection_json, projection_version::integer as projection_version
           from ilka.projection_documents
           where expedition_id = ${expeditionId}::uuid
             and projection_key = 'expedition_setup_view'
