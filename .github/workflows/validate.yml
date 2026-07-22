@@ -8,7 +8,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   contracts-and-tests:
@@ -16,8 +16,10 @@ jobs:
     timeout-minutes: 40
 
     steps:
-      - name: Checkout
+      - name: Checkout Gate 9D2A branch
         uses: actions/checkout@v4
+        with:
+          ref: agent/gate9d2-start-expedition
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -112,20 +114,6 @@ jobs:
       - name: Format Gate 9D2A TypeScript workspace
         run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 
-      - name: Export formatted Gate 9D2A TypeScript
-        uses: actions/upload-artifact@v4
-        with:
-          name: gate9d2a-formatted-typescript
-          path: |
-            supabase/functions/_shared/engine-runtime/expedition-start-v1.ts
-            supabase/functions/_shared/command-gateway/start.ts
-            supabase/functions/_shared/command-gateway/start-database.ts
-            supabase/functions/_shared/command-gateway/start-schema-validation.ts
-            supabase/functions/command-gateway/tests/unit/start-runtime.test.ts
-            supabase/functions/command-gateway/tests/unit/start-executor.test.ts
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Lint command gateway and Engine runtime
         run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 
@@ -166,18 +154,16 @@ jobs:
       - name: Generate Supabase database types
         run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
 
-      - name: Export temporary Gate 9D2A workspace
-        uses: actions/upload-artifact@v4
-        with:
-          name: gate9d2a-workspace
-          path: |
-            supabase/database.types.ts
-            supabase/functions/_shared/engine-runtime/expedition-start-v1.ts
-            supabase/functions/_shared/command-gateway/start.ts
-            supabase/functions/_shared/command-gateway/start-schema-validation.ts
-            supabase/migrations/20260722010000_start_expedition_transaction.sql
-          if-no-files-found: error
-          retention-days: 1
+      - name: Commit exact generated database types
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/database.types.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(gate9d2a): refresh Supabase database types [skip ci]"
+            git push origin HEAD:agent/gate9d2-start-expedition
+          fi
 
       - name: Validate Supabase Foundation contract
         run: python scripts/validate_supabase_foundation.py
