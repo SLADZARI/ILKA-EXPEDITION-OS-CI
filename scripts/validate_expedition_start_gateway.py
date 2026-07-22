@@ -53,7 +53,7 @@ def main() -> int:
         "handler",
         errors,
     )
-    replay = handler.find("const existingReceipt = await dependencies.database.getReceipt")
+    replay = handler.find("existing = await dependencies.database.getReceipt")
     start_branch = handler.find('if (command.command_type === "start_expedition")')
     generic_context = handler.find("let context: GatewayExecutionContext | null")
     if min(replay, start_branch, generic_context) < 0 or not replay < start_branch < generic_context:
