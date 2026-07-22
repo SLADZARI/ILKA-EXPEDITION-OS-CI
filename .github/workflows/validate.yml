@@ -50,6 +50,9 @@ jobs:
       - name: Validate Expedition Day 1 start contract
         run: python scripts/validate_expedition_day1_start_contract.py
 
+      - name: Validate Expedition start execution
+        run: python scripts/validate_expedition_start_execution.py
+
       - name: Run test suite
         run: pytest -q
 

@@ -759,6 +759,7 @@ export type Database = {
         }[]
       }
       revoke_invitation: { Args: { p_request: Json }; Returns: Json }
+      start_expedition: { Args: { p_request: Json }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
