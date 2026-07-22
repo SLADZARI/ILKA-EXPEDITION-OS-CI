@@ -160,6 +160,7 @@ function databaseFailure(error: unknown): StartExecutionOutcome {
     "expedition_not_found",
     "expedition_not_ready",
     "expedition_already_started",
+    "expedition_setup_projection_missing",
     "team_not_frozen",
     "rotation_not_ready",
     "first_stage_unresolvable",
