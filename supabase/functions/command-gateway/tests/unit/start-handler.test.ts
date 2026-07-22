@@ -100,7 +100,9 @@ function database(storedReceipt: CommandReceipt | null = null): GatewayDatabase 
   };
 }
 
-function dependencies(storedReceipt: CommandReceipt | null = null): GatewayDependencies {
+function dependencies(
+  storedReceipt: CommandReceipt | null = null,
+): GatewayDependencies {
   return {
     auth: { verify: async () => ({ id: AUTH_USER_ID }) },
     database: database(storedReceipt),

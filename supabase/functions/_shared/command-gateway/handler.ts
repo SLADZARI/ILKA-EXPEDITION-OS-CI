@@ -567,7 +567,6 @@ export function createCommandGatewayHandler(
       );
     }
 
-
     if (command.command_type === "start_expedition") {
       if (!startExecutor) {
         return errorResponse(
