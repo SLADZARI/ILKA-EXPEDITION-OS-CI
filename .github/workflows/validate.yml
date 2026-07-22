@@ -8,7 +8,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   contracts-and-tests:
@@ -16,10 +16,8 @@ jobs:
     timeout-minutes: 40
 
     steps:
-      - name: Checkout Gate 9D2A branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: agent/gate9d2-start-expedition
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -111,8 +109,8 @@ jobs:
       - name: Format generated command gateway contract
         run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
 
-      - name: Format Gate 9D2A TypeScript workspace
-        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+      - name: Check command gateway and Engine runtime formatting
+        run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
 
       - name: Lint command gateway and Engine runtime
         run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
@@ -153,17 +151,6 @@ jobs:
 
       - name: Generate Supabase database types
         run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
-
-      - name: Commit exact generated database types
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add supabase/database.types.ts
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(gate9d2a): refresh Supabase database types [skip ci]"
-            git push origin HEAD:agent/gate9d2-start-expedition
-          fi
 
       - name: Validate Supabase Foundation contract
         run: python scripts/validate_supabase_foundation.py
