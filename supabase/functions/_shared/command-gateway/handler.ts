@@ -2,6 +2,7 @@ import { AuthServiceError } from "./auth.ts";
 import type { BootstrapExecutor } from "./bootstrap.ts";
 import type { InvitationExecutor } from "./invitation.ts";
 import type { RotationExecutor } from "./rotation.ts";
+import type { StartExecutor } from "./start.ts";
 import { commandRequestHash } from "./canonical-json.ts";
 import {
   COMMAND_CONTRACTS,
@@ -187,6 +188,7 @@ export function createCommandGatewayHandler(
   bootstrapExecutor?: BootstrapExecutor,
   invitationExecutor?: InvitationExecutor,
   rotationExecutor?: RotationExecutor,
+  startExecutor?: StartExecutor,
 ): (request: Request) => Promise<Response> {
   return async (request: Request): Promise<Response> => {
     const requestId = dependencies.requestId();
@@ -560,6 +562,62 @@ export function createCommandGatewayHandler(
       return jsonResponse(
         responseStatus(outcome.result),
         { request_id: requestId, data: outcome.result },
+        origin,
+        true,
+      );
+    }
+
+    if (command.command_type === "start_expedition") {
+      if (!startExecutor) {
+        return errorResponse(
+          503,
+          requestId,
+          "runtime_release_unavailable",
+          "The Expedition start runtime is not available.",
+          true,
+          origin,
+          true,
+        );
+      }
+
+      let outcome: Awaited<ReturnType<StartExecutor["execute"]>>;
+      try {
+        outcome = await startExecutor.execute({
+          command,
+          auth_user: authUser,
+          request_hash: requestHash,
+        });
+      } catch {
+        return errorResponse(
+          503,
+          requestId,
+          "start_persistence_unavailable",
+          "The Expedition could not be started.",
+          true,
+          origin,
+          true,
+        );
+      }
+
+      if (!outcome.ok) {
+        return errorResponse(
+          outcome.status,
+          requestId,
+          outcome.code,
+          outcome.message,
+          outcome.retryable,
+          origin,
+          true,
+          outcome.details,
+        );
+      }
+
+      return jsonResponse(
+        responseStatus(outcome.result),
+        {
+          request_id: requestId,
+          data: outcome.result,
+        },
         origin,
         true,
       );

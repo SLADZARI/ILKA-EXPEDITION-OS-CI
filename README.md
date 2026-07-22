@@ -217,7 +217,15 @@ Gate 9C deterministic initial rotation is complete locally under accepted `ADR-0
 - `private.generate_rotation(jsonb)` delegates receipt, events and projection writes to `private.process_command(jsonb)` and no rotation table is introduced;
 - unit, pgTAP and complete gateway/PostgreSQL integration coverage is protected in CI.
 
-The production runtime registry remains unchanged. Gate 9D implements `start_expedition` and Day 1 boundary; Gate 9E composes, pins and deploys the protected `day1_pilot_v1` release.
+Gate 9D2 executable Expedition start is complete locally under accepted `ADR-021`:
+
+- `start_expedition` is Captain-only, online-only, ready-only and accepts an exact empty payload;
+- the pure runtime opens `onboarding`, emits `expedition.started → stage.opened` and replaces the complete `ExpeditionSetupView` without creating a Calendar Day;
+- `private.start_expedition(jsonb)` atomically persists through `private.process_command(jsonb)` and transitions `ready → active`;
+- the existing authenticated `command-gateway` routes the command through `StartExecutor` only after exact replay;
+- protected handler and PostgreSQL integration tests prove rollback, ordered events, no premature Day projections and replay after Captain revocation.
+
+The production runtime registry remains unchanged. Gate 9D3 implements trusted `system_clock` Day 1 boundary execution; Gate 9D4 closes fixtures and the complete vertical; Gate 9E composes, pins and deploys `day1_pilot_v1`.
 
 ## Run the Day 1 prototype
 
@@ -256,6 +264,9 @@ python scripts/validate_expedition_bootstrap_contract.py
 python scripts/validate_expedition_bootstrap_transaction.py
 python scripts/validate_expedition_invitation_execution.py
 python scripts/validate_expedition_rotation.py
+python scripts/validate_expedition_day1_start_contract.py
+python scripts/validate_expedition_start_execution.py
+python scripts/validate_expedition_start_gateway.py
 pytest -q
 cd frontend
 npm ci

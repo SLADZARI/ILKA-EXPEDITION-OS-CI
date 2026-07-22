@@ -2,14 +2,14 @@
 
 ## Gate
 
-This document defines Gate 9D2A under accepted `ADR-021`.
+This document defines completed Gate 9D2 under accepted `ADR-021`.
 
-Gate 9D2 is an umbrella split into:
+Gate 9D2 was delivered as:
 
 - **9D2A — reducer, executor and atomic persistence wrapper**;
 - **9D2B — `command-gateway` routing and full handler/PostgreSQL integration**.
 
-The split follows the established Gate 9B2 contract/persistence/execution pattern. Gate 9D2A proves the domain and transaction boundary before changing the shared public handler.
+The split follows the established Gate 9B2 contract/persistence/execution pattern. Domain and transaction behavior were protected before the shared public handler was changed.
 
 ## Command boundary
 
@@ -55,7 +55,7 @@ product_support_role: product_support
 cook_role: cook
 ```
 
-It is not registered as a production runtime. Gate 9E will compose the protected implementation into `day1_pilot_v1` after the complete Gate 9 implementation SHA is known.
+It is not registered as a production runtime. Gate 9E composes the protected implementation into `day1_pilot_v1` only after the complete Gate 9 implementation SHA is known.
 
 ## Executor
 
@@ -72,7 +72,42 @@ It is not registered as a production runtime. Gate 9E will compose the protected
 9. calls only `StartDatabase.startExpedition(...)`;
 10. validates the returned immutable command result.
 
-Gate 9D2A does not yet route the public handler to this executor. That single shared-handler change is Gate 9D2B.
+## Public gateway routing
+
+The existing authenticated `command-gateway` remains the only human command endpoint.
+
+Routing order is fixed:
+
+```text
+request preflight
+→ bearer authentication
+→ canonical Command Schema
+→ canonical request hash
+→ exact persisted receipt lookup
+→ bootstrap / invitation / rotation specialized branches
+→ start_expedition specialized branch
+→ generic membership/runtime command path
+```
+
+The `start_expedition` branch therefore receives only a canonical authenticated command and delegates all business behavior to `StartExecutor`. It does not reproduce Captain, team, Rotation, Stage or transaction rules inside `handler.ts`.
+
+Exact replay occurs before mutable membership and runtime checks. A previously accepted `start_expedition` retry returns the original receipt even after the Captain membership is later revoked. A request-hash mismatch or another authenticated actor never receives that receipt.
+
+When `StartExecutor` is unavailable, the gateway returns retryable `runtime_release_unavailable`. Unhandled executor or PostgreSQL failures return retryable `start_persistence_unavailable`. Stable executor failures retain their status, code, message and retryability.
+
+## Composition root
+
+`supabase/functions/command-gateway/index.ts` constructs:
+
+```text
+PostgresStartDatabase
+→ createStartExecutor
+→ createCommandGatewayHandler(..., startExecutor)
+```
+
+The executor reuses the existing `PostgresGatewayDatabase`, canonical schema validator, exact runtime registry and server clock. No second endpoint, direct table write or alternate runtime registry is introduced.
+
+The production registry intentionally remains unchanged until Gate 9E. Before registration, a real pinned Expedition receives `runtime_release_unavailable`; tests use an exact immutable test runtime.
 
 ## Private request
 
@@ -129,7 +164,20 @@ TodayView documents: 0
 CaptainDayView documents: 0
 ```
 
-Any exception rolls back all effects, including the Expedition status update.
+Any exception rolls back all effects, including a receipt, both events, projection replacement and the Expedition status update.
+
+## Gateway-to-PostgreSQL proof
+
+The protected integration scenario starts from a schema-valid `ready` Expedition fixture and proves:
+
+1. spoofed Captain actor is rejected before persistence;
+2. a forced failure on the final `ready → active` update rolls back receipt, events and projection replacement;
+3. removal of the failure allows the same exact command to commit;
+4. event order is `expedition.started → stage.opened`;
+5. the complete setup projection becomes active and non-actionable;
+6. no `day.started`, `TodayView` or `CaptainDayView` is created;
+7. revoking the Captain membership after commit does not break exact replay;
+8. replay creates no duplicate receipt, event or projection version.
 
 ## Stable failures
 
@@ -156,18 +204,19 @@ start_persistence_unavailable
 
 The command is online-only. A local Captain UI draft is not authoritative and must not change Expedition status. Exact network retry preserves the original command body and ID. Accepted state is displayed only after receipt plus authoritative setup-view refetch.
 
-## 9D2A acceptance
+## Gate 9D2 acceptance
 
 - pure runtime tests cover accepted start, immutable Rotation preservation, invalid state, actor spoofing, payload injection, incompatible rotation and existing Day projection;
 - executor tests cover one trusted wrapper request, wrong role, spoofing, missing runtime and stable database errors;
 - pgTAP protects function existence, privileges, `SECURITY DEFINER`, empty `search_path` and delegation to `private.process_command`;
-- static validation protects lock order, replay order, event/projection counts, atomic status update and absence of runtime registration;
+- handler tests protect specialized routing, missing executor, stable errors and exact replay before mutable context;
+- gateway-to-PostgreSQL integration protects rollback, accepted transition, no premature Day state and replay after Captain revocation;
+- static validation protects routing order, composition and the absence of production runtime registration;
 - all existing protected CI remains green.
 
-## Explicitly deferred to 9D2B
+## Explicitly deferred
 
-- `createCommandGatewayHandler` routing for `start_expedition`;
-- `command-gateway/index.ts` composition;
-- handler-level exact replay scenarios;
-- complete gateway-to-PostgreSQL integration;
-- runtime registration, migration deployment and live smoke.
+- trusted `system_clock` transport and `process_day_boundary` execution — Gate 9D3;
+- Day 1 assignments, Card Bundles and read-model publication — Gate 9D3;
+- fixtures, blocker repair and complete vertical closure — Gate 9D4;
+- production runtime registration, cloud migration, secrets, deployment and live smoke — Gate 9E.

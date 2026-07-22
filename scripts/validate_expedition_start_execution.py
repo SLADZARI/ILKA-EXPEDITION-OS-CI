@@ -20,7 +20,6 @@ FILES = {
     "executor_test": ROOT / "supabase/functions/command-gateway/tests/unit/start-executor.test.ts",
     "database_types": ROOT / "supabase/database.types.ts",
     "registry": ROOT / "supabase/functions/_shared/command-gateway/runtime-registry.ts",
-    "handler": ROOT / "supabase/functions/_shared/command-gateway/handler.ts",
     "workflow": ROOT / ".github/workflows/validate.yml",
 }
 
@@ -191,7 +190,7 @@ def main() -> int:
     if "insert into ilka.event_log" in lower or "insert into ilka.projection_documents" in lower:
         errors.append("wrapper contains direct history/projection inserts")
     if "create table" in lower:
-        errors.append("Gate 9D2A creates a parallel state table")
+        errors.append("Gate 9D2 creates a parallel state table")
 
     require(
         text["pgtap"],
@@ -238,9 +237,7 @@ def main() -> int:
     if "start_expedition: { Args: { p_request: Json }; Returns: Json }" not in text["database_types"]:
         errors.append("generated Supabase types do not expose private.start_expedition")
     if "createExpeditionStartRuntime" in text["registry"] or "day1_pilot_v1" in text["registry"]:
-        errors.append("Gate 9D2A registers a production runtime")
-    if 'command.command_type === "start_expedition"' in text["handler"]:
-        errors.append("Gate 9D2A partially routes the shared handler")
+        errors.append("Gate 9D2 registers a production runtime")
 
     workflow = text["workflow"]
     require(
