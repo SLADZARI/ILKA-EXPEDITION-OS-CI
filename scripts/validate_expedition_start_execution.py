@@ -18,6 +18,7 @@ FILES = {
     "pgtap": ROOT / "supabase/tests/start_expedition_transaction.test.sql",
     "runtime_test": ROOT / "supabase/functions/command-gateway/tests/unit/start-runtime.test.ts",
     "executor_test": ROOT / "supabase/functions/command-gateway/tests/unit/start-executor.test.ts",
+    "database_types": ROOT / "supabase/database.types.ts",
     "registry": ROOT / "supabase/functions/_shared/command-gateway/runtime-registry.ts",
     "handler": ROOT / "supabase/functions/_shared/command-gateway/handler.ts",
     "workflow": ROOT / ".github/workflows/validate.yml",
@@ -47,24 +48,34 @@ def main() -> int:
 
     text = {name: path.read_text(encoding="utf-8") for name, path in FILES.items()}
 
-    require(text["architecture"], (
-        "9D2A — reducer, executor and atomic persistence wrapper",
-        "9D2B — `command-gateway` routing",
-        "expedition.started",
-        "stage.opened(onboarding)",
-        "No Calendar Day",
-        "createStartExecutor",
-        "private.start_expedition(jsonb)",
-        "private.process_command(process_request)",
-        "Exact replay is resolved before mutable status guards",
-        "Any exception rolls back all effects",
-    ), "architecture", errors)
-    require(text["adr"], (
-        "private.start_expedition(jsonb)",
-        "expedition.started",
-        "stage.opened",
-        "It does not create a Calendar Day",
-    ), "ADR-021", errors)
+    require(
+        text["architecture"],
+        (
+            "9D2A — reducer, executor and atomic persistence wrapper",
+            "9D2B — `command-gateway` routing",
+            "expedition.started",
+            "stage.opened(onboarding)",
+            "No Calendar Day",
+            "createStartExecutor",
+            "private.start_expedition(jsonb)",
+            "private.process_command(process_request)",
+            "Exact replay is resolved before mutable status guards",
+            "Any exception rolls back all effects",
+        ),
+        "architecture",
+        errors,
+    )
+    require(
+        text["adr"],
+        (
+            "private.start_expedition(jsonb)",
+            "expedition.started",
+            "stage.opened",
+            "It does not create a Calendar Day",
+        ),
+        "ADR-021",
+        errors,
+    )
 
     contract = json.loads(text["contract"])
     if contract.get("additionalProperties") is not False:
@@ -80,67 +91,92 @@ def main() -> int:
         if properties.get(key, {}).get("const") != expected:
             errors.append(f"transition {key} drifted")
 
-    require(text["runtime"], (
-        "createExpeditionStartRuntime",
-        "isExpeditionStartRuntime",
-        "start_policy",
-        'input.command.command_type !== "start_expedition"',
-        'input.context.expedition_status !== "ready"',
-        '"expedition.started"',
-        '"stage.opened"',
-        'policy.first_stage_id !== "onboarding"',
-        'document.projection_type === "today_view"',
-        'document.projection_type === "captain_day_view"',
-        'view.expedition_status = "active"',
-        'view.expected_projection_version = input.context.projection_version + 1',
-    ), "runtime", errors)
+    require(
+        text["runtime"],
+        (
+            "createExpeditionStartRuntime",
+            "isExpeditionStartRuntime",
+            "start_policy",
+            'input.command.command_type !== "start_expedition"',
+            'input.context.expedition_status !== "ready"',
+            '"expedition.started"',
+            '"stage.opened"',
+            'policy.first_stage_id !== "onboarding"',
+            'document.projection_type === "today_view"',
+            'document.projection_type === "captain_day_view"',
+            'view.expedition_status = "active"',
+            'view.expected_projection_version = input.context.projection_version + 1',
+        ),
+        "runtime",
+        errors,
+    )
     if "day.started" in text["runtime"] or "card_bundles.published" in text["runtime"]:
         errors.append("start runtime must not create Day or Card Bundles")
 
-    require(text["executor"], (
-        "createStartExecutor",
-        "isExpeditionStartRuntime",
-        'command.command_type !== "start_expedition"',
-        "active_captain_membership_required",
-        "actor_spoofing_detected",
-        "createStartRequestValidator",
-        "dependencies.database.startExpedition(outerRequest)",
-        'prepared.events[0].event_type !== "expedition.started"',
-        'prepared.events[1].event_type !== "stage.opened"',
-        'expected_status: "ready"',
-        'next_status: "active"',
-    ), "executor", errors)
-    require(text["database"], (
-        "PostgresStartDatabase",
-        "set local role service_role",
-        "select private.start_expedition",
-        "start_expedition_returned_no_result",
-    ), "database", errors)
-    require(text["validator"], (
-        "private-start-expedition-request.schema.json",
-        "private-process-command-request.schema.json",
-        "engine/event.schema.json",
-        "expedition-setup-view.schema.json",
-        "createStartRequestValidator",
-    ), "request validator", errors)
+    require(
+        text["executor"],
+        (
+            "createStartExecutor",
+            "isExpeditionStartRuntime",
+            'command.command_type !== "start_expedition"',
+            "active_captain_membership_required",
+            "actor_spoofing_detected",
+            "createStartRequestValidator",
+            "dependencies.database.startExpedition(outerRequest)",
+            'prepared.events[0].event_type !== "expedition.started"',
+            'prepared.events[1].event_type !== "stage.opened"',
+            'expected_status: "ready"',
+            'next_status: "active"',
+        ),
+        "executor",
+        errors,
+    )
+    require(
+        text["database"],
+        (
+            "PostgresStartDatabase",
+            "set local role service_role",
+            "select private.start_expedition",
+            "start_expedition_returned_no_result",
+        ),
+        "database",
+        errors,
+    )
+    require(
+        text["validator"],
+        (
+            "private-start-expedition-request.schema.json",
+            "private-process-command-request.schema.json",
+            "engine/event.schema.json",
+            "expedition-setup-view.schema.json",
+            "createStartRequestValidator",
+        ),
+        "request validator",
+        errors,
+    )
 
     migration = text["migration"]
-    require(migration, (
-        "create or replace function private.start_expedition(p_request jsonb)",
-        "security definer",
-        "set search_path = ''",
-        "active_captain_membership_required",
-        "expedition_not_ready",
-        "expedition_already_started",
-        "calendar_day_already_exists",
-        "team_not_frozen",
-        "rotation_not_ready",
-        "start_expedition_event_contract_mismatch",
-        "expedition_active_projection_mismatch",
-        "private.process_command(v_process_request)",
-        "set status = 'active'",
-        "grant execute on function private.start_expedition(jsonb) to service_role",
-    ), "migration", errors)
+    require(
+        migration,
+        (
+            "create or replace function private.start_expedition(p_request jsonb)",
+            "security definer",
+            "set search_path = ''",
+            "active_captain_membership_required",
+            "expedition_not_ready",
+            "expedition_already_started",
+            "calendar_day_already_exists",
+            "team_not_frozen",
+            "rotation_not_ready",
+            "start_expedition_event_contract_mismatch",
+            "expedition_active_projection_mismatch",
+            "private.process_command(v_process_request)",
+            "set status = 'active'",
+            "grant execute on function private.start_expedition(jsonb) to service_role",
+        ),
+        "migration",
+        errors,
+    )
     markers = [
         migration.find("'ilka:command:'"),
         migration.find("'ilka:expedition:'"),
@@ -157,39 +193,76 @@ def main() -> int:
     if "create table" in lower:
         errors.append("Gate 9D2A creates a parallel state table")
 
-    require(text["pgtap"], (
-        "private.start_expedition(jsonb) exists",
-        "service_role can execute start wrapper",
-        "authenticated cannot execute private start wrapper",
-        "anon cannot execute private start wrapper",
-        "start wrapper is SECURITY DEFINER",
-        "start wrapper has empty search_path",
-        "delegates immutable persistence to private.process_command",
-    ), "pgTAP", errors)
-    require(text["runtime_test"], (
-        "opens onboarding and activates only the Expedition",
-        "preserves generated Rotation Plan",
-        "rejects non-ready aggregate",
-        "rejects an already active aggregate",
-        "rejects a spoofed Captain",
-        "rejects non-empty payload",
-        "rejects an incompatible rotation",
-        "rejects existing Day projections",
-    ), "runtime tests", errors)
-    require(text["executor_test"], (
-        "prepares one trusted atomic wrapper request",
-        "rejects non-Captain before persistence",
-        "rejects spoofed actor before persistence",
-        "requires exact pinned start runtime",
-        "maps stable wrapper failures",
-    ), "executor tests", errors)
+    require(
+        text["pgtap"],
+        (
+            "private.start_expedition(jsonb) exists",
+            "service_role can execute start wrapper",
+            "authenticated cannot execute private start wrapper",
+            "anon cannot execute private start wrapper",
+            "start wrapper is SECURITY DEFINER",
+            "start wrapper has empty search_path",
+            "delegates immutable persistence to private.process_command",
+        ),
+        "pgTAP",
+        errors,
+    )
+    require(
+        text["runtime_test"],
+        (
+            "opens onboarding and activates only the Expedition",
+            "preserves generated Rotation Plan",
+            "rejects non-ready aggregate",
+            "rejects an already active aggregate",
+            "rejects a spoofed Captain",
+            "rejects non-empty payload",
+            "rejects an incompatible rotation",
+            "rejects existing Day projections",
+        ),
+        "runtime tests",
+        errors,
+    )
+    require(
+        text["executor_test"],
+        (
+            "prepares one trusted atomic wrapper request",
+            "rejects non-Captain before persistence",
+            "rejects spoofed actor before persistence",
+            "requires exact pinned start runtime",
+            "maps stable wrapper failures",
+        ),
+        "executor tests",
+        errors,
+    )
 
+    if "start_expedition: { Args: { p_request: Json }; Returns: Json }" not in text["database_types"]:
+        errors.append("generated Supabase types do not expose private.start_expedition")
     if "createExpeditionStartRuntime" in text["registry"] or "day1_pilot_v1" in text["registry"]:
         errors.append("Gate 9D2A registers a production runtime")
     if 'command.command_type === "start_expedition"' in text["handler"]:
         errors.append("Gate 9D2A partially routes the shared handler")
-    if "python scripts/validate_expedition_start_execution.py" not in text["workflow"]:
-        errors.append("CI does not run Gate 9D2A validator")
+
+    workflow = text["workflow"]
+    require(
+        workflow,
+        (
+            "permissions:\n  contents: read",
+            "Check command gateway and Engine runtime formatting",
+            "deno fmt --check",
+            "python scripts/validate_expedition_start_execution.py",
+            "Verify generated sources are committed",
+        ),
+        "workflow",
+        errors,
+    )
+    for forbidden in (
+        "actions/upload-artifact",
+        "Commit exact generated database types",
+        "contents: write",
+        "Checkout Gate 9D2A branch",
+    ):
+        if forbidden in workflow:
+            errors.append(f"workflow retains temporary diagnostic step: {forbidden}")
 
     if errors:
         return fail(errors)
