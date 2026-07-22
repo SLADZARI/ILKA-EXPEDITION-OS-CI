@@ -3,8 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 
-WORKFLOW_PATH = Path(".github/workflows/finalize-gate9d2b.yml")
-
 CHANGELOG_ENTRY = """## 2026-07-22 — Gate 9D2 executable Expedition start
 
 - Added the pure `expedition-start-v1` reducer for Captain-only `start_expedition` from `ready` with exact empty payload.
@@ -31,13 +29,6 @@ README_NEW = """Gate 9D2 executable Expedition start is complete locally under a
 - protected handler and PostgreSQL integration tests prove rollback, ordered events, no premature Day projections and replay after Captain revocation.
 
 The production runtime registry remains unchanged. Gate 9D3 implements trusted `system_clock` Day 1 boundary execution; Gate 9D4 closes fixtures and the complete vertical; Gate 9E composes, pins and deploys `day1_pilot_v1`."""
-
-
-def replace_once(text: str, old: str, new: str, label: str) -> str:
-    count = text.count(old)
-    if count != 1:
-        raise RuntimeError(f"{label}: expected one marker, found {count}")
-    return text.replace(old, new, 1)
 
 
 def update_changelog() -> None:
@@ -75,45 +66,22 @@ pytest -q
     path.write_text(text, encoding="utf-8")
 
 
-def update_protected_workflow() -> None:
-    path = Path(".github/workflows/validate.yml")
-    text = path.read_text(encoding="utf-8")
-    old = """      - name: Validate Expedition start execution
-        run: python scripts/validate_expedition_start_execution.py
-
-      - name: Run test suite
-"""
-    new = """      - name: Validate Expedition start execution
-        run: python scripts/validate_expedition_start_execution.py
-
-      - name: Validate Expedition start gateway
-        run: python scripts/validate_expedition_start_gateway.py
-
-      - name: Run test suite
-"""
-    if old in text:
-        text = text.replace(old, new, 1)
-    elif "python scripts/validate_expedition_start_gateway.py" not in text:
-        raise RuntimeError("protected workflow Gate 9D2B marker not found")
-    path.write_text(text, encoding="utf-8")
-
-
 def fix_integration_trigger() -> None:
     path = Path("supabase/functions/command-gateway/tests/integration/start-execution.test.ts")
     text = path.read_text(encoding="utf-8")
     old = "if new.id = ${expeditionId}::uuid and new.status = 'active' then"
     new = "if new.id = '53000000-0000-0000-0000-0000000000b1'::uuid and new.status = 'active' then"
-    text = replace_once(text, old, new, "integration trigger UUID")
+    if old in text:
+        text = text.replace(old, new, 1)
+    elif new not in text:
+        raise RuntimeError("integration trigger UUID marker not found")
     path.write_text(text, encoding="utf-8")
 
 
 def main() -> None:
     update_changelog()
     update_readme()
-    update_protected_workflow()
     fix_integration_trigger()
-    Path(__file__).unlink()
-    WORKFLOW_PATH.unlink()
 
 
 if __name__ == "__main__":
