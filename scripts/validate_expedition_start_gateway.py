@@ -111,15 +111,15 @@ def main() -> int:
         errors,
     )
 
-    architecture = ARCH.read_text(encoding="utf-8")
+    architecture = ARCH.read_text(encoding="utf-8").lower()
     require(
         architecture,
         (
-            "Gate 9D2B",
-            "exact replay before mutable membership",
-            "StartExecutor",
-            "gateway-to-PostgreSQL",
-            "no Calendar Day",
+            "gate 9d2b",
+            "exact replay occurs before mutable membership",
+            "startexecutor",
+            "gateway-to-postgresql",
+            "no calendar day",
         ),
         "start execution architecture",
         errors,
