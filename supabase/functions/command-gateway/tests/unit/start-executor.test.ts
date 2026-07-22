@@ -87,7 +87,11 @@ function setupProjection(): Record<string, JsonValue> {
         onboard_role_id: onboard[index],
       })),
     },
-    readiness: { can_generate_rotation: false, can_start_expedition: true, blockers: [] },
+    readiness: {
+      can_generate_rotation: false,
+      can_start_expedition: true,
+      blockers: [],
+    },
     controls: {
       invite_participant: false,
       revoke_invitation: false,
@@ -111,8 +115,12 @@ function context(role: "captain" | "participant" = "captain"): GatewayExecutionC
       auth_user_id: AUTH_USER_ID,
       profile_id: PROFILE_ID,
       membership_id: MEMBERSHIP_ID,
-      participant_id: role === "captain" ? null : "70000000-0000-0000-0000-00000000009e",
-      participant_key: role === "captain" ? null : "participant_00000000000000000000000000000001",
+      participant_id: role === "captain"
+        ? null
+        : "70000000-0000-0000-0000-00000000009e",
+      participant_key: role === "captain"
+        ? null
+        : "participant_00000000000000000000000000000001",
       membership_role: role,
     },
     projections: [{
@@ -170,7 +178,9 @@ class FakeStartDatabase implements StartDatabase {
   calls: Array<Record<string, JsonValue>> = [];
   current = command();
   error: Error | null = null;
-  async startExpedition(request: Record<string, JsonValue>): Promise<ProcessCommandResult> {
+  async startExpedition(
+    request: Record<string, JsonValue>,
+  ): Promise<ProcessCommandResult> {
     this.calls.push(request);
     if (this.error) throw this.error;
     return result(this.current);

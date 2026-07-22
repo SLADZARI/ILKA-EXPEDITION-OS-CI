@@ -74,7 +74,10 @@ function participant(index: number): Record<string, JsonValue> {
 }
 
 function setupView(count = 4, projectionVersion = 5): Record<string, JsonValue> {
-  const participants = Array.from({ length: count }, (_, index) => participant(index + 1));
+  const participants = Array.from(
+    { length: count },
+    (_, index) => participant(index + 1),
+  );
   const onboard = ["navigation", "mooring", "order", "cook", "product_focus"];
   return {
     expedition_id: "start_runtime_test",
@@ -114,7 +117,10 @@ function setupView(count = 4, projectionVersion = 5): Record<string, JsonValue> 
   };
 }
 
-function document(projection: Record<string, JsonValue>, version = 5): ProjectionDocument {
+function document(
+  projection: Record<string, JsonValue>,
+  version = 5,
+): ProjectionDocument {
   return {
     projection_key: "expedition_setup_view",
     projection_type: "expedition_setup_view",
@@ -166,8 +172,14 @@ Deno.test("start_expedition opens onboarding and activates only the Expedition",
   const projection = prepared.projection_mutations[0].projection;
   assertEquals(projection.expedition_status, "active");
   assertEquals(projection.expected_projection_version, 6);
-  assertEquals((projection.controls as Record<string, JsonValue>).start_expedition, false);
-  assertEquals((projection.readiness as Record<string, JsonValue>).can_start_expedition, false);
+  assertEquals(
+    (projection.controls as Record<string, JsonValue>).start_expedition,
+    false,
+  );
+  assertEquals(
+    (projection.readiness as Record<string, JsonValue>).can_start_expedition,
+    false,
+  );
 });
 
 Deno.test("start_expedition preserves generated Rotation Plan", async () => {
