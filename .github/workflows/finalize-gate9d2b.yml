@@ -1,9 +1,6 @@
 name: Finalize Gate 9D2B
 
 on:
-  push:
-    branches:
-      - agent/gate9d2b-route-start-expedition
   pull_request:
 
 permissions:
@@ -24,14 +21,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Apply deterministic finalization
+      - name: Apply deterministic documentation finalization
         run: python scripts/finalize_gate9d2b.py
 
-      - name: Commit finalized Gate 9D2B files
+      - name: Commit finalized Gate 9D2B documentation
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "docs(gate9d2b): finalize Expedition start gateway"
-          git push origin HEAD:agent/gate9d2b-route-start-expedition
+          git add CHANGELOG.md README.md supabase/functions/command-gateway/tests/integration/start-execution.test.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(gate9d2b): record Expedition start gateway"
+            git push origin HEAD:agent/gate9d2b-route-start-expedition
+          fi
