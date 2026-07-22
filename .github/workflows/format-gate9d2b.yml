@@ -1,0 +1,45 @@
+name: Format Gate 9D2B TypeScript
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Gate 9D2B branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/gate9d2b-route-start-expedition
+          fetch-depth: 0
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format Gate 9D2B TypeScript
+        run: |
+          deno fmt --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/_shared/command-gateway/handler.ts \
+            supabase/functions/command-gateway/index.ts \
+            supabase/functions/command-gateway/tests/unit/start-handler.test.ts \
+            supabase/functions/command-gateway/tests/integration/start-execution.test.ts
+
+      - name: Commit formatting
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            supabase/functions/_shared/command-gateway/handler.ts \
+            supabase/functions/command-gateway/index.ts \
+            supabase/functions/command-gateway/tests/unit/start-handler.test.ts \
+            supabase/functions/command-gateway/tests/integration/start-execution.test.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "style(gate9d2b): apply Deno formatting"
+            git push origin HEAD:agent/gate9d2b-route-start-expedition
+          fi
