@@ -1,0 +1,36 @@
+name: Debug Gate 9D2B validator
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Capture validator output
+        shell: bash
+        run: |
+          set +e
+          python scripts/validate_expedition_start_gateway.py > gate9d2b-validator.log 2>&1
+          status=$?
+          printf 'exit_status=%s\n' "$status" >> gate9d2b-validator.log
+          exit 0
+
+      - name: Upload validator log
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9d2b-validator-log
+          path: gate9d2b-validator.log
+          if-no-files-found: error
+          retention-days: 1
