@@ -305,3 +305,26 @@ Deno.test("start executor maps stable wrapper failures", async () => {
   assertEquals(outcome.ok, false);
   if (!outcome.ok) assertEquals(outcome.code, "team_not_frozen");
 });
+
+Deno.test("start executor preserves missing setup projection race as 409", async () => {
+  const database = new FakeStartDatabase();
+  database.error = new Error("expedition_setup_projection_missing");
+  const executor = createStartExecutor({
+    database,
+    contextDatabase: gatewayDatabase(context()),
+    schemas: createSchemaValidator(),
+    runtimes: new StaticRuntimeRegistry([runtime]),
+    now: () => new Date("2026-07-22T04:10:01Z"),
+  });
+  const outcome = await executor.execute({
+    command: command(),
+    auth_user: { id: AUTH_USER_ID },
+    request_hash: "a".repeat(64),
+  });
+  assertEquals(outcome.ok, false);
+  if (!outcome.ok) {
+    assertEquals(outcome.code, "expedition_setup_projection_missing");
+    assertEquals(outcome.status, 409);
+    assertEquals(outcome.retryable, false);
+  }
+});
