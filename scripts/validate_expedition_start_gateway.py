@@ -115,7 +115,7 @@ def main() -> int:
     require(
         architecture,
         (
-            "gate 9d2b",
+            "9d2b — `command-gateway` routing",
             "exact replay occurs before mutable membership",
             "startexecutor",
             "gateway-to-postgresql",
