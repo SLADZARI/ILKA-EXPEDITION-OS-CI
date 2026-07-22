@@ -53,6 +53,9 @@ jobs:
       - name: Validate Expedition start execution
         run: python scripts/validate_expedition_start_execution.py
 
+      - name: Validate Expedition start gateway
+        run: python scripts/validate_expedition_start_gateway.py
+
       - name: Run test suite
         run: pytest -q
 
