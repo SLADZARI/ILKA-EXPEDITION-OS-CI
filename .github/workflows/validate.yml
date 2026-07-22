@@ -51,11 +51,9 @@ jobs:
         run: python scripts/validate_expedition_day1_start_contract.py
 
       - name: Validate Expedition start execution
-        continue-on-error: true
         run: python scripts/validate_expedition_start_execution.py
 
       - name: Run test suite
-        continue-on-error: true
         run: pytest -q
 
       - name: Set up Node
@@ -121,30 +119,7 @@ jobs:
         run: deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts supabase/functions/_shared/engine-runtime/*.ts
 
       - name: Run command gateway and Engine runtime unit tests
-        id: deno_unit_tests
-        continue-on-error: true
-        shell: bash
-        run: |
-          deno test --frozen \
-            --config supabase/functions/command-gateway/deno.json \
-            supabase/functions/command-gateway/tests/unit \
-            > deno-unit-tests.log 2>&1
-
-      - name: Upload Deno unit diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gate9d2a-deno-unit-log
-          path: deno-unit-tests.log
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Fail on Deno unit failure
-        if: steps.deno_unit_tests.outcome == 'failure'
-        shell: bash
-        run: |
-          cat deno-unit-tests.log
-          exit 1
+        run: deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
