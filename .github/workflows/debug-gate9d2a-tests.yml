@@ -1,0 +1,41 @@
+name: Debug Gate 9D2A tests
+
+on:
+  push:
+    branches:
+      - agent/gate9d2-start-expedition
+
+permissions:
+  contents: read
+
+jobs:
+  capture-deno-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Capture unit test output
+        shell: bash
+        run: |
+          set +e
+          deno test --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway/tests/unit \
+            > deno-unit-tests.log 2>&1
+          status=$?
+          printf 'exit_status=%s\n' "$status" >> deno-unit-tests.log
+          exit 0
+
+      - name: Upload diagnostic log
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9d2a-deno-unit-log
+          path: deno-unit-tests.log
+          if-no-files-found: error
+          retention-days: 1
