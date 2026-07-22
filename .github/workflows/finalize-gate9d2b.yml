@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - agent/gate9d2b-route-start-expedition
+  pull_request:
 
 permissions:
   contents: write
