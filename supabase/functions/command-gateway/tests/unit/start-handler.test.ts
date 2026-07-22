@@ -1,5 +1,6 @@
 import { assertEquals } from "jsr:@std/assert@1.0.19";
 
+import { commandRequestHash } from "../../../_shared/command-gateway/canonical-json.ts";
 import { createCommandGatewayHandler } from "../../../_shared/command-gateway/handler.ts";
 import type { StartExecutor } from "../../../_shared/command-gateway/start.ts";
 import { StaticRuntimeRegistry } from "../../../_shared/command-gateway/runtime-registry.ts";
@@ -191,6 +192,7 @@ Deno.test("gateway maps stable StartExecutor failures", async () => {
 Deno.test("gateway returns exact start replay before StartExecutor and mutable context", async () => {
   const current = command();
   const stored = receipt(current);
+  stored.request_hash = await commandRequestHash(current);
   let calls = 0;
   const executor: StartExecutor = {
     execute: async () => {
