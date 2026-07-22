@@ -99,7 +99,7 @@ def main() -> int:
             "forced_start_status_failure",
             "start_persistence_unavailable",
             'status: "ready"',
-            'status: "active"',
+            'assertEquals(expedition.rows[0]?.status, "active")',
             '"expedition.started"',
             '"stage.opened"',
             "day_event_count: 0",
