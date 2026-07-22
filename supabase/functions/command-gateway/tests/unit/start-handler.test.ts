@@ -6,9 +6,10 @@ import type { StartExecutor } from "../../../_shared/command-gateway/start.ts";
 import { StaticRuntimeRegistry } from "../../../_shared/command-gateway/runtime-registry.ts";
 import type {
   CommandEnvelope,
-  CommandReceipt,
+  ExistingReceiptLookup,
   GatewayDatabase,
   GatewayDependencies,
+  PersistedReceipt,
   ProcessCommandResult,
   SchemaValidator,
 } from "../../../_shared/command-gateway/types.ts";
@@ -33,7 +34,7 @@ function command(): CommandEnvelope {
   };
 }
 
-function receipt(current: CommandEnvelope): CommandReceipt {
+function receipt(current: CommandEnvelope): PersistedReceipt {
   return {
     command_id: current.command_id,
     expedition_id: EXPEDITION_ID,
@@ -88,7 +89,9 @@ function validators(): SchemaValidator {
   };
 }
 
-function database(storedReceipt: CommandReceipt | null = null): GatewayDatabase {
+function database(
+  storedReceipt: ExistingReceiptLookup | null = null,
+): GatewayDatabase {
   return {
     getReceipt: async () => storedReceipt,
     loadContext: async () => {
@@ -101,7 +104,7 @@ function database(storedReceipt: CommandReceipt | null = null): GatewayDatabase 
 }
 
 function dependencies(
-  storedReceipt: CommandReceipt | null = null,
+  storedReceipt: ExistingReceiptLookup | null = null,
 ): GatewayDependencies {
   return {
     auth: { verify: async () => ({ id: AUTH_USER_ID }) },
@@ -193,8 +196,14 @@ Deno.test("gateway maps stable StartExecutor failures", async () => {
 
 Deno.test("gateway returns exact start replay before StartExecutor and mutable context", async () => {
   const current = command();
-  const stored = receipt(current);
-  stored.request_hash = await commandRequestHash(current);
+  const requestHash = await commandRequestHash(current);
+  const storedResult = result(current, true);
+  storedResult.receipt.request_hash = requestHash;
+  const stored: ExistingReceiptLookup = {
+    expedition_key: current.expedition_id,
+    request_hash: requestHash,
+    result: storedResult,
+  };
   let calls = 0;
   const executor: StartExecutor = {
     execute: async () => {
