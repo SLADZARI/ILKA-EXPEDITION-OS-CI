@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-22 — Gate 9D2 executable Expedition start
+
+- Added the pure `expedition-start-v1` reducer for Captain-only `start_expedition` from `ready` with exact empty payload.
+- Added authoritative frozen-team, generated-Rotation, Cook compatibility, first-Stage and no-existing-Day guards.
+- Added ordered `expedition.started → stage.opened(onboarding)` events and one complete active `ExpeditionSetupView` replacement without creating a Calendar Day.
+- Added `StartExecutor`, command-specific private request validation, `PostgresStartDatabase` and service-role-only `private.start_expedition(jsonb)`.
+- Preserved command → Expedition lock order, exact replay before mutable guards and `private.process_command(jsonb)` as the only receipt/event/projection writer.
+- Routed `start_expedition` through the existing authenticated `command-gateway` after exact replay and before the generic membership/runtime path.
+- Added composition in `command-gateway/index.ts` without a second endpoint, direct table write or alternate runtime registry.
+- Added handler tests and a full gateway-to-PostgreSQL integration proving actor rejection, complete rollback, `ready → active`, ordered events, no premature Day state and replay after Captain revocation.
+- Added protected Gate 9D2A/9D2B static validation and generated-source parity.
+
+Gate 9D2 adds no `process_day_boundary`, assignment instance, Card Bundle, `TodayView`, `CaptainDayView`, production runtime registration, cloud migration, deployment or pilot data. Gate 9D3 implements trusted `system_clock` Day 1 execution.
+
 ## 2026-07-22 — Gate 9D1 Expedition start and Day 1 contracts
 
 - Accepted `ADR-021` for the `start_expedition → process_day_boundary → Day 1 projections` boundary.

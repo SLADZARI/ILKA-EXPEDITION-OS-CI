@@ -397,7 +397,7 @@ Deno.test({
           set search_path = ''
           as $$
           begin
-            if new.id = ${expeditionId}::uuid and new.status = 'active' then
+            if new.id = '53000000-0000-0000-0000-0000000000b1'::uuid and new.status = 'active' then
               raise exception using message = 'forced_start_status_failure';
             end if;
             return new;
