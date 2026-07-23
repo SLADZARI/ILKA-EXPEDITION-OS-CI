@@ -1,0 +1,90 @@
+name: Fix Gate 9D3 typecheck
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-types:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Gate 9D3 branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/gate9d3-day1-boundary
+          fetch-depth: 0
+
+      - name: Apply exact type fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          runtime = Path("supabase/functions/_shared/engine-runtime/day1-boundary-v1.ts")
+          text = runtime.read_text(encoding="utf-8")
+          text = text.replace(
+              "  RuntimeBundle,\n} from \"../command-gateway/types.ts\";",
+              "  RuntimeBundle,\n  RuntimeInput,\n} from \"../command-gateway/types.ts\";",
+              1,
+          )
+          text = text.replace(
+              "resolveActorRole: async (input): Promise<ActorRole> => input.actor_role,",
+              "resolveActorRole: async (input: RuntimeInput): Promise<ActorRole> =>\n      input.actor_role,",
+              1,
+          )
+          text = text.replace(
+              "reduceBoundary: async (input) => await reduceBoundary(input, policy),",
+              "reduceBoundary: async (input: Day1BoundaryInput) =>\n      await reduceBoundary(input, policy),",
+              1,
+          )
+          runtime.write_text(text, encoding="utf-8")
+
+          test = Path("supabase/functions/command-gateway/tests/unit/day1-boundary-runtime.test.ts")
+          text = test.read_text(encoding="utf-8")
+          old = '''  const assignments = result.events[1].payload.assignments as Array<
+            Record<string, unknown>
+          >;'''
+          new = '''  const assignmentPayload = result.events[1].payload;
+          if (
+            typeof assignmentPayload !== "object" || assignmentPayload === null ||
+            Array.isArray(assignmentPayload)
+          ) {
+            throw new Error("role_assignments_payload_invalid");
+          }
+          const assignments = assignmentPayload.assignments as Array<
+            Record<string, unknown>
+          >;'''
+          if old not in text:
+              raise SystemExit("day1-boundary runtime test marker not found")
+          test.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format and typecheck fixes
+        run: |
+          deno fmt --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/_shared/engine-runtime/day1-boundary-v1.ts \
+            supabase/functions/command-gateway/tests/unit/day1-boundary-runtime.test.ts
+          deno check --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway/index.ts \
+            supabase/functions/command-gateway/tests/unit/*.ts \
+            supabase/functions/command-gateway/tests/integration/*.ts \
+            supabase/functions/_shared/engine-runtime/*.ts
+
+      - name: Commit type fixes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            supabase/functions/_shared/engine-runtime/day1-boundary-v1.ts \
+            supabase/functions/command-gateway/tests/unit/day1-boundary-runtime.test.ts
+          git commit -m "fix(gate9d3): type trusted boundary runtime"
+          git push origin HEAD:agent/gate9d3-day1-boundary
