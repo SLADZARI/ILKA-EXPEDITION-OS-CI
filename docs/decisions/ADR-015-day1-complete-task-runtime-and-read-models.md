@@ -156,7 +156,7 @@ The Participant `TodayView` update:
 The Captain `CaptainDayView` update:
 
 - updates the matching Participant `required_tasks_terminal` from all tasks in that Participant `TodayView`;
-- removes `required_task_incomplete` blockers for the completed task when all required tasks are terminal;
+- removes only the completing Participant blocker `<participant_key>:<task_id>` when all required tasks in that Participant `TodayView` are terminal, as refined by `ADR-021`;
 - leaves unrelated card/output blockers untouched;
 - recalculates `can_close_day` from the remaining blockers;
 - increments `day.revision` by one;

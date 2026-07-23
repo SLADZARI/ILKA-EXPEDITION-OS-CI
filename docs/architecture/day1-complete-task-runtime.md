@@ -167,7 +167,7 @@ Mutation:
 
 - matching Participant `required_tasks_terminal` is recalculated from that Participant TodayView;
 - Participant `sync_status` becomes `synced`;
-- relevant `required_task_incomplete` blockers are removed only when all that Participant's tasks are terminal;
+- only the completing Participant blocker `<participant_key>:<task_id>` is removed when all that Participant's tasks are terminal; blockers for other Participants sharing the same methodology task ID remain;
 - unrelated card/output blockers remain;
 - `can_close_day` is recalculated from remaining blockers;
 - `day.revision` increments once;

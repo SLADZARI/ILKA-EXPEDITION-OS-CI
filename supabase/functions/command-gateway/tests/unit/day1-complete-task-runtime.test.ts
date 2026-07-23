@@ -153,9 +153,20 @@ Deno.test("Day 1 runtime accepts an assigned on-time task completion", async () 
   assertEquals(participants[0].required_tasks_terminal, true);
   const blockers = captain.projection.blockers as Array<Record<string, JsonValue>>;
   assertEquals(
-    blockers.some((blocker) => blocker.code === "required_task_incomplete"),
+    blockers.some((blocker) =>
+      blocker.code === "required_task_incomplete" &&
+      blocker.entity_id === "participant_01:task_team_agreement"
+    ),
     false,
   );
+  assertEquals(
+    blockers.some((blocker) =>
+      blocker.code === "required_task_incomplete" &&
+      blocker.entity_id === "participant_02:task_team_agreement"
+    ),
+    true,
+  );
+  assertEquals(captain.projection.can_close_day, false);
   assertEquals((captain.projection.day as Record<string, JsonValue>).revision, 2);
   assertEquals(
     (captain.projection.completion_readiness as Record<string, JsonValue>)

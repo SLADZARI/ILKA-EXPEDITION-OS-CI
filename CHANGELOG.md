@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-24 — Gate 9D4 Day 1 vertical closure
+
+- Repaired `complete_task` blocker ownership so only `<participant_key>:<task_id>` for the authenticated Participant is removed after that Participant's required tasks become terminal.
+- Preserved blockers for other Participants that share the same methodology `task_id`.
+- Synchronized Day 1 Participant/Captain fixtures with deterministic boundary assignment IDs, complete Participant-scoped blockers and authoritative after-sync projection versions.
+- Synchronized sample start, boundary and `complete_task` commands/events with exact runtime identities, event order, trusted timestamps, ten assignment instances and five complete Card Bundles.
+- Updated frontend source validation for flat assignment instances and actor-only blocker removal.
+- Added unit, gateway-to-PostgreSQL integration, pytest and protected Gate 9D4 static validation coverage.
+- Reconciled `ADR-015` and Day 1 architecture wording with the later accepted `ADR-021` blocker identity rule.
+
+Gate 9D4 adds no new command, event, permission, state, SQL function, runtime registration, cloud migration, Edge deployment, secret, scheduler, pilot data, Day 2 reducer or frontend Auth/setup implementation. Gate 9E remains the deployment and composed pilot-runtime gate.
+
 ## 2026-07-23 — Gate 9D3 trusted Day 1 boundary
 
 - Added raw-body HMAC-SHA256 `system_clock` verification with lowercase signatures, constant-time comparison and a bounded timestamp replay window.

@@ -344,6 +344,24 @@ Deno.test({
           Record<string, unknown>
         >;
         assertEquals(participants[0].required_tasks_terminal, true);
+        assertEquals(participants[1].required_tasks_terminal, false);
+        const blockers = captain.rows[0].projection.blockers as Array<
+          Record<string, unknown>
+        >;
+        assertEquals(
+          blockers.some((blocker) =>
+            blocker.code === "required_task_incomplete" &&
+            blocker.entity_id === "participant_01:task_team_agreement"
+          ),
+          false,
+        );
+        assertEquals(
+          blockers.some((blocker) =>
+            blocker.code === "required_task_incomplete" &&
+            blocker.entity_id === "participant_02:task_team_agreement"
+          ),
+          true,
+        );
         assertEquals(
           (captain.rows[0].projection.day as Record<string, unknown>).revision,
           2,

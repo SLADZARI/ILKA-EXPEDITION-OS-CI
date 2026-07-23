@@ -389,10 +389,10 @@ async function reduceCompleteTask(
   participant.sync_status = "synced";
 
   if (requiredTasksTerminal) {
-    const actorTaskIds = new Set(today.tasks.map((candidate) => candidate.task_id));
+    const actorTaskBlockerId = `${actor.participant_key}:${taskId}`;
     captain.blockers = captain.blockers.filter((blocker) =>
       blocker.code !== "required_task_incomplete" ||
-      !actorTaskIds.has(blocker.entity_id)
+      blocker.entity_id !== actorTaskBlockerId
     );
   }
   captain.can_close_day = captain.blockers.length === 0;
