@@ -196,6 +196,7 @@ function event(
   return {
     event_id: eventId(input.command.command_id, ordinal),
     event_type: eventType,
+    schema_version: 1,
     occurred_at: input.received_at,
     recorded_at: input.received_at,
     actor_id: "system_clock",
