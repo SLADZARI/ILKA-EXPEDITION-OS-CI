@@ -19,6 +19,17 @@ jobs:
       - name: Reassemble and verify package
         shell: bash
         run: |
+          cat > /tmp/gate9d3-chunks.sha256 <<'EOF'
+          9adf765b72e03711bdceed896a0d002e9cce4c698f1f73deba873ceae710e5c8  .gate9d3/chunk-00.b64
+          0c1bec847c33fcbf7e8dc2a5d4e3fc20646043bfe3134c76ac7a14c6a685d886  .gate9d3/chunk-01.b64
+          4cd5f527f5b2bff795de170333634ee3ecb6b01ab4d8651edf410c4af68f0af9  .gate9d3/chunk-02.b64
+          b7f595f49927b350e2f48820a5ddeca283621b3a1e14257318f6ffd246228cbb  .gate9d3/chunk-03.b64
+          6f447ed7f56f794e3c784a622ab2da8fae0afd8180650061cc6c845b5cf09c0c  .gate9d3/chunk-04.b64
+          3e17b20b203c216909aba386e494c3f7f7f70e17c3b93da1ade5d20a1b245797  .gate9d3/chunk-05.b64
+          9d4e1b5ef1ff69ed30228c6b336ecea7ea548a04073c25ef3e62512562820476  .gate9d3/chunk-06.b64
+          9a49f7a10f04372458bbe115d5814efa6bf51473acbcba6997a78dce657f45e1  .gate9d3/chunk-07.b64
+          EOF
+          sha256sum --check --strict /tmp/gate9d3-chunks.sha256
           cat .gate9d3/chunk-*.b64 | base64 --decode > /tmp/gate9d3-changes.tar.gz
           echo "e6dd10f0187272e42ddf8ac46c2320f75880b9a3a01fe468fe37ef979e78a824  /tmp/gate9d3-changes.tar.gz" | sha256sum --check --strict
           tar -tzf /tmp/gate9d3-changes.tar.gz
