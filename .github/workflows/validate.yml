@@ -145,6 +145,25 @@ jobs:
       - name: Lint Supabase database
         run: supabase db lint --local --level error
 
+      - name: Inject temporary Gate 9D3 database diagnostics
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("supabase/functions/_shared/command-gateway/day-boundary.ts")
+          text = path.read_text(encoding="utf-8")
+          marker = '''      } catch (error) {
+                  return databaseFailure(error);
+                }'''
+          replacement = '''      } catch (error) {
+                  console.error("DAY_BOUNDARY_DATABASE_ERROR", error);
+                  return databaseFailure(error);
+                }'''
+          if text.count(marker) != 1:
+              raise SystemExit(f"database catch marker count: {text.count(marker)}")
+          path.write_text(text.replace(marker, replacement, 1), encoding="utf-8")
+          PY
+
       - name: Run command gateway database integration
         shell: bash
         run: |
