@@ -80,7 +80,6 @@ export type override_stage_advancePayload = {
 export type process_day_boundaryPayload = {
   "local_calendar_date": string;
   "boundary_at": string;
-  [key: string]: unknown;
 };
 export type recover_day_transitionPayload = {
   "local_calendar_date": string;
