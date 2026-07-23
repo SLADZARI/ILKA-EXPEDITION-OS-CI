@@ -1,0 +1,60 @@
+name: Fix Gate 9D3 event contract
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-events:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Gate 9D3 branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/gate9d3-day1-boundary
+          fetch-depth: 0
+
+      - name: Add canonical event schema version
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("supabase/functions/_shared/engine-runtime/day1-boundary-v1.ts")
+          text = path.read_text(encoding="utf-8")
+          marker = "    event_type: eventType,\n    occurred_at: input.received_at,"
+          replacement = "    event_type: eventType,\n    schema_version: 1,\n    occurred_at: input.received_at,"
+          if text.count(marker) != 1:
+              raise SystemExit(f"event factory marker count: {text.count(marker)}")
+          path.write_text(text.replace(marker, replacement, 1), encoding="utf-8")
+          PY
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Verify event contract
+        run: |
+          deno fmt --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/_shared/engine-runtime/day1-boundary-v1.ts
+          deno check --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway/index.ts \
+            supabase/functions/command-gateway/tests/unit/*.ts \
+            supabase/functions/command-gateway/tests/integration/*.ts \
+            supabase/functions/_shared/engine-runtime/*.ts
+          deno test --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            --filter "Day boundary executor" \
+            supabase/functions/command-gateway/tests/unit/day1-boundary-executor.test.ts
+
+      - name: Commit event contract fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/functions/_shared/engine-runtime/day1-boundary-v1.ts
+          git commit -m "fix(gate9d3): version Day 1 boundary events"
+          git push origin HEAD:agent/gate9d3-day1-boundary
