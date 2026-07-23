@@ -122,6 +122,8 @@ def main() -> int:
         "validateCommand",
         "idempotency_key must equal command_id",
         "commandRequestHash",
+        "systemClock.verifier.verify",
+        "systemClock.executor.execute",
         "auth.verify",
         "database.getReceipt",
         "receipt_actor_mismatch",
@@ -135,11 +137,25 @@ def main() -> int:
         "database.processCommand",
         "validateProcessResult",
     ), "gateway handler missing behavior", errors)
-    auth_at = handler.find("dependencies.auth.verify")
-    replay_at = handler.find("dependencies.database.getReceipt")
-    membership_at = handler.find("dependencies.database.loadContext")
+
+    system_verify_at = handler.find("systemClock.verifier.verify")
+    system_replay_at = handler.find(
+        "dependencies.database.getReceipt",
+        system_verify_at,
+    )
+    system_execute_at = handler.find("systemClock.executor.execute")
+    if not (0 <= system_verify_at < system_replay_at < system_execute_at):
+        errors.append(
+            "trusted system gateway order must be HMAC auth -> replay -> boundary execution"
+        )
+
+    human_start = handler.find("const command = parsed as CommandEnvelope;")
+    human_handler = handler[human_start:] if human_start >= 0 else ""
+    auth_at = human_handler.find("dependencies.auth.verify")
+    replay_at = human_handler.find("dependencies.database.getReceipt")
+    membership_at = human_handler.find("dependencies.database.loadContext")
     if not (0 <= auth_at < replay_at < membership_at):
-        errors.append("gateway order must be auth -> replay -> membership")
+        errors.append("human gateway order must be auth -> replay -> membership")
 
     canonical = (
         ROOT / "supabase/functions/_shared/command-gateway/canonical-json.ts"

@@ -1,8 +1,14 @@
 import { AuthServiceError } from "./auth.ts";
 import type { BootstrapExecutor } from "./bootstrap.ts";
+import type { DayBoundaryExecutor } from "./day-boundary.ts";
 import type { InvitationExecutor } from "./invitation.ts";
 import type { RotationExecutor } from "./rotation.ts";
 import type { StartExecutor } from "./start.ts";
+import {
+  SYSTEM_CLOCK_SIGNATURE_HEADER,
+  SYSTEM_CLOCK_TIMESTAMP_HEADER,
+  type SystemClockRequestVerifier,
+} from "./system-clock-auth.ts";
 import { commandRequestHash } from "./canonical-json.ts";
 import {
   COMMAND_CONTRACTS,
@@ -22,7 +28,13 @@ import type {
 
 const MAX_BODY_BYTES = 64 * 1024;
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
-const CORS_ALLOW_HEADERS = "authorization, apikey, content-type, x-client-info";
+const CORS_ALLOW_HEADERS =
+  "authorization, apikey, content-type, x-client-info, x-ilka-system-timestamp, x-ilka-system-signature";
+
+export interface TrustedSystemClockBranch {
+  verifier: SystemClockRequestVerifier;
+  executor: DayBoundaryExecutor;
+}
 
 interface GatewayErrorBody {
   request_id: string;
@@ -189,6 +201,7 @@ export function createCommandGatewayHandler(
   invitationExecutor?: InvitationExecutor,
   rotationExecutor?: RotationExecutor,
   startExecutor?: StartExecutor,
+  systemClock?: TrustedSystemClockBranch,
 ): (request: Request) => Promise<Response> {
   return async (request: Request): Promise<Response> => {
     const requestId = dependencies.requestId();
@@ -260,6 +273,215 @@ export function createCommandGatewayHandler(
         "request_too_large",
         "The command body exceeds 64 KiB.",
         false,
+        origin,
+        true,
+      );
+    }
+
+    const systemTimestamp = request.headers.get(SYSTEM_CLOCK_TIMESTAMP_HEADER);
+    const systemSignature = request.headers.get(SYSTEM_CLOCK_SIGNATURE_HEADER);
+    const hasSystemHeaders = systemTimestamp !== null || systemSignature !== null;
+
+    if (hasSystemHeaders) {
+      if (!systemClock || systemTimestamp === null || systemSignature === null) {
+        return errorResponse(
+          401,
+          requestId,
+          "system_clock_authentication_required",
+          "Trusted system clock authentication is required.",
+          false,
+          origin,
+          true,
+        );
+      }
+      const verification = await systemClock.verifier.verify({
+        authorization: request.headers.get("authorization") ?? "",
+        timestamp: systemTimestamp,
+        signature: systemSignature,
+        raw_body: rawBody,
+      });
+      if (!verification.ok) {
+        return errorResponse(
+          verification.status,
+          requestId,
+          verification.code,
+          verification.message,
+          verification.retryable,
+          origin,
+          true,
+        );
+      }
+
+      let systemParsed: unknown;
+      try {
+        systemParsed = JSON.parse(rawBody);
+      } catch {
+        return errorResponse(
+          400,
+          requestId,
+          "invalid_json",
+          "The request body is not valid JSON.",
+          false,
+          origin,
+          true,
+        );
+      }
+      const systemIssues = dependencies.schemas.validateCommand(systemParsed);
+      if (systemIssues.length) {
+        return errorResponse(
+          400,
+          requestId,
+          "validation_failed",
+          "The command does not match the canonical schema.",
+          false,
+          origin,
+          true,
+          systemIssues,
+        );
+      }
+      const systemCommand = systemParsed as CommandEnvelope;
+      if (systemCommand.idempotency_key !== systemCommand.command_id) {
+        return errorResponse(
+          400,
+          requestId,
+          "validation_failed",
+          "idempotency_key must equal command_id.",
+          false,
+          origin,
+          true,
+          [{ path: "/idempotency_key", message: "must equal command_id" }],
+        );
+      }
+      if (
+        systemCommand.command_type !== "process_day_boundary" ||
+        systemCommand.actor_id !== "system_clock" ||
+        systemCommand.actor_role !== "system_clock"
+      ) {
+        return errorResponse(
+          403,
+          requestId,
+          "system_actor_not_allowed",
+          "The trusted branch accepts only process_day_boundary from system_clock.",
+          false,
+          origin,
+          true,
+        );
+      }
+      const localDate = systemCommand.payload.local_calendar_date;
+      const boundaryAt = systemCommand.payload.boundary_at;
+      const expectedId = typeof localDate === "string"
+        ? `cmd_day_boundary_${systemCommand.expedition_id}_${
+          localDate.replaceAll("-", "")
+        }`
+        : "";
+      if (
+        typeof localDate !== "string" || typeof boundaryAt !== "string" ||
+        Object.keys(systemCommand.payload).length !== 2 ||
+        systemCommand.command_id !== expectedId ||
+        systemCommand.idempotency_key !== expectedId
+      ) {
+        return errorResponse(
+          400,
+          requestId,
+          "validation_failed",
+          "The Day boundary command identity or payload is invalid.",
+          false,
+          origin,
+          true,
+        );
+      }
+
+      const systemRequestHash = await commandRequestHash(systemCommand);
+      let existingSystemReceipt;
+      try {
+        existingSystemReceipt = await dependencies.database.getReceipt(
+          systemCommand.command_id,
+        );
+      } catch {
+        return errorResponse(
+          503,
+          requestId,
+          "persistence_unavailable",
+          "The command store is temporarily unavailable.",
+          true,
+          origin,
+          true,
+        );
+      }
+      if (existingSystemReceipt) {
+        if (
+          existingSystemReceipt.expedition_key !== systemCommand.expedition_id ||
+          existingSystemReceipt.request_hash !== systemRequestHash
+        ) {
+          return errorResponse(
+            409,
+            requestId,
+            "idempotency_key_reused_with_different_payload",
+            "The command ID was already used for another request.",
+            false,
+            origin,
+            true,
+          );
+        }
+        const receipt = existingSystemReceipt.result.receipt;
+        if (
+          receipt.actor_role !== "system_clock" ||
+          receipt.actor_auth_user_id !== null || receipt.actor_profile_id !== null ||
+          receipt.actor_membership_id !== null ||
+          receipt.actor_participant_id !== null
+        ) {
+          return errorResponse(
+            403,
+            requestId,
+            "receipt_actor_mismatch",
+            "The stored command belongs to another actor.",
+            false,
+            origin,
+            true,
+          );
+        }
+        return jsonResponse(
+          200,
+          { request_id: requestId, data: existingSystemReceipt.result },
+          origin,
+          true,
+        );
+      }
+
+      let boundaryOutcome: Awaited<
+        ReturnType<DayBoundaryExecutor["execute"]>
+      >;
+      try {
+        boundaryOutcome = await systemClock.executor.execute({
+          command: systemCommand,
+          request_hash: systemRequestHash,
+        });
+      } catch {
+        return errorResponse(
+          503,
+          requestId,
+          "day_boundary_persistence_unavailable",
+          "The Day boundary could not be processed.",
+          true,
+          origin,
+          true,
+        );
+      }
+      if (!boundaryOutcome.ok) {
+        return errorResponse(
+          boundaryOutcome.status,
+          requestId,
+          boundaryOutcome.code,
+          boundaryOutcome.message,
+          boundaryOutcome.retryable,
+          origin,
+          true,
+          boundaryOutcome.details,
+        );
+      }
+      return jsonResponse(
+        responseStatus(boundaryOutcome.result),
+        { request_id: requestId, data: boundaryOutcome.result },
         origin,
         true,
       );

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-23 — Gate 9D3 trusted Day 1 boundary
+
+- Added raw-body HMAC-SHA256 `system_clock` verification with lowercase signatures, constant-time comparison and a bounded timestamp replay window.
+- Added the trusted branch to the existing `command-gateway`; HMAC verification occurs before JSON parsing, receipt lookup or Expedition data access, while platform JWT verification remains enabled.
+- Added the pure `day1-boundary-v1` runtime for catch-up-safe Day 1 execution with exact `day.started → role_assignments.activated → card_bundles.published` order.
+- Added deterministic Participant-scoped product/onboard assignment instances and one pinned-methodology Card Bundle per active Participant.
+- Added atomic publication of `N × TodayView` and one `CaptainDayView`, including Participant-scoped task blocker IDs.
+- Added `DayBoundaryExecutor`, `PostgresDayBoundaryDatabase`, private request validation and service-role-only `private.process_day_boundary(jsonb)`.
+- Preserved command → Expedition lock order, exact replay before mutable guards and `private.process_command(jsonb)` as the only receipt/event/projection writer.
+- Added pgTAP, transport/runtime/executor/handler unit tests and a complete gateway-to-PostgreSQL catch-up, rollback and replay integration proof.
+- Updated the transport projection, architecture, generated database types and protected CI validation.
+
+Gate 9D3 adds no production runtime registration, secret value, scheduler, cloud migration application, Edge deployment, pilot data, Day 2–12 reducer, Recovery Day execution or frontend setup UI. Gate 9D4 closes examples and the Participant-scoped blocker repair; Gate 9E deploys the composed pilot runtime.
+
 ## 2026-07-22 — Gate 9D2 executable Expedition start
 
 - Added the pure `expedition-start-v1` reducer for Captain-only `start_expedition` from `ready` with exact empty payload.

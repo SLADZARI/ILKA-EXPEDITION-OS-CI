@@ -225,7 +225,16 @@ Gate 9D2 executable Expedition start is complete locally under accepted `ADR-021
 - the existing authenticated `command-gateway` routes the command through `StartExecutor` only after exact replay;
 - protected handler and PostgreSQL integration tests prove rollback, ordered events, no premature Day projections and replay after Captain revocation.
 
-The production runtime registry remains unchanged. Gate 9D3 implements trusted `system_clock` Day 1 boundary execution; Gate 9D4 closes fixtures and the complete vertical; Gate 9E composes, pins and deploys `day1_pilot_v1`.
+Gate 9D3 trusted Day 1 boundary execution is complete locally under accepted `ADR-021`:
+
+- the same `command-gateway` exposes a server-only HMAC branch selected by `x-ilka-system-timestamp` and `x-ilka-system-signature`;
+- signature verification over the exact raw body occurs before command parsing, receipt lookup or Expedition data access;
+- the pure pinned runtime emits exactly `day.started → role_assignments.activated → card_bundles.published` and uses trusted gateway time for both event timestamps;
+- two deterministic assignment instances and one Card Bundle are derived per active Participant from the pinned onboarding methodology;
+- `private.process_day_boundary(jsonb)` atomically publishes `N TodayView + 1 CaptainDayView` through `private.process_command(jsonb)`;
+- protected tests prove catch-up timing, invalid transport rejection, complete rollback and exact replay without duplicates.
+
+The production runtime registry remains unchanged. Gate 9D4 closes fixtures and repairs Participant-scoped task blocker completion; Gate 9E composes, pins and deploys `day1_pilot_v1`, configures the secret and scheduler, applies the cloud migration and runs pilot smoke.
 
 ## Run the Day 1 prototype
 
@@ -267,6 +276,7 @@ python scripts/validate_expedition_rotation.py
 python scripts/validate_expedition_day1_start_contract.py
 python scripts/validate_expedition_start_execution.py
 python scripts/validate_expedition_start_gateway.py
+python scripts/validate_expedition_day1_boundary.py
 pytest -q
 cd frontend
 npm ci
