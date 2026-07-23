@@ -68,11 +68,37 @@ jobs:
           pytest -q
 
       - name: Commit Gate 9D3 implementation
+        id: publication
+        continue-on-error: true
         shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git reset -- .gate9d3 .github/workflows/apply-gate9d3.yml .github/workflows/snapshot-gate9d3.yml .github/workflows/debug-gate9d3-chunks.yml
-          git commit -m "feat(gate9d3): execute trusted Day 1 boundary"
-          git push origin HEAD:agent/gate9d3-day1-boundary
+          set +e
+          {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git reset -- .gate9d3 .github/workflows/apply-gate9d3.yml .github/workflows/snapshot-gate9d3.yml .github/workflows/debug-gate9d3-chunks.yml
+            git status --short
+            git diff --cached --stat
+            git commit -m "feat(gate9d3): execute trusted Day 1 boundary"
+            git push origin HEAD:agent/gate9d3-day1-boundary
+          } > /tmp/gate9d3-publication.log 2>&1
+          status=$?
+          printf 'exit_status=%s\n' "$status" >> /tmp/gate9d3-publication.log
+          exit "$status"
+
+      - name: Upload publication diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9d3-publication-log
+          path: /tmp/gate9d3-publication.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail on publication error
+        if: steps.publication.outcome == 'failure'
+        shell: bash
+        run: |
+          cat /tmp/gate9d3-publication.log
+          exit 1
