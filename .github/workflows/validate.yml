@@ -9,12 +9,13 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   contracts-and-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    outputs:
+      gate9d3_db_error: ${{ steps.capture_gate9d3_error.outputs.message }}
 
     steps:
       - name: Checkout
@@ -182,20 +183,23 @@ jobs:
           cat /tmp/gate9d3-db.log
           exit "$status"
 
-      - name: Publish focused Gate 9D3 diagnostic
+      - name: Capture focused Gate 9D3 database error
+        id: capture_gate9d3_error
         if: steps.database_integration.outcome == 'failure'
-        env:
-          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          diagnostic="$(grep -A 18 -B 2 'DAY_BOUNDARY_DATABASE_ERROR' /tmp/gate9d3-db.log | tail -n 40)"
-          if [[ -z "$diagnostic" ]]; then
-            diagnostic="$(tail -n 40 /tmp/gate9d3-db.log)"
+          message="$(grep -A 8 'DAY_BOUNDARY_DATABASE_ERROR' /tmp/gate9d3-db.log | tr '\n' ' ' | tr -s ' ' | cut -c1-220)"
+          if [[ -z "$message" ]]; then
+            message="$(tail -n 8 /tmp/gate9d3-db.log | tr '\n' ' ' | tr -s ' ' | cut -c1-220)"
           fi
-          body="$(printf 'Gate 9D3 database diagnostic for `%s`:\n\n```text\n%s\n```' "${GITHUB_SHA}" "$diagnostic")"
-          jq -n --arg body "$body" '{body:$body}' | \
-            gh api repos/${GITHUB_REPOSITORY}/issues/41/comments --method POST --input -
-          exit 1
+          message="${message//'%'/'%25'}"
+          message="${message//$'\n'/'%0A'}"
+          message="${message//$'\r'/'%0D'}"
+          printf 'message=%s\n' "$message" >> "$GITHUB_OUTPUT"
+
+      - name: Fail after Gate 9D3 diagnostic capture
+        if: steps.database_integration.outcome == 'failure'
+        run: exit 1
 
       - name: Generate Supabase database types
         run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
@@ -240,3 +244,11 @@ jobs:
       - name: Stop local Supabase
         if: always()
         run: supabase stop --no-backup || true
+
+  gate9d3-database-diagnostic:
+    needs: contracts-and-tests
+    if: always() && needs.contracts-and-tests.outputs.gate9d3_db_error != ''
+    name: "Gate 9D3 DB: ${{ needs.contracts-and-tests.outputs.gate9d3_db_error }}"
+    runs-on: ubuntu-latest
+    steps:
+      - run: printf '%s\n' "${{ needs.contracts-and-tests.outputs.gate9d3_db_error }}"
