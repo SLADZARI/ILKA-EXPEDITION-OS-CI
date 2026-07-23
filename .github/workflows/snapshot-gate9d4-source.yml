@@ -41,6 +41,7 @@ jobs:
       - name: Commit Gate 9D4 product changes
         shell: bash
         run: |
+          git checkout -- .github/workflows/validate.yml
           if git diff --quiet --exit-code; then
             echo "Gate 9D4 product changes are already published."
             exit 0
