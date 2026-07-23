@@ -21,32 +21,42 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
+          def replace_once(text: str, pattern: str, replacement: str, label: str) -> str:
+              updated, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected one match, found {count}")
+              return updated
 
           runtime = Path("supabase/functions/_shared/engine-runtime/day1-boundary-v1.ts")
           text = runtime.read_text(encoding="utf-8")
-          text = text.replace(
-              "  RuntimeBundle,\n} from \"../command-gateway/types.ts\";",
-              "  RuntimeBundle,\n  RuntimeInput,\n} from \"../command-gateway/types.ts\";",
-              1,
+          text = replace_once(
+              text,
+              r'  RuntimeBundle,\n} from "\.\./command-gateway/types\.ts";',
+              '  RuntimeBundle,\n  RuntimeInput,\n} from "../command-gateway/types.ts";',
+              "RuntimeInput import",
           )
-          text = text.replace(
-              "resolveActorRole: async (input): Promise<ActorRole> => input.actor_role,",
-              "resolveActorRole: async (input: RuntimeInput): Promise<ActorRole> =>\n      input.actor_role,",
-              1,
+          text = replace_once(
+              text,
+              r'resolveActorRole: async \(input\): Promise<ActorRole> => input\.actor_role,',
+              'resolveActorRole: async (input: RuntimeInput): Promise<ActorRole> =>\n      input.actor_role,',
+              "resolveActorRole annotation",
           )
-          text = text.replace(
-              "reduceBoundary: async (input) => await reduceBoundary(input, policy),",
-              "reduceBoundary: async (input: Day1BoundaryInput) =>\n      await reduceBoundary(input, policy),",
-              1,
+          text = replace_once(
+              text,
+              r'reduceBoundary: async \(input\) => await reduceBoundary\(input, policy\),',
+              'reduceBoundary: async (input: Day1BoundaryInput) =>\n      await reduceBoundary(input, policy),',
+              "reduceBoundary annotation",
           )
           runtime.write_text(text, encoding="utf-8")
 
           test = Path("supabase/functions/command-gateway/tests/unit/day1-boundary-runtime.test.ts")
           text = test.read_text(encoding="utf-8")
-          old = '''  const assignments = result.events[1].payload.assignments as Array<
-            Record<string, unknown>
-          >;'''
-          new = '''  const assignmentPayload = result.events[1].payload;
+          text = replace_once(
+              text,
+              r'  const assignments = result\.events\[1\]\.payload\.assignments as Array<\s*Record<string, unknown>\s*>;',
+              '''  const assignmentPayload = result.events[1].payload;
           if (
             typeof assignmentPayload !== "object" || assignmentPayload === null ||
             Array.isArray(assignmentPayload)
@@ -55,10 +65,10 @@ jobs:
           }
           const assignments = assignmentPayload.assignments as Array<
             Record<string, unknown>
-          >;'''
-          if old not in text:
-              raise SystemExit("day1-boundary runtime test marker not found")
-          test.write_text(text.replace(old, new, 1), encoding="utf-8")
+          >;''',
+              "role assignments payload narrowing",
+          )
+          test.write_text(text, encoding="utf-8")
           PY
 
       - name: Set up Deno
