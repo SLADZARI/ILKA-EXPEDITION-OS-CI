@@ -59,6 +59,9 @@ jobs:
       - name: Validate trusted Day 1 boundary
         run: python scripts/validate_expedition_day1_boundary.py
 
+      - name: Validate Day 1 vertical closure
+        run: python scripts/validate_expedition_day1_vertical_closure.py
+
       - name: Run test suite
         run: pytest -q
 
