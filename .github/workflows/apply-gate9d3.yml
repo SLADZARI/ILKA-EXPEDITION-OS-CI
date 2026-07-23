@@ -1,0 +1,72 @@
+name: Apply Gate 9D3 implementation
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-implementation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Gate 9D3 branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/gate9d3-day1-boundary
+          fetch-depth: 0
+
+      - name: Reassemble and verify package
+        shell: bash
+        run: |
+          cat .gate9d3/chunk-*.b64 | base64 --decode > /tmp/gate9d3-changes.tar.gz
+          echo "e6dd10f0187272e42ddf8ac46c2320f75880b9a3a01fe468fe37ef979e78a824  /tmp/gate9d3-changes.tar.gz" | sha256sum --check --strict
+          tar -tzf /tmp/gate9d3-changes.tar.gz
+          tar -xzf /tmp/gate9d3-changes.tar.gz
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install validation dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Generate command gateway contract
+        run: python scripts/generate_supabase_command_gateway_contract.py
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format command gateway and Engine runtime
+        run: |
+          deno fmt --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway \
+            supabase/functions/_shared/command-gateway \
+            supabase/functions/_shared/engine-runtime
+
+      - name: Validate Gate 9D3 contracts
+        run: |
+          python scripts/validate_expedition_day1_start_contract.py
+          python scripts/validate_expedition_day1_boundary.py
+          python scripts/validate_repository.py .
+          pytest -q
+
+      - name: Remove one-time publication mechanism
+        run: |
+          rm -rf .gate9d3
+          rm -f .github/workflows/apply-gate9d3.yml
+          rm -f .github/workflows/snapshot-gate9d3.yml
+
+      - name: Commit Gate 9D3 implementation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(gate9d3): execute trusted Day 1 boundary"
+          git push origin HEAD:agent/gate9d3-day1-boundary
