@@ -1,9 +1,7 @@
 name: Snapshot Gate 9D3 source
 
 on:
-  push:
-    branches:
-      - agent/gate9d3-day1-boundary
+  pull_request:
 
 permissions:
   contents: read
