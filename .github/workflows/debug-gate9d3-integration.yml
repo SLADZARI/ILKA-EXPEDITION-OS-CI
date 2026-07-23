@@ -14,6 +14,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Inject local response diagnostics
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("supabase/functions/command-gateway/tests/integration/day1-boundary-execution.test.ts")
+          text = path.read_text(encoding="utf-8")
+          marker = "      assertEquals(acceptedResponse.status, 200);"
+          replacement = (
+              '      console.log("ACCEPTED_RESPONSE", await acceptedResponse.clone().text());\n'
+              + marker
+          )
+          if text.count(marker) != 1:
+              raise SystemExit(f"accepted response marker count: {text.count(marker)}")
+          path.write_text(text.replace(marker, replacement, 1), encoding="utf-8")
+          PY
+
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
