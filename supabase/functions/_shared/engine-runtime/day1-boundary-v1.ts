@@ -6,6 +6,7 @@ import type {
   PreparedCommandResult,
   PreparedProjectionMutation,
   RuntimeBundle,
+  RuntimeInput,
 } from "../command-gateway/types.ts";
 
 export const DAY1_TODAY_VIEW_SCHEMA_ID =
@@ -722,12 +723,14 @@ export function createDay1BoundaryRuntime(
     content_release: metadata.content_release,
     reducer_version: metadata.reducer_version,
     day1_policy: Object.freeze(policy),
-    resolveActorRole: async (input): Promise<ActorRole> => input.actor_role,
+    resolveActorRole: async (input: RuntimeInput): Promise<ActorRole> =>
+      input.actor_role,
     reduce: async () =>
       rejected(
         "command_not_implemented_in_runtime",
         "Day 1 boundary runtime is available only through the trusted executor.",
       ),
-    reduceBoundary: async (input) => await reduceBoundary(input, policy),
+    reduceBoundary: async (input: Day1BoundaryInput) =>
+      await reduceBoundary(input, policy),
   });
 }

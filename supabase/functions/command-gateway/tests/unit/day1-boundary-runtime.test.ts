@@ -35,7 +35,14 @@ Deno.test("Day 1 boundary emits canonical events and all read models", async () 
     ...PARTICIPANTS.map((participant) => `today_view:${participant}`),
     "captain_day_view",
   ]);
-  const assignments = result.events[1].payload.assignments as Array<
+  const assignmentPayload = result.events[1].payload;
+  if (
+    typeof assignmentPayload !== "object" || assignmentPayload === null ||
+    Array.isArray(assignmentPayload)
+  ) {
+    throw new Error("role_assignments_payload_invalid");
+  }
+  const assignments = assignmentPayload.assignments as Array<
     Record<string, unknown>
   >;
   assertEquals(assignments.length, 6);
