@@ -1,0 +1,89 @@
+name: Debug Gate 9D3 database error v2
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-database-error:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject local database diagnostics
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          executor = Path("supabase/functions/_shared/command-gateway/day-boundary.ts")
+          text = executor.read_text(encoding="utf-8")
+          marker = '''      } catch (error) {
+        return databaseFailure(error);
+      }'''
+          replacement = '''      } catch (error) {
+        console.error("DAY_BOUNDARY_DATABASE_ERROR", error);
+        return databaseFailure(error);
+      }'''
+          if text.count(marker) != 1:
+              raise SystemExit(f"database catch marker count: {text.count(marker)}")
+          executor.write_text(text.replace(marker, replacement, 1), encoding="utf-8")
+
+          test = Path("supabase/functions/command-gateway/tests/integration/day1-boundary-execution.test.ts")
+          text = test.read_text(encoding="utf-8")
+          marker = "      assertEquals(acceptedResponse.status, 200);"
+          replacement = (
+              '      console.log("ACCEPTED_RESPONSE", await acceptedResponse.clone().text());\n'
+              + marker
+          )
+          if text.count(marker) != 1:
+              raise SystemExit(f"accepted response marker count: {text.count(marker)}")
+          test.write_text(text.replace(marker, replacement, 1), encoding="utf-8")
+          PY
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Start and reset local Supabase
+        run: |
+          supabase start
+          supabase db reset
+
+      - name: Capture focused integration output
+        shell: bash
+        run: |
+          set +e
+          db_url="$(supabase status -o json | jq -r '.DB_URL')"
+          SUPABASE_DB_URL="$db_url" deno test --frozen \
+            --config supabase/functions/command-gateway/deno.json \
+            --allow-env=SUPABASE_DB_URL \
+            --allow-net=127.0.0.1:54322 \
+            supabase/functions/command-gateway/tests/integration/day1-boundary-execution.test.ts \
+            > gate9d3-db-error.log 2>&1
+          status=$?
+          printf 'exit_status=%s\n' "$status" >> gate9d3-db-error.log
+          exit 0
+
+      - name: Upload diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9d3-db-error-log-v2
+          path: gate9d3-db-error.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
