@@ -222,7 +222,10 @@ begin
   end if;
   if v_command -> 'payload' ->> 'local_calendar_date' is distinct from v_local_calendar_date::text
      or (v_command -> 'payload' ->> 'boundary_at')::timestamptz is distinct from v_boundary_at
-     or jsonb_object_length(v_command -> 'payload') <> 2 then
+     or (
+  select count(*)
+  from jsonb_object_keys(v_command -> 'payload')
+) <> 2 then
     raise exception using errcode = '23514', message = 'boundary_date_mismatch';
   end if;
   if (v_boundary_at at time zone v_timezone)::date is distinct from v_local_calendar_date
