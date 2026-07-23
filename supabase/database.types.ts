@@ -758,6 +758,7 @@ export type Database = {
           profile_id: string
         }[]
       }
+      process_day_boundary: { Args: { p_request: Json }; Returns: Json }
       revoke_invitation: { Args: { p_request: Json }; Returns: Json }
       start_expedition: { Args: { p_request: Json }; Returns: Json }
     }

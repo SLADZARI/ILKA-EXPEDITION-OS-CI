@@ -325,3 +325,42 @@ Gate 9D1 protected validation checks:
 - CI invocation.
 
 Gate 9D2/9D3 add reducer, executor, pgTAP and PostgreSQL integration coverage. Gate 9D4 closes fixtures, blocker repair and the complete vertical.
+
+## Gate 9D3 executable implementation
+
+Gate 9D3 implements the trusted path described above without changing the accepted domain contract.
+
+### Runtime and composition
+
+- `day1-boundary-v1.ts` is a pure pinned runtime capability. It receives immutable Stage, role, Card and output definitions from the future composite release; it does not read files, PostgreSQL or network services.
+- `DayBoundaryExecutor` loads system context without a human identity, requires an exact runtime with the Day 1 capability, validates three events and `N + 1` projections, then calls only `private.process_day_boundary(jsonb)`.
+- `PostgresDayBoundaryDatabase` loads timezone, boundary, start time, active Stage, setup projection and release metadata under `service_role`.
+- `command-gateway/index.ts` composes the verifier and executor, but the production runtime registry remains unchanged until Gate 9E.
+
+### Trusted request isolation
+
+The branch is selected by the presence of either system header. A partial pair is rejected. HMAC verification over the exact raw body occurs before JSON parsing, receipt lookup or Expedition context loading. The branch does not call the human `/auth/v1/user` verifier; platform JWT enforcement remains enabled for the Edge Function itself.
+
+A verified request still must satisfy canonical Command Schema, exact `system_clock` identity, deterministic command ID and an exact two-field payload. Exact replay requires a null human identity receipt with `actor_role: system_clock`.
+
+### Transaction proof
+
+`private.process_day_boundary(jsonb)` validates:
+
+1. command lock before Expedition lock;
+2. exact replay before mutable state checks;
+3. active Expedition and pinned runtime;
+4. null system actor context;
+5. deterministic date/command identity;
+6. configured local boundary and catch-up date;
+7. active onboarding Stage and no previous `day.started`;
+8. active Participant order and generated Rotation Plan;
+9. exactly three ordered events, `2N` assignment instances and `N` bundles;
+10. exactly `N TodayView + 1 CaptainDayView` mutations;
+11. final stream `+3` and projection version `+1`.
+
+The wrapper delegates all immutable writes to `private.process_command(jsonb)`. A failure on any projection rolls back the receipt, all three events, every TodayView, CaptainDayView and both heads.
+
+### Gate 9D3 completion boundary
+
+Gate 9D3 includes local migration, runtime/executor/transport code, pgTAP, unit tests and full gateway-to-PostgreSQL proof. It intentionally excludes production secret configuration, scheduler invocation, runtime registration, cloud migration application, Edge deployment and pilot data. Those remain Gate 9E. Gate 9D4 remains responsible for fixture/example closure and the existing Participant-scoped task-blocker completion repair.

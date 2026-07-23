@@ -233,8 +233,8 @@ def main() -> int:
     day1 = app.get("expedition_day1_start", {})
     if day1.get("source_of_truth") != "docs/decisions/ADR-021-start-expedition-and-day1-boundary.md":
         errors.append("app transport source must be ADR-021")
-    if day1.get("implementation_status") != "contracts_only_gate_9d1":
-        errors.append("Gate 9D1 status must remain contract-only")
+    if day1.get("implementation_status") not in {"contracts_only_gate_9d1", "executable_gate_9d3"}:
+        errors.append("Day 1 implementation status is not recognized")
     if day1.get("start_expedition", {}).get("creates_calendar_day") is not False:
         errors.append("start transport must not create Day")
     app_boundary = day1.get("process_day_boundary", {})

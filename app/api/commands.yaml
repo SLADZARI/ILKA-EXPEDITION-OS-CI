@@ -90,7 +90,7 @@ expedition_setup:
   implementation_status: executable_gate_9b2c_and_9c
 expedition_day1_start:
   source_of_truth: docs/decisions/ADR-021-start-expedition-and-day1-boundary.md
-  implementation_status: contracts_only_gate_9d1
+  implementation_status: executable_gate_9d3
   start_expedition:
     endpoint: /functions/v1/command-gateway
     authentication: supabase_bearer_session
@@ -102,7 +102,7 @@ expedition_day1_start:
     creates_calendar_day: false
     offline_allowed: false
     authoritative_refetch: api.get_expedition_setup_view
-    planned_private_transaction: private.start_expedition
+    private_transaction: private.start_expedition
   process_day_boundary:
     endpoint: /functions/v1/command-gateway
     authentication: trusted_system_clock_hmac
@@ -113,7 +113,7 @@ expedition_day1_start:
     idempotency_key: command_id
     day1_events: [day.started, role_assignments.activated, card_bundles.published]
     conditional_previous_day_events: [role_assignments.expired, task.overdue]
-    planned_private_transaction: private.process_day_boundary
+    private_transaction: private.process_day_boundary
     projection_publication: [today_view_per_active_participant, captain_day_view]
     offline_allowed: false
   system_clock_headers:

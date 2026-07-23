@@ -2,6 +2,8 @@ import { createSupabaseAuthVerifier } from "../_shared/command-gateway/auth.ts";
 import { PostgresBootstrapDatabase } from "../_shared/command-gateway/bootstrap-database.ts";
 import { createExpeditionBootstrapExecutor } from "../_shared/command-gateway/bootstrap.ts";
 import { PostgresGatewayDatabase } from "../_shared/command-gateway/database.ts";
+import { PostgresDayBoundaryDatabase } from "../_shared/command-gateway/day-boundary-database.ts";
+import { createDayBoundaryExecutor } from "../_shared/command-gateway/day-boundary.ts";
 import { createCommandGatewayHandler } from "../_shared/command-gateway/handler.ts";
 import { PostgresInvitationDatabase } from "../_shared/command-gateway/invitation-database.ts";
 import { createInvitationExecutor } from "../_shared/command-gateway/invitation.ts";
@@ -11,6 +13,7 @@ import { PostgresStartDatabase } from "../_shared/command-gateway/start-database
 import { createStartExecutor } from "../_shared/command-gateway/start.ts";
 import { commandGatewayRuntimeRegistry } from "../_shared/command-gateway/runtime-registry.ts";
 import { createSchemaValidator } from "../_shared/command-gateway/schema-validation.ts";
+import { createSystemClockRequestVerifier } from "../_shared/command-gateway/system-clock-auth.ts";
 
 function requiredEnv(name: string): string {
   const value = Deno.env.get(name);
@@ -39,6 +42,7 @@ const bootstrapDatabase = new PostgresBootstrapDatabase(connectionString);
 const invitationDatabase = new PostgresInvitationDatabase(connectionString);
 const rotationDatabase = new PostgresRotationDatabase(connectionString);
 const startDatabase = new PostgresStartDatabase(connectionString);
+const dayBoundaryDatabase = new PostgresDayBoundaryDatabase(connectionString);
 const schemas = createSchemaValidator();
 const auth = createSupabaseAuthVerifier({
   baseUrl: supabaseUrl,
@@ -80,6 +84,18 @@ const startExecutor = createStartExecutor({
   now,
 });
 
+const dayBoundaryExecutor = createDayBoundaryExecutor({
+  database: dayBoundaryDatabase,
+  schemas,
+  runtimes: commandGatewayRuntimeRegistry,
+  now,
+});
+
+const systemClockVerifier = createSystemClockRequestVerifier({
+  secret: Deno.env.get("ILKA_SYSTEM_CLOCK_HMAC_SECRET"),
+  now,
+});
+
 const handler = createCommandGatewayHandler(
   {
     auth,
@@ -94,6 +110,7 @@ const handler = createCommandGatewayHandler(
   invitationExecutor,
   rotationExecutor,
   startExecutor,
+  { verifier: systemClockVerifier, executor: dayBoundaryExecutor },
 );
 
 Deno.serve(handler);

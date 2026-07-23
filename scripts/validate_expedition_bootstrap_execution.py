@@ -100,7 +100,7 @@ def main() -> int:
         errors,
     )
     auth_at = handler.find("dependencies.auth.verify")
-    replay_at = handler.find("dependencies.database.getReceipt")
+    replay_at = handler.find("dependencies.database.getReceipt", auth_at)
     bootstrap_at = handler.find('command.command_type === "create_expedition"')
     membership_at = handler.find("dependencies.database.loadContext")
     if not (0 <= auth_at < replay_at < bootstrap_at < membership_at):

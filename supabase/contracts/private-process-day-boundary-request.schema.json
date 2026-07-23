@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supabase/contracts/private-process-day-boundary-request.schema.json",
+  "title": "PrivateProcessDayBoundaryRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["boundary_transition", "process_command_request"],
+  "properties": {
+    "boundary_transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expedition_id",
+        "local_calendar_date",
+        "boundary_at",
+        "day_number",
+        "day_revision",
+        "stage_id",
+        "rotation_id",
+        "rules_version",
+        "participant_keys"
+      ],
+      "properties": {
+        "expedition_id": { "type": "string", "format": "uuid" },
+        "local_calendar_date": { "type": "string", "format": "date" },
+        "boundary_at": { "type": "string", "format": "date-time" },
+        "day_number": { "const": 1 },
+        "day_revision": { "const": 1 },
+        "stage_id": { "const": "onboarding" },
+        "rotation_id": { "type": "string", "pattern": "^rotation_[a-f0-9]{32}$" },
+        "rules_version": { "type": "integer", "minimum": 1 },
+        "participant_keys": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^participant_[a-f0-9]{32}$" }
+        }
+      }
+    },
+    "process_command_request": {
+      "$ref": "./private-process-command-request.schema.json"
+    }
+  }
+}
