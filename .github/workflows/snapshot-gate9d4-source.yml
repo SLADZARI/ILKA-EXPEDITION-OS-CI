@@ -1,9 +1,7 @@
 name: Snapshot Gate 9D4 source
 
 on:
-  push:
-    branches:
-      - agent/gate9d4-vertical-closure
+  pull_request:
 
 permissions:
   contents: read
