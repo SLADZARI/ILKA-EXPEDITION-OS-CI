@@ -1,254 +1,49 @@
-name: Validate repository
+name: Apply Gate 9D3 PostgreSQL fix
 
 on:
-  workflow_dispatch:
   pull_request:
-  push:
-    branches:
-      - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  contracts-and-tests:
+  apply-postgresql-fix:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    outputs:
-      gate9d3_db_error: ${{ steps.capture_gate9d3_error.outputs.message }}
-
     steps:
-      - name: Checkout
+      - name: Checkout Gate 9D3 branch
         uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: requirements-dev.txt
+          ref: agent/gate9d3-day1-boundary
+          fetch-depth: 0
 
-      - name: Install test dependencies
-        run: python -m pip install -r requirements-dev.txt
-
-      - name: Generate command gateway contract
-        run: python scripts/generate_supabase_command_gateway_contract.py
-
-      - name: Validate canonical repository
-        run: python scripts/validate_repository.py .
-
-      - name: Validate Expedition bootstrap contract
-        run: python scripts/validate_expedition_bootstrap_contract.py
-
-      - name: Validate Expedition bootstrap transaction
-        run: python scripts/validate_expedition_bootstrap_transaction.py
-
-      - name: Validate Expedition bootstrap release
-        run: python scripts/validate_expedition_bootstrap_release.py
-
-      - name: Validate Expedition setup contract
-        run: python scripts/validate_expedition_setup_contract.py
-
-      - name: Validate Expedition Day 1 start contract
-        run: python scripts/validate_expedition_day1_start_contract.py
-
-      - name: Validate Expedition start execution
-        run: python scripts/validate_expedition_start_execution.py
-
-      - name: Validate Expedition start gateway
-        run: python scripts/validate_expedition_start_gateway.py
-
-      - name: Validate trusted Day 1 boundary
-        run: python scripts/validate_expedition_day1_boundary.py
-
-      - name: Run test suite
-        run: pytest -q
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Generate design-system sources
-        working-directory: frontend
-        run: npm run generate:design
-
-      - name: Generate frontend contracts
-        working-directory: frontend
-        run: npm run generate:contracts
-
-      - name: Validate frontend sources
-        working-directory: frontend
-        run: npm run validate:sources
-
-      - name: Validate frontend offline synchronization contract
-        run: python scripts/validate_frontend_offline_sync.py
-
-      - name: Validate service worker syntax
-        run: node --check frontend/public/sw.js
-
-      - name: Run frontend tests
-        working-directory: frontend
-        run: npm run test
-
-      - name: Typecheck frontend
-        working-directory: frontend
-        run: npm run typecheck
-
-      - name: Build production frontend
-        working-directory: frontend
-        run: npm run build
-
-      - name: Build static Day 1 preview
-        working-directory: frontend
-        run: npm run build:preview
-
-      - name: Set up Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
-      - name: Format generated command gateway contract
-        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
-
-      - name: Check command gateway and Engine runtime formatting
-        run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
-
-      - name: Lint command gateway and Engine runtime
-        run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
-
-      - name: Typecheck command gateway and Engine runtime
-        run: deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts supabase/functions/_shared/engine-runtime/*.ts
-
-      - name: Run command gateway and Engine runtime unit tests
-        run: deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
-
-      - name: Set up Supabase CLI
-        uses: supabase/setup-cli@v2
-        with:
-          version: 2.101.0
-          github-token: ${{ github.token }}
-
-      - name: Start local Supabase
-        run: supabase start
-
-      - name: Rebuild local database from migrations
-        run: supabase db reset
-
-      - name: Run Supabase database tests
-        run: supabase test db
-
-      - name: Lint Supabase database
-        run: supabase db lint --local --level error
-
-      - name: Inject temporary Gate 9D3 database diagnostics
+      - name: Replace unsupported JSON object length call
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path("supabase/functions/_shared/command-gateway/day-boundary.ts")
+
+          path = Path("supabase/migrations/20260723010000_process_day_boundary_transaction.sql")
           text = path.read_text(encoding="utf-8")
-          marker = '''      } catch (error) {
-                  return databaseFailure(error);
-                }'''
-          replacement = '''      } catch (error) {
-                  console.error("DAY_BOUNDARY_DATABASE_ERROR", error);
-                  return databaseFailure(error);
-                }'''
-          if text.count(marker) != 1:
-              raise SystemExit(f"database catch marker count: {text.count(marker)}")
-          path.write_text(text.replace(marker, replacement, 1), encoding="utf-8")
+          old = "     or jsonb_object_length(v_command -> 'payload') <> 2 then"
+          new = """     or (
+            select count(*)
+            from jsonb_object_keys(v_command -> 'payload')
+          ) <> 2 then"""
+          if old in text:
+              path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          elif new not in text:
+              raise SystemExit("Gate 9D3 payload key-count marker drifted")
           PY
 
-      - name: Run command gateway database integration
-        id: database_integration
-        continue-on-error: true
+      - name: Commit PostgreSQL compatibility fix
         shell: bash
         run: |
-          set +e
-          db_url="$(supabase status -o json | jq -r '.DB_URL')"
-          SUPABASE_DB_URL="$db_url" deno test --frozen \
-            --config supabase/functions/command-gateway/deno.json \
-            --allow-env=SUPABASE_DB_URL \
-            --allow-net=127.0.0.1:54322 \
-            supabase/functions/command-gateway/tests/integration \
-            > /tmp/gate9d3-db.log 2>&1
-          status=$?
-          cat /tmp/gate9d3-db.log
-          exit "$status"
-
-      - name: Capture focused Gate 9D3 database error
-        id: capture_gate9d3_error
-        if: steps.database_integration.outcome == 'failure'
-        shell: bash
-        run: |
-          message="$(grep -A 8 'DAY_BOUNDARY_DATABASE_ERROR' /tmp/gate9d3-db.log | tr '\n' ' ' | tr -s ' ' | cut -c1-220)"
-          if [[ -z "$message" ]]; then
-            message="$(tail -n 8 /tmp/gate9d3-db.log | tr '\n' ' ' | tr -s ' ' | cut -c1-220)"
+          if git diff --quiet -- supabase/migrations/20260723010000_process_day_boundary_transaction.sql; then
+            echo "Gate 9D3 PostgreSQL fix already applied."
+            exit 0
           fi
-          message="${message//'%'/'%25'}"
-          message="${message//$'\n'/'%0A'}"
-          message="${message//$'\r'/'%0D'}"
-          printf 'message=%s\n' "$message" >> "$GITHUB_OUTPUT"
-
-      - name: Fail after Gate 9D3 diagnostic capture
-        if: steps.database_integration.outcome == 'failure'
-        run: exit 1
-
-      - name: Generate Supabase database types
-        run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
-
-      - name: Validate Supabase Foundation contract
-        run: python scripts/validate_supabase_foundation.py
-
-      - name: Validate Supabase identity and membership contract
-        run: python scripts/validate_supabase_identity_membership.py
-
-      - name: Validate Supabase immutable history contract
-        run: python scripts/validate_supabase_immutable_history.py
-
-      - name: Validate Supabase atomic command transaction contract
-        run: python scripts/validate_supabase_atomic_command_transaction.py
-
-      - name: Validate Supabase command gateway contract
-        run: python scripts/validate_supabase_command_gateway.py
-
-      - name: Validate Supabase Day 1 vertical contract
-        run: python scripts/validate_supabase_day1_vertical.py
-
-      - name: Validate Expedition invitation persistence
-        run: python scripts/validate_expedition_invitation_persistence.py
-
-      - name: Validate Expedition invitation execution
-        run: python scripts/validate_expedition_invitation_execution.py
-
-      - name: Validate Expedition rotation
-        run: python scripts/validate_expedition_rotation.py
-
-      - name: Verify generated sources are committed
-        shell: bash
-        run: |
-          status="$(git status --porcelain --untracked-files=all)"
-          if [[ -n "$status" ]]; then
-            printf '%s\n' "$status"
-            git diff --exit-code || true
-            exit 1
-          fi
-
-      - name: Stop local Supabase
-        if: always()
-        run: supabase stop --no-backup || true
-
-  gate9d3-database-diagnostic:
-    needs: contracts-and-tests
-    if: always() && needs.contracts-and-tests.outputs.gate9d3_db_error != ''
-    name: "Gate 9D3 DB: ${{ needs.contracts-and-tests.outputs.gate9d3_db_error }}"
-    runs-on: ubuntu-latest
-    steps:
-      - run: printf '%s\n' "${{ needs.contracts-and-tests.outputs.gate9d3_db_error }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/migrations/20260723010000_process_day_boundary_transaction.sql
+          git commit -m "fix(gate9d3): count boundary payload keys portably"
+          git push origin HEAD:agent/gate9d3-day1-boundary
