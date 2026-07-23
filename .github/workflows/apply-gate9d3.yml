@@ -67,17 +67,12 @@ jobs:
           python scripts/validate_repository.py .
           pytest -q
 
-      - name: Remove one-time publication mechanism
-        run: |
-          rm -rf .gate9d3
-          rm -f .github/workflows/apply-gate9d3.yml
-          rm -f .github/workflows/snapshot-gate9d3.yml
-
       - name: Commit Gate 9D3 implementation
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
+          git reset -- .gate9d3 .github/workflows/apply-gate9d3.yml .github/workflows/snapshot-gate9d3.yml .github/workflows/debug-gate9d3-chunks.yml
           git commit -m "feat(gate9d3): execute trusted Day 1 boundary"
           git push origin HEAD:agent/gate9d3-day1-boundary
