@@ -328,7 +328,7 @@ begin
        or coalesce((supplied.assignment ->> 'day_number')::integer, 0) <> 1
        or supplied.assignment ->> 'stage_id' is distinct from 'onboarding'
        or supplied.assignment ->> 'assignment_id' is distinct from (
-         'assignment_day_01_' || supplied.assignment ->> 'participant_id' || '_' || supplied.assignment ->> 'role_type'
+         'assignment_day_01_' || (supplied.assignment ->> 'participant_id') || '_' || (supplied.assignment ->> 'role_type')
        )
   ) then
     raise exception using errcode = '23514', message = 'scheduled_assignments_unresolvable';
@@ -340,7 +340,7 @@ begin
       select jsonb_array_elements_text(v_participant_keys)
     )
        or supplied.bundle ->> 'bundle_id' is distinct from (
-         'bundle_day_01_' || supplied.bundle ->> 'participant_id'
+         'bundle_day_01_' || (supplied.bundle ->> 'participant_id')
        )
        or jsonb_typeof(supplied.bundle -> 'card_ids') <> 'array'
        or jsonb_typeof(supplied.bundle -> 'task_ids') <> 'array'
@@ -365,7 +365,7 @@ begin
          supplied.mutation ->> 'projection_type' = 'today_view'
          and (
            supplied.mutation ->> 'projection_key' is distinct from (
-             'today_view:' || supplied.mutation ->> 'subject_id'
+             'today_view:' || (supplied.mutation ->> 'subject_id')
            )
            or supplied.mutation ->> 'schema_id' is distinct from 'https://ilka.local/schemas/today-view.schema.json'
            or supplied.mutation -> 'projection' ->> 'participant_id' is distinct from supplied.mutation ->> 'subject_id'
