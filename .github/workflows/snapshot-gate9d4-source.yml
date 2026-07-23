@@ -21,11 +21,14 @@ jobs:
       - name: Apply Gate 9D4 patch
         shell: bash
         run: |
+          if [[ ! -f .gate9d4.patch.gz.b64 ]]; then
+            echo "Gate 9D4 product patch is already applied."
+            exit 0
+          fi
           base64 -d .gate9d4.patch.gz.b64 | gzip -d > /tmp/gate9d4.patch
           git apply --check /tmp/gate9d4.patch
           git apply /tmp/gate9d4.patch
           rm .gate9d4.patch.gz.b64
-          rm .github/workflows/snapshot-gate9d4-source.yml
 
       - name: Validate staged Gate 9D4 sources
         shell: bash
@@ -38,6 +41,10 @@ jobs:
       - name: Commit Gate 9D4 product changes
         shell: bash
         run: |
+          if git diff --quiet --exit-code; then
+            echo "Gate 9D4 product changes are already published."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
