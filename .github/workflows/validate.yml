@@ -1,23 +1,131 @@
-name: Validate Gate 9D3 focused integration
+name: Validate repository
 
 on:
+  workflow_dispatch:
   pull_request:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
-  gate9d3-focused-integration:
+  contracts-and-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Generate command gateway contract
+        run: python scripts/generate_supabase_command_gateway_contract.py
+
+      - name: Validate canonical repository
+        run: python scripts/validate_repository.py .
+
+      - name: Validate Expedition bootstrap contract
+        run: python scripts/validate_expedition_bootstrap_contract.py
+
+      - name: Validate Expedition bootstrap transaction
+        run: python scripts/validate_expedition_bootstrap_transaction.py
+
+      - name: Validate Expedition bootstrap release
+        run: python scripts/validate_expedition_bootstrap_release.py
+
+      - name: Validate Expedition setup contract
+        run: python scripts/validate_expedition_setup_contract.py
+
+      - name: Validate Expedition Day 1 start contract
+        run: python scripts/validate_expedition_day1_start_contract.py
+
+      - name: Validate Expedition start execution
+        run: python scripts/validate_expedition_start_execution.py
+
+      - name: Validate Expedition start gateway
+        run: python scripts/validate_expedition_start_gateway.py
+
+      - name: Validate trusted Day 1 boundary
+        run: python scripts/validate_expedition_day1_boundary.py
+
+      - name: Run test suite
+        run: pytest -q
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Generate design-system sources
+        working-directory: frontend
+        run: npm run generate:design
+
+      - name: Generate frontend contracts
+        working-directory: frontend
+        run: npm run generate:contracts
+
+      - name: Validate frontend sources
+        working-directory: frontend
+        run: npm run validate:sources
+
+      - name: Validate frontend offline synchronization contract
+        run: python scripts/validate_frontend_offline_sync.py
+
+      - name: Validate service worker syntax
+        run: node --check frontend/public/sw.js
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm run test
+
+      - name: Typecheck frontend
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build production frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Build static Day 1 preview
+        working-directory: frontend
+        run: npm run build:preview
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+
+      - name: Format generated command gateway contract
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
+
+      - name: Check command gateway and Engine runtime formatting
+        run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+
+      - name: Lint command gateway and Engine runtime
+        run: deno lint --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime
+
+      - name: Typecheck command gateway and Engine runtime
+        run: deno check --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/index.ts supabase/functions/command-gateway/tests/unit/*.ts supabase/functions/command-gateway/tests/integration/*.ts supabase/functions/_shared/engine-runtime/*.ts
+
+      - name: Run command gateway and Engine runtime unit tests
+        run: deno test --frozen --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway/tests/unit
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
@@ -31,7 +139,13 @@ jobs:
       - name: Rebuild local database from migrations
         run: supabase db reset
 
-      - name: Run Gate 9D3 boundary integration
+      - name: Run Supabase database tests
+        run: supabase test db
+
+      - name: Lint Supabase database
+        run: supabase db lint --local --level error
+
+      - name: Run command gateway database integration
         shell: bash
         run: |
           db_url="$(supabase status -o json | jq -r '.DB_URL')"
@@ -39,7 +153,47 @@ jobs:
             --config supabase/functions/command-gateway/deno.json \
             --allow-env=SUPABASE_DB_URL \
             --allow-net=127.0.0.1:54322 \
-            supabase/functions/command-gateway/tests/integration/day1-boundary-execution.test.ts
+            supabase/functions/command-gateway/tests/integration
+
+      - name: Generate Supabase database types
+        run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
+
+      - name: Validate Supabase Foundation contract
+        run: python scripts/validate_supabase_foundation.py
+
+      - name: Validate Supabase identity and membership contract
+        run: python scripts/validate_supabase_identity_membership.py
+
+      - name: Validate Supabase immutable history contract
+        run: python scripts/validate_supabase_immutable_history.py
+
+      - name: Validate Supabase atomic command transaction contract
+        run: python scripts/validate_supabase_atomic_command_transaction.py
+
+      - name: Validate Supabase command gateway contract
+        run: python scripts/validate_supabase_command_gateway.py
+
+      - name: Validate Supabase Day 1 vertical contract
+        run: python scripts/validate_supabase_day1_vertical.py
+
+      - name: Validate Expedition invitation persistence
+        run: python scripts/validate_expedition_invitation_persistence.py
+
+      - name: Validate Expedition invitation execution
+        run: python scripts/validate_expedition_invitation_execution.py
+
+      - name: Validate Expedition rotation
+        run: python scripts/validate_expedition_rotation.py
+
+      - name: Verify generated sources are committed
+        shell: bash
+        run: |
+          status="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            git diff --exit-code || true
+            exit 1
+          fi
 
       - name: Stop local Supabase
         if: always()
