@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   contracts-and-tests:
@@ -165,14 +166,36 @@ jobs:
           PY
 
       - name: Run command gateway database integration
+        id: database_integration
+        continue-on-error: true
         shell: bash
         run: |
+          set +e
           db_url="$(supabase status -o json | jq -r '.DB_URL')"
           SUPABASE_DB_URL="$db_url" deno test --frozen \
             --config supabase/functions/command-gateway/deno.json \
             --allow-env=SUPABASE_DB_URL \
             --allow-net=127.0.0.1:54322 \
-            supabase/functions/command-gateway/tests/integration
+            supabase/functions/command-gateway/tests/integration \
+            > /tmp/gate9d3-db.log 2>&1
+          status=$?
+          cat /tmp/gate9d3-db.log
+          exit "$status"
+
+      - name: Publish focused Gate 9D3 diagnostic
+        if: steps.database_integration.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          diagnostic="$(grep -A 18 -B 2 'DAY_BOUNDARY_DATABASE_ERROR' /tmp/gate9d3-db.log | tail -n 40)"
+          if [[ -z "$diagnostic" ]]; then
+            diagnostic="$(tail -n 40 /tmp/gate9d3-db.log)"
+          fi
+          body="$(printf 'Gate 9D3 database diagnostic for `%s`:\n\n```text\n%s\n```' "${GITHUB_SHA}" "$diagnostic")"
+          jq -n --arg body "$body" '{body:$body}' | \
+            gh api repos/${GITHUB_REPOSITORY}/issues/41/comments --method POST --input -
+          exit 1
 
       - name: Generate Supabase database types
         run: supabase gen types typescript --local --schema api,ilka,private > supabase/database.types.ts
