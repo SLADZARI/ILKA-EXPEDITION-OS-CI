@@ -75,13 +75,63 @@
     },
     {
       "code": "required_task_incomplete",
-      "message": "Team Agreement task is not terminal",
-      "entity_id": "task_team_agreement"
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_01:task_team_agreement"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_02"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_02:task_team_agreement"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_03"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_03:task_team_agreement"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_04"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_04:task_team_agreement"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_05"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_05:task_team_agreement"
     },
     {
       "code": "required_output_unconfirmed",
-      "message": "Team Agreement output is not confirmed",
+      "message": "Team Agreement is not confirmed",
       "entity_id": "team_agreement"
+    },
+    {
+      "code": "required_output_unconfirmed",
+      "message": "Safety Acknowledgements is not confirmed",
+      "entity_id": "safety_acknowledgements"
+    },
+    {
+      "code": "required_output_unconfirmed",
+      "message": "Participant Profiles is not confirmed",
+      "entity_id": "participant_profiles"
     }
   ],
   "can_close_day": false,

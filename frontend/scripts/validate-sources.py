@@ -118,10 +118,18 @@ def main() -> int:
     if not activation_events:
         errors.append("sample event stream lacks Day 1 role_assignments.activated")
     else:
-        expected_assignments = {
-            item["participant_id"]: (item["product_role_id"], item["onboard_role_id"])
-            for item in activation_events[-1]["payload"]["assignments"]
-        }
+        assignment_instances = activation_events[-1]["payload"]["assignments"]
+        expected_assignments = {}
+        for participant_id in {item["participant_id"] for item in assignment_instances}:
+            product = next(
+                item["role_id"] for item in assignment_instances
+                if item["participant_id"] == participant_id and item["role_type"] == "product"
+            )
+            onboard = next(
+                item["role_id"] for item in assignment_instances
+                if item["participant_id"] == participant_id and item["role_type"] == "onboard"
+            )
+            expected_assignments[participant_id] = (product, onboard)
         for fixture_name in ("captain-day-view.day1.fixture.json", "captain-day-view.day1-progress.fixture.json"):
             captain_day1 = json.loads((FRONTEND / "src/dev" / fixture_name).read_text(encoding="utf-8"))
             actual_assignments = {
@@ -130,6 +138,33 @@ def main() -> int:
             }
             if actual_assignments != expected_assignments:
                 errors.append(f"{fixture_name} assignments mismatch sample event stream")
+
+        expected_product_assignment = "assignment_day_01_participant_01_product"
+        expected_onboard_assignment = "assignment_day_01_participant_01_onboard"
+        if day1_today["product_role"]["assignment_id"] != expected_product_assignment:
+            errors.append("Day 1 Participant product assignment ID is not deterministic")
+        if day1_today["onboard_role"]["assignment_id"] != expected_onboard_assignment:
+            errors.append("Day 1 Participant onboard assignment ID is not deterministic")
+
+        initial_captain = json.loads((FRONTEND / "src/dev/captain-day-view.day1.fixture.json").read_text(encoding="utf-8"))
+        progress_captain = json.loads((FRONTEND / "src/dev/captain-day-view.day1-progress.fixture.json").read_text(encoding="utf-8"))
+        initial_task_blockers = {
+            blocker["entity_id"] for blocker in initial_captain["blockers"]
+            if blocker["code"] == "required_task_incomplete"
+        }
+        expected_task_blockers = {
+            f"{participant_id}:task_team_agreement" for participant_id in expected_assignments
+        }
+        if initial_task_blockers != expected_task_blockers:
+            errors.append("Day 1 Captain fixture task blockers are not Participant-scoped")
+        progress_task_blockers = {
+            blocker["entity_id"] for blocker in progress_captain["blockers"]
+            if blocker["code"] == "required_task_incomplete"
+        }
+        if progress_task_blockers != expected_task_blockers - {"participant_01:task_team_agreement"}:
+            errors.append("Day 1 progress fixture removes more than the completing Participant blocker")
+        if progress_captain["participants"][0]["required_cards_acknowledged"] is not False:
+            errors.append("complete_task fixture must not acknowledge Participant cards")
 
     captain_schema = load_json("app/contracts/captain-day-view.schema.json")
     if not {"expedition_status", "expedition_completion", "completion_readiness"} <= set(captain_schema["required"]):

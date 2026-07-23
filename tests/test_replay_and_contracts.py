@@ -23,7 +23,7 @@ def test_sample_events_replay_to_closed_day():
     assert state["day"]["status"] == "closed"
     assert len(state["participants"]) == 5
     assert state["tasks"]["task_team_agreement"]["status"] == "completed"
-    assert len(state["roles"]) == 5
+    assert len(state["roles"]) == 10
     assert len(state["card_bundles"]) == 5
     assert state["stage"]["stage_id"] == "validation"
     assert state["stage"]["status"] == "active"

@@ -16,13 +16,13 @@
     "pending_target_stage_id": null
   },
   "product_role": {
-    "assignment_id": "asg_01",
+    "assignment_id": "assignment_day_01_participant_01_product",
     "role_id": "product_captain",
     "title": "Product Captain",
     "state": "active"
   },
   "onboard_role": {
-    "assignment_id": "asg_01_navigation",
+    "assignment_id": "assignment_day_01_participant_01_onboard",
     "role_id": "navigation",
     "title": "Navigation",
     "state": "active"
@@ -30,42 +30,42 @@
   "cards": [
     {
       "card_id": "knowledge_expedition_rules",
-      "title": "Expedition Rules",
+      "title": "Правила экспедиции",
       "required": true,
       "acknowledged": false,
       "pending_sync": false
     },
     {
       "card_id": "knowledge_day_01_flow",
-      "title": "Day 1 Flow",
+      "title": "Как проходит Day 1",
       "required": true,
       "acknowledged": false,
       "pending_sync": false
     },
     {
       "card_id": "safety_captain_authority",
-      "title": "Captain Authority and Safety",
+      "title": "Приоритет капитана и безопасность",
       "required": true,
       "acknowledged": false,
       "pending_sync": false
     },
     {
       "card_id": "task_team_agreement",
-      "title": "Create the Team Agreement",
+      "title": "Сформировать Team Agreement",
       "required": true,
       "acknowledged": false,
       "pending_sync": false
     },
     {
       "card_id": "role_product_captain_day_01",
-      "title": "Product Captain · Day 1",
+      "title": "Product Captain — Day 1",
       "required": true,
       "acknowledged": false,
       "pending_sync": false
     },
     {
       "card_id": "onboard_navigation_day_01",
-      "title": "Navigation · Day 1",
+      "title": "Navigation — Day 1",
       "required": true,
       "acknowledged": false,
       "pending_sync": false
@@ -74,7 +74,7 @@
   "tasks": [
     {
       "task_id": "task_team_agreement",
-      "title": "Create and confirm the Team Agreement",
+      "title": "Сформировать Team Agreement",
       "status": "available",
       "due_day_number": 1,
       "pending_sync": false

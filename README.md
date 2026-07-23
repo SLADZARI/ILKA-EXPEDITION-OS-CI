@@ -234,7 +234,16 @@ Gate 9D3 trusted Day 1 boundary execution is complete locally under accepted `AD
 - `private.process_day_boundary(jsonb)` atomically publishes `N TodayView + 1 CaptainDayView` through `private.process_command(jsonb)`;
 - protected tests prove catch-up timing, invalid transport rejection, complete rollback and exact replay without duplicates.
 
-The production runtime registry remains unchanged. Gate 9D4 closes fixtures and repairs Participant-scoped task blocker completion; Gate 9E composes, pins and deploys `day1_pilot_v1`, configures the secret and scheduler, applies the cloud migration and runs pilot smoke.
+Gate 9D4 Day 1 vertical closure is complete locally:
+
+- Day 1 Participant and Captain fixtures match the deterministic boundary reducer output;
+- canonical examples use exact start, boundary and `complete_task` identities and payloads;
+- Captain task blockers are Participant-scoped as `<participant_key>:<task_id>`;
+- completing a shared methodology task removes only the authenticated Participant blocker;
+- after-sync fixtures preserve card, output and other Participant task blockers;
+- protected validation covers fixture/example drift and the complete rollback/retry/replay vertical.
+
+The production runtime registry remains unchanged. Gate 9E composes, pins and deploys `day1_pilot_v1`, configures the secret and scheduler, applies the cloud migration and runs pilot smoke.
 
 ## Run the Day 1 prototype
 
@@ -277,6 +286,7 @@ python scripts/validate_expedition_day1_start_contract.py
 python scripts/validate_expedition_start_execution.py
 python scripts/validate_expedition_start_gateway.py
 python scripts/validate_expedition_day1_boundary.py
+python scripts/validate_expedition_day1_vertical_closure.py
 pytest -q
 cd frontend
 npm ci

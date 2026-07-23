@@ -364,3 +364,17 @@ The wrapper delegates all immutable writes to `private.process_command(jsonb)`. 
 ### Gate 9D3 completion boundary
 
 Gate 9D3 includes local migration, runtime/executor/transport code, pgTAP, unit tests and full gateway-to-PostgreSQL proof. It intentionally excludes production secret configuration, scheduler invocation, runtime registration, cloud migration application, Edge deployment and pilot data. Those remain Gate 9E. Gate 9D4 remains responsible for fixture/example closure and the existing Participant-scoped task-blocker completion repair.
+
+
+## Gate 9D4 vertical closure
+
+Gate 9D4 closes the local Day 1 vertical without adding a new domain transition or persistence boundary.
+
+- Day 1 Participant and Captain fixtures now mirror the deterministic assignment instances, Card Bundles, blockers and projection versions produced by `day1-boundary-v1`.
+- The canonical sample command/event stream uses deterministic boundary identity, exact `command_id == idempotency_key`, one trusted event timestamp, ten flat assignment instances and five complete Card Bundles.
+- `complete_task` removes only `<participant_key>:<task_id>` for the authenticated Participant after that Participant's required tasks become terminal.
+- A shared methodology `task_id` in another Participant bundle remains blocked and cannot be removed by another Participant's completion.
+- The after-sync Captain fixture represents one authoritative `complete_task` result: Day revision and projection version advance once, card/output blockers remain, and only the actor's task blocker is absent.
+- Protected Gate 9D4 validation rejects fixture, example or blocker-ownership drift.
+
+Gate 9D4 adds no new command, event, permission, state, SQL function, runtime registration, secret, scheduler, deployment or pilot data. Gate 9E remains responsible for composing and pinning `day1_pilot_v1`, applying reviewed cloud migrations, deploying the gateway, configuring trusted invocation and running pilot smoke.

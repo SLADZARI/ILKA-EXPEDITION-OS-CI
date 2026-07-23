@@ -15,7 +15,7 @@
       "participant_id": "participant_01",
       "product_role_id": "product_captain",
       "onboard_role_id": "navigation",
-      "required_cards_acknowledged": true,
+      "required_cards_acknowledged": false,
       "required_tasks_terminal": true,
       "overdue_task_count": 0,
       "sync_status": "synced",
@@ -69,18 +69,63 @@
   ],
   "blockers": [
     {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_01"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_02"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_02:task_team_agreement"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_03"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_03:task_team_agreement"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_04"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_04:task_team_agreement"
+    },
+    {
+      "code": "required_cards_unacknowledged",
+      "message": "Required Day 1 cards are not acknowledged",
+      "entity_id": "participant_05"
+    },
+    {
+      "code": "required_task_incomplete",
+      "message": "Сформировать Team Agreement is not terminal",
+      "entity_id": "participant_05:task_team_agreement"
+    },
+    {
       "code": "required_output_unconfirmed",
-      "message": "Team Agreement output is not confirmed",
+      "message": "Team Agreement is not confirmed",
       "entity_id": "team_agreement"
     },
     {
       "code": "required_output_unconfirmed",
-      "message": "Safety acknowledgements are not confirmed",
+      "message": "Safety Acknowledgements is not confirmed",
       "entity_id": "safety_acknowledgements"
     },
     {
       "code": "required_output_unconfirmed",
-      "message": "Participant profiles are not confirmed",
+      "message": "Participant Profiles is not confirmed",
       "entity_id": "participant_profiles"
     }
   ],
@@ -141,7 +186,7 @@
     "advance_blockers": [
       {
         "code": "definition_of_done_incomplete",
-        "message": "Onboarding required outputs are incomplete"
+        "message": "Onboarding required outputs, tasks and acknowledgements are incomplete"
       }
     ]
   },

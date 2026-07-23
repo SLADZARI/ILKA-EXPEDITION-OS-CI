@@ -1,1 +1,374 @@
-[{"command_id":"cmd_task_start_001","command_type":"start_task","issued_at":"2026-07-18T18:00:00Z","actor_id":"user_01","actor_role":"participant","expedition_id":"exp_demo","idempotency_key":"cmd_task_start_001","day_number":1,"stage_id":"onboarding","device_id":"device_01","payload":{"task_id":"task_team_agreement"}},{"command_id":"cmd_task_block_001","command_type":"block_task","issued_at":"2026-07-18T18:05:00Z","actor_id":"user_02","actor_role":"participant","expedition_id":"exp_demo","idempotency_key":"cmd_task_block_001","day_number":1,"stage_id":"onboarding","device_id":"device_02","payload":{"task_id":"task_safety_ack","reason":"Нужна дополнительная инструкция капитана."}},{"command_id":"cmd_card_ack_001","command_type":"acknowledge_card","issued_at":"2026-07-18T18:10:00Z","actor_id":"user_03","actor_role":"participant","expedition_id":"exp_demo","idempotency_key":"cmd_card_ack_001","day_number":1,"stage_id":"onboarding","device_id":"device_03","payload":{"card_id":"knowledge_expedition_rules"}},{"command_id":"cmd_boundary_001","command_type":"process_day_boundary","issued_at":"2026-07-19T03:00:00Z","actor_id":"system_clock","actor_role":"system_clock","expedition_id":"exp_demo","idempotency_key":"day_boundary:exp_demo:2026-07-19","device_id":null,"payload":{"local_calendar_date":"2026-07-19","boundary_at":"2026-07-19T06:00:00+03:00"}},{"command_id":"cmd_stage_request_003","command_type":"request_stage_advance","issued_at":"2026-07-20T20:10:00+03:00","actor_id":"participant_01","actor_role":"product_captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_stage_request_003","day_number":2,"stage_id":"problem_discovery","device_id":"device_01","payload":{"from_stage_id":"problem_discovery","to_stage_id":"hypothesis","requested_for_day_number":3}},{"command_id":"cmd_stage_advance_003","command_type":"advance_stage","issued_at":"2026-07-20T20:30:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_stage_advance_003","day_number":2,"stage_id":"problem_discovery","device_id":null,"payload":{"from_stage_id":"problem_discovery","to_stage_id":"hypothesis","effective_from_day_number":3,"request_event_id":"evt_stage_request_003"}},{"command_id":"cmd_stage_request_004","command_type":"request_stage_advance","issued_at":"2026-07-21T20:10:00+03:00","actor_id":"participant_02","actor_role":"product_captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_stage_request_004","day_number":3,"stage_id":"hypothesis","device_id":"device_02","payload":{"from_stage_id":"hypothesis","to_stage_id":"validation","requested_for_day_number":4}},{"command_id":"cmd_stage_advance_004","command_type":"advance_stage","issued_at":"2026-07-21T20:30:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_stage_advance_004","day_number":3,"stage_id":"hypothesis","device_id":null,"payload":{"from_stage_id":"hypothesis","to_stage_id":"validation","effective_from_day_number":4,"request_event_id":"evt_stage_request_004"}},{"command_id":"cmd_force_day_005","command_type":"force_day_transition","issued_at":"2026-07-22T05:30:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_force_day_005","day_number":4,"day_revision":1,"stage_id":"validation","device_id":null,"payload":{"target_local_calendar_date":"2026-07-23","reason":"Weather window requires an early operational transition.","expected_projection_version":44}},{"command_id":"cmd_rewind_day_005","command_type":"rewind_day","issued_at":"2026-07-22T21:00:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_rewind_day_005","day_number":5,"day_revision":1,"stage_id":"product_decision","device_id":null,"payload":{"from_day_number":5,"to_day_number":4,"reason":"Day 5 was opened against the wrong crew availability.","expected_projection_version":52}},{"command_id":"cmd_ban_participant_003","command_type":"ban_participant","issued_at":"2026-07-22T21:05:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_ban_participant_003","day_number":4,"day_revision":2,"stage_id":"validation","device_id":null,"payload":{"participant_id":"participant_03","reason":"Participant removed from this Expedition by Captain.","effective_at":"2026-07-22T21:05:00+03:00"}},{"command_id":"cmd_unban_participant_003","command_type":"unban_participant","issued_at":"2026-07-23T08:00:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"cmd_unban_participant_003","day_number":4,"day_revision":2,"stage_id":"validation","device_id":null,"payload":{"participant_id":"participant_03","reason":"Captain restored Expedition access after review.","effective_at":"2026-07-23T08:00:00+03:00"}},{"command_id":"cmd_decision_01","command_type":"create_decision_draft","issued_at":"2026-07-18T18:00:00+03:00","actor_id":"participant_01","actor_role":"product_captain","expedition_id":"expedition_demo","idempotency_key":"decision:01","payload":{"decision_id":"decision_primary_direction","stage_id":"product_decision","question":"Какое направление берём в MVP?","options":[{"option_id":"concierge_flow","title":"Concierge flow"},{"option_id":"self_service_flow","title":"Self-service flow"}],"criteria":["validated_need","delivery_feasibility"],"evidence_refs":["evidence_validation_pack"]}},{"command_id":"cmd_decision_02","command_type":"create_vote","issued_at":"2026-07-18T18:00:00+03:00","actor_id":"participant_01","actor_role":"product_captain","expedition_id":"expedition_demo","idempotency_key":"decision:02","payload":{"vote_id":"vote_primary_direction_v1","decision_id":"decision_primary_direction","eligible_voter_ids":["participant_01","participant_02","participant_03","participant_04","participant_05"],"vote_mode":"single_choice","quorum_rule":"all_eligible","threshold_rule":"strict_majority_of_eligible","round_version":1}},{"command_id":"cmd_decision_03","command_type":"vote","issued_at":"2026-07-18T18:00:00+03:00","actor_id":"participant_02","actor_role":"participant","expedition_id":"expedition_demo","idempotency_key":"decision:03","payload":{"vote_id":"vote_primary_direction_v1","choice":"concierge_flow","ballot_revision":1,"reason":"Strongest evidence"}},{"command_id":"cmd_decision_04","command_type":"finalize_product_decision","issued_at":"2026-07-18T18:00:00+03:00","actor_id":"participant_01","actor_role":"product_captain","expedition_id":"expedition_demo","idempotency_key":"decision:04","payload":{"vote_id":"vote_primary_direction_v1","decision_id":"decision_primary_direction","selected_option_id":"concierge_flow","rationale":"Three of five eligible voters selected the option supported by strongest evidence.","rejected_option_ids":["self_service_flow"],"objection_summary":["Manual operations risk"],"evidence_refs":["evidence_validation_pack"],"expected_round_version":1}},{"command_id":"cmd_decision_05","command_type":"override_product_decision","issued_at":"2026-07-18T18:00:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"expedition_demo","idempotency_key":"decision:05","payload":{"vote_id":"vote_primary_direction_v1","decision_id":"decision_primary_direction","selected_option_id":"self_service_flow","reason":"Operational constraint makes the majority option unsafe to deliver during the expedition.","unresolved_objections":["Lower confidence in onboarding conversion"],"evidence_refs":["evidence_validation_pack"],"expected_round_version":1}},{"command_id":"cmd_close_expedition_001","command_type":"close_expedition","issued_at":"2026-07-30T21:30:00+03:00","actor_id":"captain_01","actor_role":"captain","expedition_id":"ilka_demo_2026_01","idempotency_key":"expedition_completion:ilka_demo_2026_01:184","day_number":12,"day_revision":1,"stage_id":"demo_day","device_id":"captain_console_01","payload":{"final_stage_id":"demo_day","final_day_number":12,"shore_package_ref":"artifact_shore_package_v1","completion_summary":"Demo completed, final outputs confirmed and Shore Package handed over.","expected_projection_version":184}}]
+[
+  {
+    "command_id": "cmd_task_start_001",
+    "command_type": "start_task",
+    "issued_at": "2026-07-18T18:00:00Z",
+    "actor_id": "user_01",
+    "actor_role": "participant",
+    "expedition_id": "exp_demo",
+    "idempotency_key": "cmd_task_start_001",
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": "device_01",
+    "payload": {
+      "task_id": "task_team_agreement"
+    }
+  },
+  {
+    "command_id": "cmd_task_block_001",
+    "command_type": "block_task",
+    "issued_at": "2026-07-18T18:05:00Z",
+    "actor_id": "user_02",
+    "actor_role": "participant",
+    "expedition_id": "exp_demo",
+    "idempotency_key": "cmd_task_block_001",
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": "device_02",
+    "payload": {
+      "task_id": "task_safety_ack",
+      "reason": "Нужна дополнительная инструкция капитана."
+    }
+  },
+  {
+    "command_id": "cmd_card_ack_001",
+    "command_type": "acknowledge_card",
+    "issued_at": "2026-07-18T18:10:00Z",
+    "actor_id": "user_03",
+    "actor_role": "participant",
+    "expedition_id": "exp_demo",
+    "idempotency_key": "cmd_card_ack_001",
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": "device_03",
+    "payload": {
+      "card_id": "knowledge_expedition_rules"
+    }
+  },
+  {
+    "command_id": "cmd_start_expedition_ilka_demo_2026_01",
+    "command_type": "start_expedition",
+    "issued_at": "2026-07-18T05:15:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_start_expedition_ilka_demo_2026_01",
+    "day_number": null,
+    "stage_id": null,
+    "day_revision": null,
+    "device_id": null,
+    "payload": {}
+  },
+  {
+    "command_id": "cmd_day_boundary_ilka_demo_2026_01_20260718",
+    "command_type": "process_day_boundary",
+    "issued_at": "2026-07-18T06:00:00+03:00",
+    "actor_id": "system_clock",
+    "actor_role": "system_clock",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_day_boundary_ilka_demo_2026_01_20260718",
+    "day_number": null,
+    "stage_id": null,
+    "day_revision": null,
+    "device_id": null,
+    "payload": {
+      "local_calendar_date": "2026-07-18",
+      "boundary_at": "2026-07-18T06:00:00+03:00"
+    }
+  },
+  {
+    "command_id": "cmd_complete_task_ilka_demo_2026_01_participant_01",
+    "command_type": "complete_task",
+    "issued_at": "2026-07-18T20:30:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "product_captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_complete_task_ilka_demo_2026_01_participant_01",
+    "day_number": 1,
+    "stage_id": "onboarding",
+    "device_id": "device_01",
+    "payload": {
+      "task_id": "task_team_agreement"
+    }
+  },
+  {
+    "command_id": "cmd_stage_request_003",
+    "command_type": "request_stage_advance",
+    "issued_at": "2026-07-20T20:10:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "product_captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_stage_request_003",
+    "day_number": 2,
+    "stage_id": "problem_discovery",
+    "device_id": "device_01",
+    "payload": {
+      "from_stage_id": "problem_discovery",
+      "to_stage_id": "hypothesis",
+      "requested_for_day_number": 3
+    }
+  },
+  {
+    "command_id": "cmd_stage_advance_003",
+    "command_type": "advance_stage",
+    "issued_at": "2026-07-20T20:30:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_stage_advance_003",
+    "day_number": 2,
+    "stage_id": "problem_discovery",
+    "device_id": null,
+    "payload": {
+      "from_stage_id": "problem_discovery",
+      "to_stage_id": "hypothesis",
+      "effective_from_day_number": 3,
+      "request_event_id": "evt_stage_request_003"
+    }
+  },
+  {
+    "command_id": "cmd_stage_request_004",
+    "command_type": "request_stage_advance",
+    "issued_at": "2026-07-21T20:10:00+03:00",
+    "actor_id": "participant_02",
+    "actor_role": "product_captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_stage_request_004",
+    "day_number": 3,
+    "stage_id": "hypothesis",
+    "device_id": "device_02",
+    "payload": {
+      "from_stage_id": "hypothesis",
+      "to_stage_id": "validation",
+      "requested_for_day_number": 4
+    }
+  },
+  {
+    "command_id": "cmd_stage_advance_004",
+    "command_type": "advance_stage",
+    "issued_at": "2026-07-21T20:30:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_stage_advance_004",
+    "day_number": 3,
+    "stage_id": "hypothesis",
+    "device_id": null,
+    "payload": {
+      "from_stage_id": "hypothesis",
+      "to_stage_id": "validation",
+      "effective_from_day_number": 4,
+      "request_event_id": "evt_stage_request_004"
+    }
+  },
+  {
+    "command_id": "cmd_force_day_005",
+    "command_type": "force_day_transition",
+    "issued_at": "2026-07-22T05:30:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_force_day_005",
+    "day_number": 4,
+    "day_revision": 1,
+    "stage_id": "validation",
+    "device_id": null,
+    "payload": {
+      "target_local_calendar_date": "2026-07-23",
+      "reason": "Weather window requires an early operational transition.",
+      "expected_projection_version": 44
+    }
+  },
+  {
+    "command_id": "cmd_rewind_day_005",
+    "command_type": "rewind_day",
+    "issued_at": "2026-07-22T21:00:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_rewind_day_005",
+    "day_number": 5,
+    "day_revision": 1,
+    "stage_id": "product_decision",
+    "device_id": null,
+    "payload": {
+      "from_day_number": 5,
+      "to_day_number": 4,
+      "reason": "Day 5 was opened against the wrong crew availability.",
+      "expected_projection_version": 52
+    }
+  },
+  {
+    "command_id": "cmd_ban_participant_003",
+    "command_type": "ban_participant",
+    "issued_at": "2026-07-22T21:05:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_ban_participant_003",
+    "day_number": 4,
+    "day_revision": 2,
+    "stage_id": "validation",
+    "device_id": null,
+    "payload": {
+      "participant_id": "participant_03",
+      "reason": "Participant removed from this Expedition by Captain.",
+      "effective_at": "2026-07-22T21:05:00+03:00"
+    }
+  },
+  {
+    "command_id": "cmd_unban_participant_003",
+    "command_type": "unban_participant",
+    "issued_at": "2026-07-23T08:00:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "cmd_unban_participant_003",
+    "day_number": 4,
+    "day_revision": 2,
+    "stage_id": "validation",
+    "device_id": null,
+    "payload": {
+      "participant_id": "participant_03",
+      "reason": "Captain restored Expedition access after review.",
+      "effective_at": "2026-07-23T08:00:00+03:00"
+    }
+  },
+  {
+    "command_id": "cmd_decision_01",
+    "command_type": "create_decision_draft",
+    "issued_at": "2026-07-18T18:00:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "product_captain",
+    "expedition_id": "expedition_demo",
+    "idempotency_key": "decision:01",
+    "payload": {
+      "decision_id": "decision_primary_direction",
+      "stage_id": "product_decision",
+      "question": "Какое направление берём в MVP?",
+      "options": [
+        {
+          "option_id": "concierge_flow",
+          "title": "Concierge flow"
+        },
+        {
+          "option_id": "self_service_flow",
+          "title": "Self-service flow"
+        }
+      ],
+      "criteria": [
+        "validated_need",
+        "delivery_feasibility"
+      ],
+      "evidence_refs": [
+        "evidence_validation_pack"
+      ]
+    }
+  },
+  {
+    "command_id": "cmd_decision_02",
+    "command_type": "create_vote",
+    "issued_at": "2026-07-18T18:00:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "product_captain",
+    "expedition_id": "expedition_demo",
+    "idempotency_key": "decision:02",
+    "payload": {
+      "vote_id": "vote_primary_direction_v1",
+      "decision_id": "decision_primary_direction",
+      "eligible_voter_ids": [
+        "participant_01",
+        "participant_02",
+        "participant_03",
+        "participant_04",
+        "participant_05"
+      ],
+      "vote_mode": "single_choice",
+      "quorum_rule": "all_eligible",
+      "threshold_rule": "strict_majority_of_eligible",
+      "round_version": 1
+    }
+  },
+  {
+    "command_id": "cmd_decision_03",
+    "command_type": "vote",
+    "issued_at": "2026-07-18T18:00:00+03:00",
+    "actor_id": "participant_02",
+    "actor_role": "participant",
+    "expedition_id": "expedition_demo",
+    "idempotency_key": "decision:03",
+    "payload": {
+      "vote_id": "vote_primary_direction_v1",
+      "choice": "concierge_flow",
+      "ballot_revision": 1,
+      "reason": "Strongest evidence"
+    }
+  },
+  {
+    "command_id": "cmd_decision_04",
+    "command_type": "finalize_product_decision",
+    "issued_at": "2026-07-18T18:00:00+03:00",
+    "actor_id": "participant_01",
+    "actor_role": "product_captain",
+    "expedition_id": "expedition_demo",
+    "idempotency_key": "decision:04",
+    "payload": {
+      "vote_id": "vote_primary_direction_v1",
+      "decision_id": "decision_primary_direction",
+      "selected_option_id": "concierge_flow",
+      "rationale": "Three of five eligible voters selected the option supported by strongest evidence.",
+      "rejected_option_ids": [
+        "self_service_flow"
+      ],
+      "objection_summary": [
+        "Manual operations risk"
+      ],
+      "evidence_refs": [
+        "evidence_validation_pack"
+      ],
+      "expected_round_version": 1
+    }
+  },
+  {
+    "command_id": "cmd_decision_05",
+    "command_type": "override_product_decision",
+    "issued_at": "2026-07-18T18:00:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "expedition_demo",
+    "idempotency_key": "decision:05",
+    "payload": {
+      "vote_id": "vote_primary_direction_v1",
+      "decision_id": "decision_primary_direction",
+      "selected_option_id": "self_service_flow",
+      "reason": "Operational constraint makes the majority option unsafe to deliver during the expedition.",
+      "unresolved_objections": [
+        "Lower confidence in onboarding conversion"
+      ],
+      "evidence_refs": [
+        "evidence_validation_pack"
+      ],
+      "expected_round_version": 1
+    }
+  },
+  {
+    "command_id": "cmd_close_expedition_001",
+    "command_type": "close_expedition",
+    "issued_at": "2026-07-30T21:30:00+03:00",
+    "actor_id": "captain_01",
+    "actor_role": "captain",
+    "expedition_id": "ilka_demo_2026_01",
+    "idempotency_key": "expedition_completion:ilka_demo_2026_01:184",
+    "day_number": 12,
+    "day_revision": 1,
+    "stage_id": "demo_day",
+    "device_id": "captain_console_01",
+    "payload": {
+      "final_stage_id": "demo_day",
+      "final_day_number": 12,
+      "shore_package_ref": "artifact_shore_package_v1",
+      "completion_summary": "Demo completed, final outputs confirmed and Shore Package handed over.",
+      "expected_projection_version": 184
+    }
+  }
+]
