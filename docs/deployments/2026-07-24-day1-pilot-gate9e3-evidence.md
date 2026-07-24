@@ -75,16 +75,29 @@ The development project currently contains:
 
 A fresh authenticated 3–5 Participant pilot therefore cannot be executed yet without approved Auth identities. No identities, memberships or Participants were fabricated through direct SQL.
 
+## Authenticated smoke harness now available
+
+Protected merge `024ab8ecdb2ab6d172ff75d2eba1605e55343397` adds the reusable operator harness, tests and runbook:
+
+- `scripts/run_day1_pilot_smoke.py`;
+- `tests/test_day1_pilot_smoke.py`;
+- `docs/deployments/day1-pilot-live-smoke.md`;
+- `docs/deployments/2026-07-24-day1-pilot-gate9e4-live-smoke-harness.md`.
+
+The harness performs Auth preflight before any domain mutation, executes the exact authenticated Gate 9E vertical, checks Participant-scoped blockers, append-only receipt/event evidence and exact replay, and emits sanitized evidence without JWTs, HMAC secrets, raw invitation tokens, full emails or Auth/Profile identifiers.
+
+The harness does not remove the environment blockers above and does not automate the private invariant check for unrelated `gate8d_smoke`; that check remains an independent before/after deployment verification.
+
 ## Remaining closure sequence
 
 1. Configure the three GitHub `development` environment secrets.
 2. Run the canonical `Deploy command gateway to development` workflow from protected `main`.
 3. Verify cloud `ILKA_DEFAULT_RUNTIME_RELEASE_KEY=day1_pilot_v1`, HMAC authentication and allowed origins through a successful gateway smoke rather than by exposing secret values.
 4. Provision or confirm 3–5 real pilot Auth users through the accepted Auth flow.
-5. Create a fresh Expedition and execute:
+5. Run `scripts/run_day1_pilot_smoke.py` against a fresh Expedition. It executes:
 
    `create_expedition → invite_participant × N → accept_invitation × N → generate_rotation → start_expedition → trusted process_day_boundary → complete_task → exact replay`.
-
 6. Verify append-only events, one receipt per command, `N TodayView + 1 CaptainDayView`, participant-scoped blockers, deterministic replay and unchanged `gate8d_smoke`.
+7. Record the sanitized successful live evidence in a dated deployment document.
 
 Until these steps pass, Gate 9E remains **OPEN / environment-blocked**.
