@@ -1,25 +1,83 @@
-name: Snapshot Gate 9E2 source
+name: Apply Gate 9E2 pilot release
 
 on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  snapshot:
+  apply:
+    if: github.head_ref == 'agent/gate9e2-day1-pilot-release'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - name: Checkout
+      - name: Checkout Gate 9E2 branch
         uses: actions/checkout@v4
-
-      - name: Build source archive
-        run: |
-          git ls-files -z | xargs -0 zip -q gate9e2-source.zip
-
-      - name: Upload source archive
-        uses: actions/upload-artifact@v4
         with:
-          name: gate9e2-source
-          path: gate9e2-source.zip
-          retention-days: 1
+          ref: agent/gate9e2-day1-pilot-release
+          fetch-depth: 0
+
+      - name: Apply Gate 9E2 product patch
+        shell: bash
+        run: |
+          if [[ ! -f .gate9e2.patch.gz.b64 ]]; then
+            echo "Gate 9E2 product patch is already applied."
+            exit 0
+          fi
+          base64 -d .gate9e2.patch.gz.b64 | gzip -d > /tmp/gate9e2.patch
+          git apply --check /tmp/gate9e2.patch
+          git apply /tmp/gate9e2.patch
+          rm .gate9e2.patch.gz.b64
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate Gate 9E2 contracts
+        shell: bash
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python scripts/generate_day1_pilot_policy.py
+          python scripts/validate_repository.py .
+          python scripts/validate_day1_pilot_runtime.py
+          python scripts/validate_day1_pilot_release.py
+          pytest -q
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check Gate 9E2 registry
+        shell: bash
+        run: |
+          deno fmt --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/_shared/engine-runtime/day1-pilot-policy.generated.ts \
+            supabase/functions/_shared/command-gateway/runtime-registry.ts \
+            supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts
+          deno fmt --check --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/_shared/command-gateway/runtime-registry.ts \
+            supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts
+          deno lint --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/_shared/command-gateway/runtime-registry.ts \
+            supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts
+          deno check --frozen --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts
+          deno test --frozen --config supabase/functions/command-gateway/deno.json \
+            supabase/functions/command-gateway/tests/unit/runtime-registry.test.ts
+
+      - name: Commit Gate 9E2 product changes
+        shell: bash
+        run: |
+          git checkout -- .github/workflows/deploy-command-gateway.yml .github/workflows/validate.yml
+          if git diff --quiet --exit-code; then
+            echo "Gate 9E2 product changes are already published."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(gate9e2): register Day 1 pilot release"
+          git push origin HEAD:agent/gate9e2-day1-pilot-release
