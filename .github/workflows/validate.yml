@@ -29,6 +29,9 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
 
+      - name: Generate Day 1 pilot policy
+        run: python scripts/generate_day1_pilot_policy.py
+
       - name: Generate command gateway contract
         run: python scripts/generate_supabase_command_gateway_contract.py
 
@@ -61,6 +64,9 @@ jobs:
 
       - name: Validate Day 1 vertical closure
         run: python scripts/validate_expedition_day1_vertical_closure.py
+
+      - name: Validate Day 1 pilot runtime composition
+        run: python scripts/validate_day1_pilot_runtime.py
 
       - name: Run test suite
         run: pytest -q
@@ -116,7 +122,7 @@ jobs:
           deno-version: v2.x
 
       - name: Format generated command gateway contract
-        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts
+        run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts supabase/functions/_shared/engine-runtime/day1-pilot-policy.generated.ts
 
       - name: Check command gateway and Engine runtime formatting
         run: deno fmt --check --config supabase/functions/command-gateway/deno.json supabase/functions/command-gateway supabase/functions/_shared/command-gateway supabase/functions/_shared/engine-runtime

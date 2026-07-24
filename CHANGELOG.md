@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-24 — Gate 9E1 Day 1 pilot runtime composition
+
+- Added one `day1_pilot_v1` composite runtime factory for bootstrap, invitations, rotation, Expedition start, trusted Day 1 boundary and `complete_task`.
+- Delegated every command to the existing protected capability reducer instead of copying domain rules.
+- Added generated immutable Day 1 policy sourced from canonical pipeline, rotation, role, onboarding Stage and Card files.
+- Preserved the trusted-only `process_day_boundary` path and Product Captain role resolution.
+- Added composite capability, dispatch and policy generation tests plus protected static validation.
+- Kept the production runtime registry and database release rows unchanged until the Gate 9E1 protected merge SHA exists.
+
+Gate 9E2 remains responsible for exact SHA registration, reviewed development migrations, environment secrets, scheduler, JWT-protected gateway deployment and fresh authenticated pilot smoke. Existing Expedition runtime pins, including `gate8d_smoke`, must remain unchanged.
+
 ## 2026-07-24 — Gate 9D4 Day 1 vertical closure
 
 - Repaired `complete_task` blocker ownership so only `<participant_key>:<task_id>` for the authenticated Participant is removed after that Participant's required tasks become terminal.

@@ -243,7 +243,14 @@ Gate 9D4 Day 1 vertical closure is complete locally:
 - after-sync fixtures preserve card, output and other Participant task blockers;
 - protected validation covers fixture/example drift and the complete rollback/retry/replay vertical.
 
-The production runtime registry remains unchanged. Gate 9E composes, pins and deploys `day1_pilot_v1`, configures the secret and scheduler, applies the cloud migration and runs pilot smoke.
+Gate 9E1 Day 1 pilot runtime composition is complete locally:
+
+- one immutable bundle delegates all accepted setup, rotation, start, trusted boundary and `complete_task` behavior to protected capability reducers;
+- Day 1 methodology policy is generated from canonical engine, Stage, role and Card sources;
+- the bundle exposes every specialized executor capability while preserving trusted-only boundary isolation;
+- protected tests verify command dispatch and Product Captain role resolution.
+
+The production runtime registry remains unchanged until the Gate 9E1 merge SHA is protected. Gate 9E2 pins and registers that SHA, applies reviewed cloud migrations, updates development secrets and scheduler configuration, deploys the JWT-protected gateway and runs pilot smoke.
 
 ## Run the Day 1 prototype
 
