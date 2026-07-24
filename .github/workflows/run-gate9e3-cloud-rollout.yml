@@ -7,18 +7,15 @@ permissions:
   contents: read
 
 jobs:
-  preflight:
+  protected-source:
     if: github.head_ref == 'agent/gate9e3-cloud-rollout'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: development
-
     steps:
       - name: Checkout protected main
         uses: actions/checkout@v4
         with:
           ref: f2f88cd39c102dcdf46916dfc782a91f503beaaa
-
       - name: Verify protected source
         shell: bash
         run: |
@@ -27,41 +24,38 @@ jobs:
           grep -q 'release_key: "day1_pilot_v1"' supabase/functions/_shared/command-gateway/runtime-registry.ts
           grep -q 'git_commit_sha: "969d4956a9247aa5f28ba18cc6fe587bd38c20f4"' supabase/functions/_shared/command-gateway/runtime-registry.ts
 
+  supabase-access-token:
+    if: github.head_ref == 'agent/gate9e3-cloud-rollout'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: development
+    steps:
       - name: Verify SUPABASE_ACCESS_TOKEN
-        id: access_token
-        continue-on-error: true
         shell: bash
         env:
           VALUE: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: test -n "$VALUE"
 
+  system-clock-secret:
+    if: github.head_ref == 'agent/gate9e3-cloud-rollout'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: development
+    steps:
       - name: Verify ILKA_SYSTEM_CLOCK_HMAC_SECRET
-        id: system_clock_secret
-        continue-on-error: true
         shell: bash
         env:
           VALUE: ${{ secrets.ILKA_SYSTEM_CLOCK_HMAC_SECRET }}
         run: test -n "$VALUE"
 
+  allowed-origins:
+    if: github.head_ref == 'agent/gate9e3-cloud-rollout'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: development
+    steps:
       - name: Verify ILKA_ALLOWED_ORIGINS
-        id: allowed_origins
-        continue-on-error: true
         shell: bash
         env:
           VALUE: ${{ secrets.ILKA_ALLOWED_ORIGINS }}
         run: test -n "$VALUE"
-
-      - name: Report environment prerequisites
-        if: always()
-        shell: bash
-        env:
-          ACCESS_TOKEN: ${{ steps.access_token.outcome }}
-          SYSTEM_CLOCK_SECRET: ${{ steps.system_clock_secret.outcome }}
-          ALLOWED_ORIGINS: ${{ steps.allowed_origins.outcome }}
-        run: |
-          echo "SUPABASE_ACCESS_TOKEN=$ACCESS_TOKEN"
-          echo "ILKA_SYSTEM_CLOCK_HMAC_SECRET=$SYSTEM_CLOCK_SECRET"
-          echo "ILKA_ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
-          test "$ACCESS_TOKEN" = success
-          test "$SYSTEM_CLOCK_SECRET" = success
-          test "$ALLOWED_ORIGINS" = success
