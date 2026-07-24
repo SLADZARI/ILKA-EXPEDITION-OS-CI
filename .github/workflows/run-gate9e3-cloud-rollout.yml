@@ -1,0 +1,86 @@
+name: Run Gate 9E3 cloud rollout
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gate9e3-cloud-rollout-development
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.head_ref == 'agent/gate9e3-cloud-rollout'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: development
+
+    steps:
+      - name: Checkout protected main
+        uses: actions/checkout@v4
+        with:
+          ref: f2f88cd39c102dcdf46916dfc782a91f503beaaa
+
+      - name: Verify protected source and configuration
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          ILKA_SYSTEM_CLOCK_HMAC_SECRET: ${{ secrets.ILKA_SYSTEM_CLOCK_HMAC_SECRET }}
+          ILKA_ALLOWED_ORIGINS: ${{ secrets.ILKA_ALLOWED_ORIGINS }}
+        run: |
+          test "$(git rev-parse HEAD)" = "f2f88cd39c102dcdf46916dfc782a91f503beaaa"
+          for name in SUPABASE_ACCESS_TOKEN ILKA_SYSTEM_CLOCK_HMAC_SECRET ILKA_ALLOWED_ORIGINS; do
+            if [[ -z "${!name}" ]]; then
+              echo "$name is not configured for the development environment."
+              exit 1
+            fi
+          done
+          grep -A2 '^\[functions.command-gateway\]' supabase/config.toml | grep -q 'verify_jwt = true'
+          grep -q 'release_key: "day1_pilot_v1"' supabase/functions/_shared/command-gateway/runtime-registry.ts
+          grep -q 'git_commit_sha: "969d4956a9247aa5f28ba18cc6fe587bd38c20f4"' supabase/functions/_shared/command-gateway/runtime-registry.ts
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.101.0
+          github-token: ${{ github.token }}
+
+      - name: Verify database connection secret
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase secrets list --project-ref rehfxjlyfojkpascjtmb | tee /tmp/secrets.txt
+          grep -q 'SUPABASE_DB_URL' /tmp/secrets.txt
+
+      - name: Configure Day 1 pilot environment
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          ILKA_SYSTEM_CLOCK_HMAC_SECRET: ${{ secrets.ILKA_SYSTEM_CLOCK_HMAC_SECRET }}
+          ILKA_ALLOWED_ORIGINS: ${{ secrets.ILKA_ALLOWED_ORIGINS }}
+        run: |
+          supabase secrets set \
+            ILKA_DEFAULT_RUNTIME_RELEASE_KEY=day1_pilot_v1 \
+            ILKA_SYSTEM_CLOCK_HMAC_SECRET="$ILKA_SYSTEM_CLOCK_HMAC_SECRET" \
+            ILKA_ALLOWED_ORIGINS="$ILKA_ALLOWED_ORIGINS" \
+            --project-ref rehfxjlyfojkpascjtmb
+
+      - name: Deploy reviewed command gateway
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy command-gateway \
+            --project-ref rehfxjlyfojkpascjtmb \
+            --use-api
+
+      - name: Verify active gateway
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions list --project-ref rehfxjlyfojkpascjtmb | tee /tmp/functions.txt
+          grep -q 'command-gateway' /tmp/functions.txt
