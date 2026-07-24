@@ -279,8 +279,8 @@ def main() -> int:
         }[label]
         require(text[key], values, label, errors)
 
-    if "createDay1BoundaryRuntime" in text["registry"] or "day1_pilot_v1" in text["registry"]:
-        errors.append("Gate 9D3 must not register a production boundary runtime")
+    # Gate 9E2 owns production composite registration after the Gate 9D3
+    # boundary capability is protected.
     if "verify_jwt = true" not in text["config"]:
         errors.append("platform JWT verification must remain enabled")
     app = yaml.safe_load(text["app_commands"])

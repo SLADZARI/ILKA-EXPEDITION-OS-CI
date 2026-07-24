@@ -1,3 +1,13 @@
+## 2026-07-24 — Gate 9E2 Day 1 pilot runtime registration
+
+- Registered one exact `day1_pilot_v1` bundle pinned to protected Gate 9E1 merge SHA `969d4956a9247aa5f28ba18cc6fe587bd38c20f4`.
+- Pinned rules release `engine_v10_permissions_v8_roles_v2_rotation_v2` and content release `ilka_mvp_12_day_v5_onboarding_v3` from canonical source versions.
+- Added immutable runtime release migration, pgTAP immutability checks, exact registry tests and protected static validation.
+- Strengthened the reviewed development deployment workflow to require the HMAC secret and allowed origins, set the new default only for future Expeditions and preserve JWT verification.
+- Added the reviewed `VOYAGE` migration order, `gate8d_smoke` invariants and authenticated pilot checklist.
+
+No existing Expedition runtime pin is modified. Cloud migrations, gateway deployment and live pilot evidence occur only after protected merge; missing Auth users or secrets must be recorded as environment blockers rather than bypassed.
+
 # Changelog
 
 ## 2026-07-24 — Gate 9E1 Day 1 pilot runtime composition

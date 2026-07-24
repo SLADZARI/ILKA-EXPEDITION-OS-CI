@@ -250,7 +250,7 @@ Gate 9E1 Day 1 pilot runtime composition is complete locally:
 - the bundle exposes every specialized executor capability while preserving trusted-only boundary isolation;
 - protected tests verify command dispatch and Product Captain role resolution.
 
-The production runtime registry remains unchanged until the Gate 9E1 merge SHA is protected. Gate 9E2 pins and registers that SHA, applies reviewed cloud migrations, updates development secrets and scheduler configuration, deploys the JWT-protected gateway and runs pilot smoke.
+Gate 9E1 is protected at `969d4956a9247aa5f28ba18cc6fe587bd38c20f4`. Gate 9E2 now registers `day1_pilot_v1` with rules `engine_v10_permissions_v8_roles_v2_rotation_v2` and content `ilka_mvp_12_day_v5_onboarding_v3`, adds the immutable database row and protects the reviewed development deployment workflow. Cloud migration application, environment configuration and live pilot evidence remain post-merge operations.
 
 ## Run the Day 1 prototype
 

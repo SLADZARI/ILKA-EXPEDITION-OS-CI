@@ -1,5 +1,6 @@
 import { createDay1CompleteTaskRuntime } from "../engine-runtime/day1-complete-task-v1.ts";
 import { createExpeditionBootstrapRuntime } from "../engine-runtime/expedition-bootstrap-v1.ts";
+import { createDay1PilotRuntime } from "../engine-runtime/day1-pilot-v1.ts";
 import type { RuntimeBundle, RuntimeRegistry, RuntimeRelease } from "./types.ts";
 
 function matches(bundle: RuntimeBundle, release: RuntimeRelease): boolean {
@@ -40,7 +41,16 @@ export const expeditionBootstrapV1 = createExpeditionBootstrapRuntime({
   recovery_days_available: 1,
 });
 
+export const day1PilotV1 = createDay1PilotRuntime({
+  release_key: "day1_pilot_v1",
+  git_commit_sha: "969d4956a9247aa5f28ba18cc6fe587bd38c20f4",
+  rules_release: "engine_v10_permissions_v8_roles_v2_rotation_v2",
+  content_release: "ilka_mvp_12_day_v5_onboarding_v3",
+  reducer_version: "day1_pilot_v1",
+});
+
 export const commandGatewayRuntimeRegistry = new StaticRuntimeRegistry([
   day1CompleteTaskV1,
   expeditionBootstrapV1,
+  day1PilotV1,
 ]);
