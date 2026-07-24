@@ -68,6 +68,9 @@ jobs:
       - name: Validate Day 1 pilot runtime composition
         run: python scripts/validate_day1_pilot_runtime.py
 
+      - name: Validate Day 1 pilot release
+        run: python scripts/validate_day1_pilot_release.py
+
       - name: Run test suite
         run: pytest -q
 
