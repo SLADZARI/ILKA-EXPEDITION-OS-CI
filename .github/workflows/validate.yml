@@ -121,7 +121,7 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Format generated runtime sources
+      - name: Format generated command gateway contract
         run: deno fmt --config supabase/functions/command-gateway/deno.json supabase/functions/_shared/command-gateway/command-contract.generated.ts supabase/functions/_shared/engine-runtime/day1-pilot-policy.generated.ts
 
       - name: Check command gateway and Engine runtime formatting
