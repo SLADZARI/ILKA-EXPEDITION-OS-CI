@@ -423,3 +423,43 @@ The runtime registry must not compose independent bundles dynamically at request
 - Recovery Day execution;
 - realtime reducers;
 - production data.
+## Gate 9E protected release sequence
+
+Gate 9E is split only to preserve the immutable release invariant; it does not split the domain runtime at request time.
+
+### Gate 9E1 — protected composite implementation
+
+`day1-pilot-v1.ts` creates one `RuntimeBundle` with one metadata identity. It delegates to the already protected capability reducers for:
+
+```text
+create_expedition
+invite_participant
+accept_invitation
+revoke_invitation
+generate_rotation
+start_expedition
+process_day_boundary
+complete_task
+```
+
+The composite exposes the bootstrap, invitation, rotation, start and Day 1 boundary capability policies required by the specialized executors. Human command dispatch and Product Captain resolution use the same bundle. `process_day_boundary` remains unavailable through generic human reduction and is executed only through `reduceBoundary` after trusted HMAC verification.
+
+Day 1 content and role policy are generated from `engine/pipeline.yaml`, `engine/role-rotation-rules.yaml`, `engine/roles-catalog.yaml`, `stages/01_onboarding.yaml` and `cards/`. The generated TypeScript is immutable release input, not a competing methodology source.
+
+Gate 9E1 intentionally does not add the bundle to `commandGatewayRuntimeRegistry` and does not insert an `ilka.runtime_releases` row. Its protected merge SHA must exist first.
+
+### Gate 9E2 — exact registration and development proof
+
+After Gate 9E1 is merged, Gate 9E2 must:
+
+1. instantiate exactly `day1_pilot_v1` with the Gate 9E1 protected merge SHA;
+2. add it to the static exact-match registry without changing existing bundles;
+3. insert one immutable runtime-release row with identical metadata;
+4. apply missing reviewed migrations to development `VOYAGE` in repository order;
+5. change `ILKA_DEFAULT_RUNTIME_RELEASE_KEY` only for new Expeditions;
+6. configure `ILKA_SYSTEM_CLOCK_HMAC_SECRET` and reviewed scheduler invocation;
+7. deploy `command-gateway` with `verify_jwt = true`;
+8. run a fresh authenticated pilot and exact replay checks;
+9. prove `gate8d_smoke` remains draft, at stream position `1`, projection version `0`, and pinned to `expedition_bootstrap_v1`.
+
+No existing Expedition runtime pin may be updated during Gate 9E2.
