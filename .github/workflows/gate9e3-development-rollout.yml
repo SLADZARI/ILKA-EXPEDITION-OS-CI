@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - ops/gate9e3-development-rollout
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -14,6 +17,7 @@ concurrency:
 
 jobs:
   rollout:
+    if: github.head_ref == 'ops/gate9e3-development-rollout' || github.ref_name == 'ops/gate9e3-development-rollout'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: development
