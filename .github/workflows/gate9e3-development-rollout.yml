@@ -16,8 +16,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  rollout:
+  verify_access_token:
     if: github.head_ref == 'ops/gate9e3-development-rollout' || github.ref_name == 'ops/gate9e3-development-rollout'
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Verify SUPABASE_ACCESS_TOKEN
+        shell: bash
+        env:
+          VALUE: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: test -n "$VALUE"
+
+  verify_system_clock_secret:
+    if: github.head_ref == 'ops/gate9e3-development-rollout' || github.ref_name == 'ops/gate9e3-development-rollout'
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Verify ILKA_SYSTEM_CLOCK_HMAC_SECRET
+        shell: bash
+        env:
+          VALUE: ${{ secrets.ILKA_SYSTEM_CLOCK_HMAC_SECRET }}
+        run: test -n "$VALUE"
+
+  verify_allowed_origins:
+    if: github.head_ref == 'ops/gate9e3-development-rollout' || github.ref_name == 'ops/gate9e3-development-rollout'
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Verify ILKA_ALLOWED_ORIGINS
+        shell: bash
+        env:
+          VALUE: ${{ secrets.ILKA_ALLOWED_ORIGINS }}
+        run: test -n "$VALUE"
+
+  rollout:
+    needs:
+      - verify_access_token
+      - verify_system_clock_secret
+      - verify_allowed_origins
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: development
@@ -26,36 +62,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-
-      - name: Verify SUPABASE_ACCESS_TOKEN
-        shell: bash
-        env:
-          VALUE: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          if [[ -z "$VALUE" ]]; then
-            echo "SUPABASE_ACCESS_TOKEN is not configured for the development environment."
-            exit 1
-          fi
-
-      - name: Verify ILKA_SYSTEM_CLOCK_HMAC_SECRET
-        shell: bash
-        env:
-          VALUE: ${{ secrets.ILKA_SYSTEM_CLOCK_HMAC_SECRET }}
-        run: |
-          if [[ -z "$VALUE" ]]; then
-            echo "ILKA_SYSTEM_CLOCK_HMAC_SECRET is not configured for the development environment."
-            exit 1
-          fi
-
-      - name: Verify ILKA_ALLOWED_ORIGINS
-        shell: bash
-        env:
-          VALUE: ${{ secrets.ILKA_ALLOWED_ORIGINS }}
-        run: |
-          if [[ -z "$VALUE" ]]; then
-            echo "ILKA_ALLOWED_ORIGINS is not configured for the development environment."
-            exit 1
-          fi
 
       - name: Verify JWT contract
         shell: bash
