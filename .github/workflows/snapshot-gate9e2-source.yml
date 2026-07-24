@@ -1,0 +1,25 @@
+name: Snapshot Gate 9E2 source
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build source archive
+        run: |
+          git ls-files -z | xargs -0 zip -q gate9e2-source.zip
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate9e2-source
+          path: gate9e2-source.zip
+          retention-days: 1
