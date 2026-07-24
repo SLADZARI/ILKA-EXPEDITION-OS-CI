@@ -21,14 +21,16 @@ jobs:
       - name: Apply Gate 9E2 product patch
         shell: bash
         run: |
-          if [[ ! -f .gate9e2.patch.gz.b64 ]]; then
+          shopt -s nullglob
+          parts=(.gate9e2.patch.part*)
+          if [[ ${#parts[@]} -eq 0 ]]; then
             echo "Gate 9E2 product patch is already applied."
             exit 0
           fi
-          base64 -d .gate9e2.patch.gz.b64 | gzip -d > /tmp/gate9e2.patch
+          cat "${parts[@]}" | base64 -d | gzip -d > /tmp/gate9e2.patch
           git apply --check /tmp/gate9e2.patch
           git apply /tmp/gate9e2.patch
-          rm .gate9e2.patch.gz.b64
+          rm "${parts[@]}"
 
       - name: Set up Python
         uses: actions/setup-python@v5
