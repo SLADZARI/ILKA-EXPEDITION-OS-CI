@@ -23,23 +23,31 @@ jobs:
         with:
           ref: f2f88cd39c102dcdf46916dfc782a91f503beaaa
 
-      - name: Verify protected source and configuration
+      - name: Verify protected source
         shell: bash
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          ILKA_SYSTEM_CLOCK_HMAC_SECRET: ${{ secrets.ILKA_SYSTEM_CLOCK_HMAC_SECRET }}
-          ILKA_ALLOWED_ORIGINS: ${{ secrets.ILKA_ALLOWED_ORIGINS }}
         run: |
           test "$(git rev-parse HEAD)" = "f2f88cd39c102dcdf46916dfc782a91f503beaaa"
-          for name in SUPABASE_ACCESS_TOKEN ILKA_SYSTEM_CLOCK_HMAC_SECRET ILKA_ALLOWED_ORIGINS; do
-            if [[ -z "${!name}" ]]; then
-              echo "$name is not configured for the development environment."
-              exit 1
-            fi
-          done
           grep -A2 '^\[functions.command-gateway\]' supabase/config.toml | grep -q 'verify_jwt = true'
           grep -q 'release_key: "day1_pilot_v1"' supabase/functions/_shared/command-gateway/runtime-registry.ts
           grep -q 'git_commit_sha: "969d4956a9247aa5f28ba18cc6fe587bd38c20f4"' supabase/functions/_shared/command-gateway/runtime-registry.ts
+
+      - name: Verify SUPABASE_ACCESS_TOKEN
+        shell: bash
+        env:
+          VALUE: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: test -n "$VALUE"
+
+      - name: Verify ILKA_SYSTEM_CLOCK_HMAC_SECRET
+        shell: bash
+        env:
+          VALUE: ${{ secrets.ILKA_SYSTEM_CLOCK_HMAC_SECRET }}
+        run: test -n "$VALUE"
+
+      - name: Verify ILKA_ALLOWED_ORIGINS
+        shell: bash
+        env:
+          VALUE: ${{ secrets.ILKA_ALLOWED_ORIGINS }}
+        run: test -n "$VALUE"
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
