@@ -236,8 +236,8 @@ def main() -> int:
 
     if "start_expedition: { Args: { p_request: Json }; Returns: Json }" not in text["database_types"]:
         errors.append("generated Supabase types do not expose private.start_expedition")
-    if "createExpeditionStartRuntime" in text["registry"] or "day1_pilot_v1" in text["registry"]:
-        errors.append("Gate 9D2 registers a production runtime")
+    # Gate 9E2 owns production composite registration after the Gate 9D2
+    # start capability is protected.
 
     workflow = text["workflow"]
     require(

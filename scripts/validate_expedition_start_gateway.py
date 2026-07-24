@@ -127,9 +127,8 @@ def main() -> int:
     if "Status: Accepted" not in ADR.read_text(encoding="utf-8"):
         errors.append("ADR-021 must remain accepted")
 
-    registry = REGISTRY.read_text(encoding="utf-8")
-    if "createExpeditionStartRuntime" in registry or "day1_pilot_v1" in registry:
-        errors.append("Gate 9D2B must not register a production start runtime")
+    # Gate 9E2 owns production composite registration after the Gate 9D2B
+    # gateway path is protected.
 
     workflow = WORKFLOW.read_text(encoding="utf-8")
     if "python scripts/validate_expedition_start_gateway.py" not in workflow:

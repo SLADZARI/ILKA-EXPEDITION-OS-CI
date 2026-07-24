@@ -463,3 +463,18 @@ After Gate 9E1 is merged, Gate 9E2 must:
 9. prove `gate8d_smoke` remains draft, at stream position `1`, projection version `0`, and pinned to `expedition_bootstrap_v1`.
 
 No existing Expedition runtime pin may be updated during Gate 9E2.
+
+
+### Gate 9E2 immutable release metadata
+
+The protected Gate 9E1 implementation is registered exactly as:
+
+```text
+release_key: day1_pilot_v1
+git_commit_sha: 969d4956a9247aa5f28ba18cc6fe587bd38c20f4
+rules_release: engine_v10_permissions_v8_roles_v2_rotation_v2
+content_release: ilka_mvp_12_day_v5_onboarding_v3
+reducer_version: day1_pilot_v1
+```
+
+The rules label pins game-engine v10, permissions v8, roles catalog v2 and rotation rules v2. The content label pins `ilka_mvp_12_day` pipeline v5 and onboarding v3; exact Card content remains captured by the protected SHA and generated Day 1 policy. `gate8d_smoke` remains pinned to `expedition_bootstrap_v1`; no existing Expedition is upgraded in place.

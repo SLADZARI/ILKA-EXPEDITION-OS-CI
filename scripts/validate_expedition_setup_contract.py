@@ -232,9 +232,8 @@ def main() -> int:
         "main event examples",
     )
 
-    registry = RUNTIME_REGISTRY.read_text(encoding="utf-8")
-    if "day1_pilot_v1" in registry:
-        errors.append("Gate 9B1 must not register day1_pilot_v1")
+    # Gate 9E2 owns production composite registration after the Gate 9B1
+    # setup contract is protected.
 
     workflow = WORKFLOW.read_text(encoding="utf-8")
     if "python scripts/validate_expedition_setup_contract.py" not in workflow:

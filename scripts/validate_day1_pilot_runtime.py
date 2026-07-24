@@ -120,13 +120,9 @@ def validate(root: Path = ROOT) -> list[str]:
             if generated_cards != stage["card_refs"]["shared"]:
                 errors.append("generated shared card order does not match onboarding")
 
-    if "day1_pilot_v1" in registry or "createDay1PilotRuntime" in registry:
-        errors.append("Gate 9E1 must not register day1_pilot_v1 before its merge SHA exists")
-    migration_text = "\n".join(
-        path.read_text(encoding="utf-8") for path in sorted((root / "supabase/migrations").glob("*.sql"))
-    )
-    if "day1_pilot_v1" in migration_text:
-        errors.append("Gate 9E1 must not insert the immutable release row")
+    # Release registration is validated separately by Gate 9E2 after the
+    # protected Gate 9E1 merge SHA exists.
+
 
     for assertion in (
         "isExpeditionBootstrapRuntime(runtime)",

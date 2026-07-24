@@ -254,8 +254,8 @@ def main() -> int:
     if day1.get("participant_task_blocker_key") != "<participant_key>:<task_id>":
         errors.append("Participant task blocker key drifted")
 
-    if "day1_pilot_v1" in RUNTIME_REGISTRY.read_text(encoding="utf-8"):
-        errors.append("Gate 9D1 must not register day1_pilot_v1")
+    # Gate 9E2 owns production composite registration after the Gate 9D1
+    # contract is protected.
     if "python scripts/validate_expedition_day1_start_contract.py" not in WORKFLOW.read_text(encoding="utf-8"):
         errors.append("protected CI does not run Gate 9D1 validator")
 
