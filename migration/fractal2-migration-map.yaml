@@ -1,0 +1,476 @@
+version: 0.1.0
+source_repository: SLADZARI/ILKA-EXPEDITION-OS-CI
+source_commit: f508121bf06f47f703e6ccc7c93da944b98608db
+purpose: >-
+  Migration manifest for building Fractal 2 / project collaboration MVP on top of ILKA Expedition OS
+  while preserving the current day-based role-play runtime, Supabase architecture, event sourcing,
+  task lifecycle, voting, invitations, offline sync, and daily role rotation.
+
+principles:
+  - keep_day_runtime: true
+  - keep_daily_role_rotation: true
+  - keep_existing_supabase_architecture_for_first_migration: true
+  - keep_event_sourcing_and_command_gateway: true
+  - keep_tasks_stages_votes_outputs: true
+  - do_not_mass_rename_backend_in_first_pass: true
+  - add_session_layer_inside_day: true
+  - one_day_one_primary_session_for_mvp: true
+  - allow_multiple_sessions_later: true
+  - roles_define_responsibility_not_contribution: true
+  - spores_measure_contribution_not_ownership: true
+  - first_session_generates_project_spores: true
+  - next_session_can_confirm_previous_attribution_and_generate_new_spores: true
+
+status_values: [KEEP, ADAPT, REPLACE_CONTENT, ADD, DEFER]
+
+terminology:
+  expedition:
+    ui_name: project
+    backend_action: KEEP
+    note: Preserve expedition_id internally in first pass; expose Project in UI copy and adapters.
+  captain:
+    ui_name: project_owner
+    backend_action: ADAPT
+    note: Preserve captain permissions initially; remove vessel/safety semantics from UI/content.
+  participant:
+    ui_name: contributor
+    backend_action: KEEP
+  product_captain:
+    ui_name: product_lead
+    backend_action: ADAPT
+  day:
+    ui_name: day
+    backend_action: KEEP
+    note: Day remains the game cycle and role-rotation boundary.
+  calendar_day:
+    ui_name: day
+    backend_action: KEEP
+  product_stage:
+    ui_name: project_stage
+    backend_action: ADAPT
+  card_bundle:
+    ui_name: day_brief
+    backend_action: ADAPT
+  role_assignment:
+    ui_name: daily_role_assignment
+    backend_action: KEEP
+  role_xp:
+    ui_name: spores_provisional_adapter
+    backend_action: ADAPT
+    note: Do not equate permanently. Reuse UI/infrastructure initially; introduce contribution ledger as source of truth.
+  expedition_rating:
+    ui_name: contribution_rating
+    backend_action: ADAPT
+  onboard_role:
+    ui_name: team_social_role
+    backend_action: REPLACE_CONTENT
+  product_role:
+    ui_name: project_role
+    backend_action: REPLACE_CONTENT
+  shore_operator:
+    ui_name: system_operator
+    backend_action: ADAPT
+  recovery_day:
+    ui_name: recovery_day
+    backend_action: KEEP
+
+new_domain_entities:
+  session:
+    status: ADD
+    scope: day
+    fields:
+      - session_id
+      - expedition_id
+      - day_number
+      - started_at
+      - ended_at
+      - source_type
+      - source_ref
+      - expected_participant_ids
+      - expected_role_assignments
+      - status
+      - processing_version
+  session_analysis:
+    status: ADD
+    fields:
+      - session_id
+      - detected_speakers
+      - speaker_mapping
+      - summary
+      - ideas
+      - hypotheses
+      - decisions
+      - disagreements
+      - evidence
+      - tasks
+      - project_changes
+      - generated_spores
+      - model_metadata
+  contribution:
+    status: ADD
+    fields:
+      - contribution_id
+      - session_id
+      - participant_id
+      - contribution_type
+      - claim
+      - evidence_refs
+      - affected_object_type
+      - affected_object_id
+      - impact
+      - confidence
+      - proposed_spores
+      - settled_spores
+      - status
+  spore_allocation:
+    status: ADD
+    fields:
+      - allocation_id
+      - session_id
+      - participant_id
+      - generated_amount
+      - settled_amount
+      - status
+      - evidence_refs
+      - confirmed_by
+      - confirmed_at
+  speaker_identity_mapping:
+    status: ADD
+    fields:
+      - session_id
+      - speaker_label
+      - participant_id
+      - confidence
+      - source
+      - status
+
+new_commands:
+  - command_type: create_session
+    status: ADD
+    allowed_actors: [captain, product_captain]
+  - command_type: attach_session_source
+    status: ADD
+    allowed_actors: [captain, product_captain, participant]
+  - command_type: process_session
+    status: ADD
+    allowed_actors: [system, shore_operator]
+  - command_type: confirm_speaker_mapping
+    status: ADD
+    allowed_actors: [captain, product_captain]
+  - command_type: confirm_contribution_attribution
+    status: ADD
+    allowed_actors: [captain, product_captain]
+  - command_type: settle_session
+    status: ADD
+    allowed_actors: [captain, product_captain, system]
+
+existing_commands:
+  create_expedition: {status: ADAPT, ui_name: create_project}
+  invite_participant: {status: KEEP, ui_name: invite_contributor}
+  accept_invitation: {status: KEEP, ui_name: join_project}
+  revoke_invitation: {status: KEEP}
+  ban_participant: {status: KEEP}
+  unban_participant: {status: KEEP}
+  generate_rotation: {status: ADAPT, note: keep daily rotation engine; replace maritime role policy/content}
+  start_expedition: {status: ADAPT, ui_name: start_project}
+  request_stage_advance: {status: KEEP}
+  advance_stage: {status: KEEP}
+  override_stage_advance: {status: KEEP}
+  process_day_boundary: {status: KEEP, note: preserve current timing and processing window}
+  recover_day_transition: {status: KEEP}
+  force_day_transition: {status: KEEP}
+  rewind_day: {status: KEEP}
+  start_evening_session: {status: ADAPT, note: repurpose around daily project call/session semantics}
+  acknowledge_card: {status: KEEP}
+  start_task: {status: KEEP}
+  block_task: {status: KEEP}
+  complete_task: {status: KEEP}
+  waive_task: {status: KEEP}
+  confirm_output: {status: KEEP, note: evidence_refs can support contribution provenance}
+  create_decision_draft: {status: KEEP}
+  create_vote: {status: KEEP}
+  vote: {status: KEEP}
+  finalize_product_decision: {status: KEEP}
+  override_product_decision: {status: KEEP}
+  request_day_close: {status: KEEP}
+  close_day: {status: KEEP}
+  close_expedition: {status: ADAPT, ui_name: close_project}
+  override_day_close: {status: KEEP}
+  override_role_assignment: {status: KEEP}
+  activate_recovery_day: {status: KEEP}
+  suspend_program: {status: KEEP}
+  resume_program: {status: KEEP}
+  verify_role_assignment: {status: ADAPT, note: role performance remains separate from contribution attribution}
+  adjust_role_xp: {status: ADAPT, note: temporary bridge only; do not make XP the contribution source of truth}
+  publish_rating_snapshot: {status: ADAPT}
+
+component_catalog:
+  app_shell: {status: KEEP, rename: null}
+  brand_lockup: {status: ADAPT, rename: null, note: rebrand only}
+  screen_header: {status: KEEP, rename: null}
+  section_header: {status: KEEP, rename: null}
+  icon_button: {status: KEEP, rename: null}
+  card_shell: {status: KEEP, rename: null}
+  product_role_card: {status: ADAPT, rename: project_role_card}
+  onboard_role_card: {status: REPLACE_CONTENT, rename: team_role_card}
+  mission_card: {status: ADAPT, rename: session_mission_card}
+  action_card: {status: KEEP, rename: null}
+  knowledge_card: {status: KEEP, rename: null}
+  team_card: {status: KEEP, rename: null}
+  decision_card: {status: KEEP, rename: null}
+  card_hand: {status: KEEP, rename: null}
+  mini_card: {status: KEEP, rename: null}
+  status_badge: {status: KEEP, rename: null}
+  sync_status: {status: KEEP, rename: null}
+  progress_bar: {status: KEEP, rename: null}
+  primary_button: {status: KEEP, rename: null}
+  action_list: {status: KEEP, rename: null}
+  completion_checklist: {status: KEEP, rename: null}
+  task_row: {status: KEEP, rename: null}
+  output_row: {status: KEEP, rename: null}
+  participant_assignment_row: {status: ADAPT, rename: contributor_assignment_row}
+  blocker_panel: {status: KEEP, rename: null}
+  captain_alert: {status: ADAPT, rename: project_owner_alert}
+  captain_control_panel: {status: ADAPT, rename: project_control_panel}
+  bottom_navigation: {status: ADAPT, rename: null}
+  bottom_sheet: {status: KEEP, rename: null}
+  empty_state: {status: KEEP, rename: null}
+  role_mastery_card: {status: KEEP, rename: null}
+  contribution_rating_card: {status: KEEP, rename: null}
+  vote_card: {status: KEEP, rename: null}
+  ballot_option: {status: KEEP, rename: null}
+  vote_result_banner: {status: KEEP, rename: null}
+  recovery_day_card: {status: KEEP, rename: null}
+  recovery_day_activation: {status: KEEP, rename: null}
+  xp_badge: {status: ADAPT, rename: spore_badge}
+  xp_entry_row: {status: ADAPT, rename: spore_entry_row}
+  xp_summary_card: {status: ADAPT, rename: spore_summary_card}
+  rating_indicator: {status: KEEP, rename: null}
+  stage_card: {status: ADAPT, rename: project_stage_card}
+  stage_path: {status: KEEP, rename: null}
+  participant_card: {status: ADAPT, rename: contributor_card}
+  screen_participant_today: {status: ADAPT, rename: screen_contributor_today}
+  screen_product_role_detail: {status: ADAPT, rename: screen_project_role_detail}
+  screen_captain_day_overview: {status: ADAPT, rename: screen_project_owner_day_overview}
+  screen_component_library: {status: KEEP, rename: null}
+  screen_participant_gamification: {status: ADAPT, rename: screen_contributor_spores}
+  screen_participant_vote: {status: KEEP, rename: null}
+  screen_captain_stage_control: {status: ADAPT, rename: screen_project_stage_control}
+  screen_captain_recovery_day: {status: ADAPT, rename: screen_project_recovery_day}
+
+new_components:
+  session_card:
+    status: ADD
+    variants: [upcoming, in_progress, processing, processed, review_required]
+  session_source_uploader:
+    status: ADD
+    variants: [transcript, audio, link, manual]
+  speaker_mapping_card:
+    status: ADD
+    variants: [review, confirmed]
+  speaker_mapping_row:
+    status: ADD
+    states: [suggested, confirmed, corrected, uncertain]
+  session_summary_card:
+    status: ADD
+  project_delta_card:
+    status: ADD
+    variants: [idea, hypothesis, decision, evidence, task, risk]
+  contribution_card:
+    status: ADD
+    states: [proposed, confirmed, corrected]
+  spore_allocation_card:
+    status: ADD
+    states: [generated, pending_attribution, settled]
+  session_review_panel:
+    status: ADD
+  previous_day_settlement_card:
+    status: ADD
+
+screens:
+  participant_today:
+    status: ADAPT
+    existing_file: frontend/src/screens/participant/TodayScreen.tsx
+    add_sections:
+      - current_day_role_brief
+      - today_session_brief
+      - previous_day_session_result
+      - pending_spore_settlement
+  product_role_detail:
+    status: ADAPT
+    existing_file: frontend/src/screens/participant/ProductRoleDetailScreen.tsx
+    changes:
+      - rename_product_role_copy_to_project_role
+      - include_call_responsibility
+      - include_speaking_order_or_facilitation_script_when_role_requires_it
+  gamification:
+    status: ADAPT
+    existing_file: frontend/src/screens/participant/GamificationScreen.tsx
+    changes:
+      - display_spores
+      - display_contribution_ledger
+      - keep_role_mastery
+  vote:
+    status: KEEP
+    existing_file: frontend/src/screens/participant/ProductDecisionVoteScreen.tsx
+  session_review:
+    status: ADD
+    proposed_file: frontend/src/screens/participant/SessionReviewScreen.tsx
+  session_upload:
+    status: ADD
+    proposed_file: frontend/src/screens/participant/SessionUploadScreen.tsx
+
+frontend_core:
+  frontend/src/app/App.tsx:
+    status: ADAPT
+    changes:
+      - add_session_review_route
+      - add_session_upload_route
+      - preserve_participant_and_captain_composition_for_first_pass
+  frontend/src/application/projections/bootstrap.ts:
+    status: ADAPT
+    changes:
+      - add_session_projection
+      - add_pending_settlement_projection
+  frontend/src/application/offline/:
+    status: KEEP
+  frontend/src/application/sync/:
+    status: KEEP
+  frontend/src/application/commands/CommandDispatcher.ts:
+    status: KEEP
+  frontend/src/pwa/:
+    status: KEEP
+
+methodology:
+  maritime_roles:
+    status: REPLACE_CONTENT
+    replacement_groups:
+      project_roles:
+        - host_facilitator
+        - analyst
+        - product_lead
+        - researcher
+        - critic_challenger
+        - designer
+        - developer
+        - qa_tester
+        - marketer
+        - synthesizer
+      team_social_roles:
+        - connector
+        - observer
+        - moderator
+        - storyteller
+        - scout
+    note: Final role list must be validated against existing role schemas and rotation compatibility constraints before code changes.
+  daily_role_cards:
+    status: REPLACE_CONTENT
+    principles:
+      - every role has a clear responsibility for the day
+      - host role includes call organization and speaking-order guidance
+      - role card describes required outputs
+      - participant may contribute outside assigned role
+      - contribution attribution never relies solely on assigned role
+
+speaker_attribution:
+  strategy:
+    - diarize source into speaker labels
+    - use known roster and daily roles as context hints only
+    - map speaker labels to participant identities
+    - show confidence
+    - require human confirmation when uncertain
+    - contributions always attach to confirmed participant identity, not inferred role
+  non_goals_for_mvp:
+    - persistent voice biometrics
+    - automatic identity recognition across all future calls
+    - embedded call recorder
+
+spores:
+  source_of_truth: contribution_ledger
+  states:
+    generated:
+      meaning: session created estimated project value not yet finally attributed
+    proposed:
+      meaning: AI proposes participant allocations
+    settled:
+      meaning: allocation confirmed by team/authorized reviewer
+  rules:
+    - first processed session may generate spores without final participant distribution
+    - next day can confirm previous allocation
+    - current day can simultaneously settle previous spores and generate new spores
+    - correction changes attribution, not historical source material
+    - spores do not imply equity, IP ownership, compensation, revenue share, or token rights
+
+supabase:
+  first_pass:
+    status: KEEP
+    strategy: reuse current project and connection; do not restructure existing tables until application migration is proven
+  new_tables_or_documents:
+    - sessions
+    - session_sources
+    - session_analyses
+    - contributions
+    - spore_allocations
+    - speaker_identity_mappings
+  new_events:
+    - session.created
+    - session.source_attached
+    - session.processing_started
+    - session.processed
+    - speaker_mapping.proposed
+    - speaker_mapping.confirmed
+    - contribution.proposed
+    - contribution.confirmed
+    - spores.generated
+    - spores.settled
+  preserve:
+    - event_log
+    - command_receipts
+    - projection_heads
+    - projection_documents
+    - command_gateway
+    - immutable_history
+    - RLS_and_actor_resolution
+
+explicitly_deferred:
+  - game_fractal_1_rebuild
+  - public_social_network
+  - expert_marketplace
+  - prompt_marketplace
+  - embedded_audio_recording
+  - realtime_meeting_bot
+  - voice_biometric_identity
+  - spores_to_money_conversion
+  - equity_distribution
+  - IP_ownership_enforcement
+  - new_supabase_project
+  - mass_backend_renaming
+
+migration_order:
+  - inventory_and_freeze_source
+  - create_separate_target_repository
+  - copy_repository_at_source_commit
+  - connect_existing_supabase_without_schema_rename
+  - replace_brand_and_ui_vocabulary
+  - replace_maritime_role_content
+  - add_session_schemas_and_events
+  - add_session_ingestion
+  - add_ai_session_analysis
+  - add_speaker_mapping_review
+  - add_contribution_ledger
+  - add_spore_settlement
+  - adapt_today_and_gamification_screens
+  - run_3_to_5_day_pilot_with_3_to_5_people
+
+mvp_acceptance:
+  - project can be created and participants invited
+  - daily role rotation works unchanged
+  - each participant sees today's role and call responsibility
+  - one primary session can be attached to a day
+  - transcript can be processed
+  - speakers can be mapped and corrected
+  - AI produces session summary and project delta
+  - AI proposes contributions and generated spores
+  - next day can settle prior attribution
+  - tasks and decisions continue to use existing ILKA engine
+  - all settled contributions have evidence/provenance
