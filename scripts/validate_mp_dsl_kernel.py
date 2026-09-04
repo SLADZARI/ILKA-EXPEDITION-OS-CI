@@ -128,9 +128,9 @@ def main() -> int:
     if project.get("activeIntegrationBranch") != approved.get("currentResult", {}).get("branch"):
         errors.append("active integration branch mismatch between PROJECT and APPROVED_STATE")
 
-    legacy = project.get("legacyDeliveryContext", {})
-    if legacy.get("label") and str(legacy.get("label")).startswith("G"):
-        errors.append("legacy ILKA delivery context must not masquerade as an MP_DSL G0-G8 gate")
+    legacy_label = str(project.get("legacyDeliveryContext", {}).get("label") or "")
+    if legacy_label in GATES:
+        errors.append("legacy ILKA delivery context must remain distinct from MP_DSL G0-G8 gates")
 
     rules = approved.get("rules", {})
     if rules.get("promoteReferenceToApprovedAutomatically") is not False:
