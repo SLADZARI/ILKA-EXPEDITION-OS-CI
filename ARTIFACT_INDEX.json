@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "mp-dsl-artifact-index-v0.1",
+  "project": "ILKA_EXPEDITION_OS",
+  "updated": "2026-09-04",
+  "artifacts": [
+    {
+      "artifactId": "ilka.product.canonical-baseline",
+      "documentType": "PRODUCT",
+      "currentVersion": "1.0",
+      "status": "APPROVED",
+      "path": "README.md",
+      "sourceRefs": [
+        "docs/decisions/",
+        "stages/",
+        "cards/"
+      ],
+      "sourceSystem": "GIT",
+      "authorityType": "APPROVED_AUTHORITY",
+      "updated": "2026-07-24"
+    },
+    {
+      "artifactId": "ilka.domain.engine-contracts",
+      "documentType": "DOMAIN",
+      "currentVersion": "1.0",
+      "status": "APPROVED",
+      "path": "engine/",
+      "sourceRefs": [
+        "schemas/",
+        "stages/",
+        "cards/"
+      ],
+      "sourceSystem": "GIT",
+      "authorityType": "APPROVED_AUTHORITY",
+      "updated": "2026-07-24"
+    },
+    {
+      "artifactId": "ilka.architecture.system",
+      "documentType": "ARCHITECTURE",
+      "currentVersion": "1.0",
+      "status": "APPROVED",
+      "path": "docs/architecture/",
+      "sourceRefs": [
+        "docs/decisions/ADR-012-supabase-persistence-command-gateway-and-projection-model.md",
+        "docs/decisions/ADR-013-atomic-command-transaction-and-projection-document-store.md",
+        "docs/decisions/ADR-014-command-gateway-auth-transport-and-runtime-loading.md"
+      ],
+      "sourceSystem": "GIT",
+      "authorityType": "APPROVED_AUTHORITY",
+      "updated": "2026-07-24"
+    },
+    {
+      "artifactId": "ilka.design.system",
+      "documentType": "DESIGN",
+      "currentVersion": "1.0",
+      "status": "APPROVED",
+      "path": "design-system/",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "updated": "2026-07-24"
+    },
+    {
+      "artifactId": "ilka.standard.project-instructions",
+      "documentType": "STANDARD",
+      "currentVersion": "1.0",
+      "status": "APPROVED",
+      "path": "PROJECT_INSTRUCTIONS.md",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "updated": "2026-09-04"
+    },
+    {
+      "artifactId": "ilka.decision.canonical-repository-mp-dsl-kernel",
+      "documentType": "DECISION",
+      "currentVersion": "1.0",
+      "status": "APPROVED",
+      "path": "docs/decisions/ADR-022-canonical-repository-and-mp-dsl-kernel.md",
+      "sourceSystem": "GIT",
+      "authorityType": "APPROVED_AUTHORITY",
+      "updated": "2026-09-04"
+    },
+    {
+      "artifactId": "ilka.result.mp-dsl-project-kernel-adoption",
+      "documentType": "RESULT",
+      "currentVersion": "0.1",
+      "status": "DRAFT",
+      "path": "docs/results/mp-dsl-project-kernel-adoption.v0.1.md",
+      "sourceSystem": "GIT",
+      "authorityType": "EVIDENCE",
+      "updated": "2026-09-04"
+    },
+    {
+      "artifactId": "ilka.release.canonical-baseline",
+      "documentType": "RELEASE",
+      "currentVersion": "0.1.0",
+      "status": "APPROVED",
+      "path": "README.md",
+      "url": "https://github.com/SLADZARI/ILKA-EXPEDITION-OS-CI/releases/tag/v0.1.0-canonical-baseline",
+      "sourceSystem": "GIT",
+      "authorityType": "EVIDENCE",
+      "updated": "2026-07-24"
+    }
+  ]
+}
