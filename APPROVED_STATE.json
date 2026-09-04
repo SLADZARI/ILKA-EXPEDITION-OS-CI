@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "mp-dsl-approved-state-v0.1",
+  "project": "ILKA_EXPEDITION_OS",
+  "updated": "2026-09-04",
+  "projectStage": "BUILD",
+  "currentGate": "G6_VALIDATION",
+  "legacyDeliveryGate": "9E",
+  "protected": {
+    "PRODUCT": {
+      "artifactId": "ilka.product.canonical-baseline",
+      "version": "1.0",
+      "status": "APPROVED",
+      "authorityType": "APPROVED_AUTHORITY"
+    },
+    "DOMAIN": {
+      "artifactId": "ilka.domain.engine-contracts",
+      "version": "1.0",
+      "status": "APPROVED",
+      "authorityType": "APPROVED_AUTHORITY"
+    },
+    "ARCHITECTURE": {
+      "artifactId": "ilka.architecture.system",
+      "version": "1.0",
+      "status": "APPROVED",
+      "authorityType": "APPROVED_AUTHORITY"
+    },
+    "DESIGN": {
+      "artifactId": "ilka.design.system",
+      "version": "1.0",
+      "status": "APPROVED",
+      "authorityType": "IMPLEMENTATION_AUTHORITY"
+    }
+  },
+  "currentResult": {
+    "artifactId": "ilka.result.mp-dsl-project-kernel-adoption",
+    "version": "0.1",
+    "status": "DRAFT",
+    "branch": "result/mp-dsl-project-kernel-adoption"
+  },
+  "releaseAuthorization": {
+    "productionAuthorized": false,
+    "reason": "Current project gate is G6_VALIDATION; authenticated Day 1 live-pilot evidence is not recorded as closed."
+  },
+  "semanticProtection": {
+    "rule": "APPROVED meaning must not change without explicit Decision or Change Proposal.",
+    "decisionSystem": "Existing accepted ILKA ADRs remain canonical DECISION artifacts."
+  }
+}
