@@ -1,5 +1,27 @@
 # ILKA Expedition OS — Project Instructions
 
+## WeeklyOS / MP_DSL entry sequence
+
+Before substantial work, enter the project through:
+
+1. `.weekly-os/PROJECT.json`;
+2. `.weekly-os/ARTIFACT_INDEX.json`;
+3. `.weekly-os/APPROVED_STATE.json`;
+4. `.weekly-os/PROJECT.json.readFirst`;
+5. current authoritative Product / Domain / Architecture / Design only where explicitly protected;
+6. current Result and MP_DSL Gate;
+7. only then inspect or change implementation.
+
+`SLADZARI/ILKA-EXPEDITION-OS-CI` is the canonical repository by explicit Decision. `SLADZARI/ILKA-EXPEDITION-OS` is legacy/history and is not current implementation authority.
+
+Kernel migration must not silently promote README, ADRs, schemas, Engine YAML, design-system or implementation into project-wide APPROVED PRODUCT / DOMAIN / ARCHITECTURE / DESIGN authority. Read each source according to its existing status and meaning.
+
+Existing ILKA `Gate 9*` labels are historical delivery sequencing. They are not MP_DSL engineering gates (`G0_SIGNAL` through `G8_CLEANUP`). Preserve both meanings and never silently map one into the other.
+
+Implementation belongs to a concrete Result. Default: one Result → one active integration branch. Discussion ≠ Decision. Commit ≠ deploy. Production deployment requires explicit release authorization / `G7_RELEASE`.
+
+The WeeklyOS / MP_DSL kernel routes to existing ILKA authority; it does not replace ADRs, schemas, Engine YAML, stages/cards, app contracts, frontend or Supabase runtime.
+
 ## Working order
 
 Before designing or changing a function:
@@ -22,7 +44,9 @@ Do not start a major implementation until these are defined:
 - offline behavior;
 - acceptance criteria.
 
-## Source-of-truth priority
+## Existing ILKA source-of-truth priority
+
+Preserve the project hierarchy documented by ILKA:
 
 1. ADR;
 2. JSON Schema;

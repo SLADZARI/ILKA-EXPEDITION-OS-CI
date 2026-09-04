@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0",
+  "_artifact": {
+    "artifactId": "ilka-expedition-os.kernel.approved-state",
+    "project": "ilka-expedition-os",
+    "documentType": "STANDARD",
+    "projectStage": "BUILD",
+    "gate": "G6_VALIDATION",
+    "status": "REVIEW",
+    "version": "0.2",
+    "updated": "2026-09-04",
+    "owner": "Modern Pilgrims",
+    "sourceSystem": "GIT",
+    "authorityType": "IMPLEMENTATION_AUTHORITY",
+    "supersedes": "0.1"
+  },
+  "protected": {
+    "PRODUCT": null,
+    "DOMAIN": null,
+    "ARCHITECTURE": null,
+    "DESIGN": null
+  },
+  "approvedDecisions": [
+    {
+      "artifactId": "ilka-expedition-os.decision.canonical-repository",
+      "version": "1.0",
+      "status": "APPROVED",
+      "location": "docs/decisions/ADR-022-canonical-repository-and-mp-dsl-kernel.md",
+      "scope": "Canonical repository identity and MP_DSL/WeeklyOS kernel adoption boundary only."
+    }
+  ],
+  "currentResult": {
+    "artifactId": "ilka-expedition-os.result.mp-dsl-project-kernel-adoption",
+    "version": "0.2",
+    "status": "REVIEW",
+    "branch": "result/mp-dsl-project-kernel-adoption"
+  },
+  "releaseAuthorization": {
+    "productionAuthorized": false,
+    "reason": "This Result is governance harmonization only; no production deployment is authorized."
+  },
+  "notes": [
+    "Kernel migration does not promote README.md, ADRs, schemas, engine YAML, stages/cards, design-system or implementation into project-wide approved PRODUCT, DOMAIN, ARCHITECTURE or DESIGN authority.",
+    "Existing ILKA decisions and source-of-truth ordering remain intact and must be read on their own terms.",
+    "Legacy Gate 9E is lineage/context, not an MP_DSL engineering gate."
+  ],
+  "rules": {
+    "promoteReferenceToApprovedAutomatically": false,
+    "approvalFromRecency": false,
+    "approvalFromImplementationCompleteness": false
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0",
+  "_artifact": {
+    "artifactId": "ilka-expedition-os.kernel.project",
+    "project": "ilka-expedition-os",
+    "documentType": "STANDARD",
+    "projectStage": "BUILD",
+    "gate": "G6_VALIDATION",
+    "status": "REVIEW",
+    "version": "0.2",
+    "updated": "2026-09-04",
+    "owner": "Modern Pilgrims",
+    "sourceSystem": "GIT",
+    "authorityType": "IMPLEMENTATION_AUTHORITY",
+    "supersedes": "0.1"
+  },
+  "projectId": "ilka-expedition-os",
+  "projectName": "ILKA Expedition OS",
+  "projectType": "WEB_PRODUCT",
+  "canonicalRepository": "SLADZARI/ILKA-EXPEDITION-OS-CI",
+  "defaultBranch": "main",
+  "projectStage": "BUILD",
+  "gate": "G6_VALIDATION",
+  "readFirst": [
+    ".weekly-os/PROJECT.json",
+    ".weekly-os/ARTIFACT_INDEX.json",
+    ".weekly-os/APPROVED_STATE.json",
+    ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.2.md",
+    "PROJECT_INSTRUCTIONS.md",
+    "README.md"
+  ],
+  "authority": {
+    "semanticSource": {
+      "repository": "SLADZARI/ILKA-EXPEDITION-OS-CI",
+      "ref": "main",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "note": "Canonical repository confirmed by explicit user Decision on 2026-09-04. Existing ILKA ADR, schema, engine, stage/card and implementation hierarchy is preserved; kernel adoption does not re-approve semantics."
+    },
+    "decisionSystem": {
+      "sourceSystem": "GIT",
+      "authorityType": "REFERENCE",
+      "paths": ["docs/decisions/"],
+      "note": "Accepted ILKA ADRs retain their existing decision meaning. MP_DSL does not duplicate them."
+    },
+    "domainAndMethodologyPointers": {
+      "sourceSystem": "GIT",
+      "authorityType": "REFERENCE",
+      "paths": ["schemas/", "engine/", "stages/", "cards/"],
+      "note": "Existing source-of-truth hierarchy is preserved as reference/implementation authority. No project-wide DOMAIN approval is inferred by migration."
+    },
+    "implementationPointers": {
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "paths": ["app/", "design-system/", "frontend/", "supabase/"]
+    }
+  },
+  "protected": {
+    "PRODUCT": null,
+    "DOMAIN": null,
+    "ARCHITECTURE": null,
+    "DESIGN": null
+  },
+  "currentResult": "ilka-expedition-os.result.mp-dsl-project-kernel-adoption",
+  "activeIntegrationBranch": "result/mp-dsl-project-kernel-adoption",
+  "reportPath": null,
+  "legacyDeliveryContext": {
+    "label": "Gate 9E",
+    "relation": "HISTORY",
+    "note": "ILKA delivery gate naming is retained for lineage only and must not be interpreted as an MP_DSL engineering gate."
+  },
+  "migrationSources": [
+    {
+      "repository": "SLADZARI/ILKA-EXPEDITION-OS",
+      "authorityType": "HISTORY",
+      "note": "Legacy repository. README now points to the canonical ILKA-EXPEDITION-OS-CI repository."
+    }
+  ],
+  "doNotInfer": [
+    "PRODUCT, DOMAIN, ARCHITECTURE or DESIGN approval from maturity, recency, README, ADR count or implementation completeness",
+    "ILKA legacy Gate 9* as an MP_DSL G0-G8 gate",
+    "deployment from commit, merge or CI success",
+    "new entities, state machines, commands, events, permissions or runtime paths when an existing equivalent exists"
+  ]
+}
