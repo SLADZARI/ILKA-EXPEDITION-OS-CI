@@ -1,5 +1,25 @@
 # ILKA Expedition OS — Project Instructions
 
+## MP_DSL entry sequence
+
+Before substantial work, enter the project through:
+
+1. `PROJECT.json`;
+2. `ARTIFACT_INDEX.json`;
+3. `APPROVED_STATE.json`;
+4. `PROJECT.json.readFirst`;
+5. current authoritative Product / Domain / Architecture / Design;
+6. current Result and MP_DSL Gate;
+7. only then inspect or change implementation.
+
+`SLADZARI/ILKA-EXPEDITION-OS-CI` is the canonical repository. `SLADZARI/ILKA-EXPEDITION-OS` is legacy/history and is not current implementation authority.
+
+Existing ILKA `Gate 9*` labels are historical delivery sequencing. They are not MP_DSL engineering gates (`G0_SIGNAL` through `G8_CLEANUP`). Preserve both meanings and never silently map one into the other.
+
+Implementation belongs to a concrete Result. Default: one Result → one active integration branch. Discussion ≠ Decision. Commit ≠ deploy. Production deployment requires explicit release authorization / `G7_RELEASE`.
+
+The MP_DSL kernel routes to existing ILKA authority; it does not replace ADRs, schemas, Engine YAML, stages/cards, app contracts, frontend or Supabase runtime.
+
 ## Working order
 
 Before designing or changing a function:
