@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "mp-dsl-project-kernel-v0.1",
+  "projectId": "ilka-expedition-os",
+  "projectName": "ILKA Expedition OS",
+  "projectType": "WEB_PRODUCT",
+  "projectStage": "BUILD",
+  "canonicalRepository": "SLADZARI/ILKA-EXPEDITION-OS-CI",
+  "defaultBranch": "main",
+  "activeIntegrationBranch": "result/mp-dsl-project-kernel-adoption",
+  "currentResult": "ilka.result.mp-dsl-project-kernel-adoption",
+  "currentGate": "G6_VALIDATION",
+  "legacyDeliveryGate": "9E",
+  "readFirst": [
+    "PROJECT.json",
+    "ARTIFACT_INDEX.json",
+    "APPROVED_STATE.json",
+    "PROJECT_INSTRUCTIONS.md",
+    "README.md"
+  ],
+  "authorityPointers": {
+    "product": "README.md",
+    "decisions": "docs/decisions/",
+    "architecture": "docs/architecture/",
+    "domainSchemas": "schemas/",
+    "engine": "engine/",
+    "methodologyStages": "stages/",
+    "methodologyCards": "cards/",
+    "interfaces": "app/",
+    "design": "design-system/",
+    "frontendImplementation": "frontend/",
+    "runtimeImplementation": "supabase/"
+  },
+  "protectedAreas": [
+    "docs/decisions/",
+    "schemas/",
+    "engine/",
+    "stages/",
+    "cards/",
+    "app/",
+    "design-system/",
+    "supabase/"
+  ],
+  "reporting": {
+    "changelog": "CHANGELOG.md",
+    "audits": "docs/audits/",
+    "deployments": "docs/deployments/"
+  },
+  "doNotInfer": [
+    "Do not treat SLADZARI/ILKA-EXPEDITION-OS as current implementation authority.",
+    "Do not infer authority from storage location or modification date.",
+    "Do not treat ILKA legacy Gate 9* labels as MP_DSL engineering gates.",
+    "Do not introduce parallel entities, state machines, command catalogs, event catalogs, permission models or runtime paths when an existing equivalent exists.",
+    "Do not deploy production unless G7_RELEASE is explicitly authorized."
+  ]
+}
