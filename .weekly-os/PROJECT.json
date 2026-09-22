@@ -7,12 +7,12 @@
     "projectStage": "BUILD",
     "gate": "G6_VALIDATION",
     "status": "REVIEW",
-    "version": "0.3",
+    "version": "0.4",
     "updated": "2026-09-22",
     "owner": "Modern Pilgrims",
     "sourceSystem": "GIT",
     "authorityType": "IMPLEMENTATION_AUTHORITY",
-    "supersedes": "0.2"
+    "supersedes": "0.3"
   },
   "projectId": "ilka-expedition-os",
   "projectName": "ILKA Expedition OS",
@@ -26,6 +26,7 @@
     ".weekly-os/ARTIFACT_INDEX.json",
     ".weekly-os/APPROVED_STATE.json",
     ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.3.md",
+    ".weekly-os/reports/mp-dsl-project-kernel-adoption.validation.v0.1.md",
     "PROJECT_INSTRUCTIONS.md",
     "README.md"
   ],
@@ -75,9 +76,9 @@
   },
   "currentResult": {
     "artifactId": "ilka-expedition-os.result.mp-dsl-project-kernel-adoption",
-    "version": "0.3",
+    "version": "0.4",
     "status": "REVIEW",
-    "path": ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.3.md",
+    "path": ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.4.md",
     "gate": "G6_VALIDATION",
     "integrationBranch": "result/mp-dsl-project-kernel-adoption"
   },
