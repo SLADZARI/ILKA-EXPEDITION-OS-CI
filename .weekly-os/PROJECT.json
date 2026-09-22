@@ -7,12 +7,12 @@
     "projectStage": "BUILD",
     "gate": "G6_VALIDATION",
     "status": "REVIEW",
-    "version": "0.2",
-    "updated": "2026-09-04",
+    "version": "0.3",
+    "updated": "2026-09-22",
     "owner": "Modern Pilgrims",
     "sourceSystem": "GIT",
     "authorityType": "IMPLEMENTATION_AUTHORITY",
-    "supersedes": "0.1"
+    "supersedes": "0.2"
   },
   "projectId": "ilka-expedition-os",
   "projectName": "ILKA Expedition OS",
@@ -25,7 +25,7 @@
     ".weekly-os/PROJECT.json",
     ".weekly-os/ARTIFACT_INDEX.json",
     ".weekly-os/APPROVED_STATE.json",
-    ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.2.md",
+    ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.3.md",
     "PROJECT_INSTRUCTIONS.md",
     "README.md"
   ],
@@ -40,19 +40,31 @@
     "decisionSystem": {
       "sourceSystem": "GIT",
       "authorityType": "REFERENCE",
-      "paths": ["docs/decisions/"],
+      "paths": [
+        "docs/decisions/"
+      ],
       "note": "Accepted ILKA ADRs retain their existing decision meaning. MP_DSL does not duplicate them."
     },
     "domainAndMethodologyPointers": {
       "sourceSystem": "GIT",
       "authorityType": "REFERENCE",
-      "paths": ["schemas/", "engine/", "stages/", "cards/"],
+      "paths": [
+        "schemas/",
+        "engine/",
+        "stages/",
+        "cards/"
+      ],
       "note": "Existing source-of-truth hierarchy is preserved as reference/implementation authority. No project-wide DOMAIN approval is inferred by migration."
     },
     "implementationPointers": {
       "sourceSystem": "GIT",
       "authorityType": "IMPLEMENTATION_AUTHORITY",
-      "paths": ["app/", "design-system/", "frontend/", "supabase/"]
+      "paths": [
+        "app/",
+        "design-system/",
+        "frontend/",
+        "supabase/"
+      ]
     }
   },
   "protected": {
@@ -61,7 +73,14 @@
     "ARCHITECTURE": null,
     "DESIGN": null
   },
-  "currentResult": "ilka-expedition-os.result.mp-dsl-project-kernel-adoption",
+  "currentResult": {
+    "artifactId": "ilka-expedition-os.result.mp-dsl-project-kernel-adoption",
+    "version": "0.3",
+    "status": "REVIEW",
+    "path": ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.3.md",
+    "gate": "G6_VALIDATION",
+    "integrationBranch": "result/mp-dsl-project-kernel-adoption"
+  },
   "activeIntegrationBranch": "result/mp-dsl-project-kernel-adoption",
   "reportPath": null,
   "legacyDeliveryContext": {
@@ -80,6 +99,7 @@
     "PRODUCT, DOMAIN, ARCHITECTURE or DESIGN approval from maturity, recency, README, ADR count or implementation completeness",
     "ILKA legacy Gate 9* as an MP_DSL G0-G8 gate",
     "deployment from commit, merge or CI success",
-    "new entities, state machines, commands, events, permissions or runtime paths when an existing equivalent exists"
+    "new entities, state machines, commands, events, permissions or runtime paths when an existing equivalent exists",
+    "currentResult must remain a machine-readable object with artifactId/version/status/path/gate/integrationBranch; do not regress to a string pointer."
   ]
 }
