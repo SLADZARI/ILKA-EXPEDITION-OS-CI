@@ -119,14 +119,31 @@ def main() -> int:
             errors.append(f"protected {key} must resolve to APPROVED current artifact")
 
     current_result = project.get("currentResult")
-    approved_result = approved.get("currentResult", {}).get("artifactId")
-    if current_result != approved_result:
-        errors.append("current Result mismatch between PROJECT and APPROVED_STATE")
-    result_item = indexed.get(current_result)
+    if not isinstance(current_result, dict):
+        errors.append("PROJECT currentResult must be a machine-readable object")
+        current_result = {}
+    for key in ("artifactId", "version", "status", "path", "gate", "integrationBranch"):
+        if not current_result.get(key):
+            errors.append(f"PROJECT currentResult.{key} is required")
+    if current_result.get("status") not in STATUSES:
+        errors.append(f"PROJECT currentResult.status must use Artifact lifecycle vocabulary: {current_result.get('status')!r}")
+    if current_result.get("gate") not in GATES:
+        errors.append(f"PROJECT currentResult.gate must use MP_DSL gate vocabulary: {current_result.get('gate')!r}")
+
+    approved_result = approved.get("currentResult")
+    if not isinstance(approved_result, dict):
+        errors.append("APPROVED_STATE currentResult must be an object")
+        approved_result = {}
+    for key in ("artifactId", "version", "status", "path", "gate", "integrationBranch"):
+        if current_result.get(key) != approved_result.get(key):
+            errors.append(f"current Result {key} mismatch between PROJECT and APPROVED_STATE")
+
+    result_id = current_result.get("artifactId")
+    result_item = indexed.get(result_id)
     if not result_item or result_item.get("documentType") != "RESULT":
         errors.append("current Result must resolve to a RESULT in currentArtifacts")
-    if project.get("activeIntegrationBranch") != approved.get("currentResult", {}).get("branch"):
-        errors.append("active integration branch mismatch between PROJECT and APPROVED_STATE")
+    if project.get("activeIntegrationBranch") != current_result.get("integrationBranch"):
+        errors.append("PROJECT activeIntegrationBranch must match currentResult.integrationBranch")
 
     legacy_label = str(project.get("legacyDeliveryContext", {}).get("label") or "")
     if legacy_label in GATES:
