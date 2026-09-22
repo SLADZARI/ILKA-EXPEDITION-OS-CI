@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "1.0",
+  "_artifact": {
+    "artifactId": "ilka-expedition-os.kernel.artifact-index",
+    "project": "ilka-expedition-os",
+    "documentType": "STANDARD",
+    "projectStage": "BUILD",
+    "gate": "G6_VALIDATION",
+    "status": "REVIEW",
+    "version": "0.4",
+    "updated": "2026-09-22",
+    "owner": "Modern Pilgrims",
+    "sourceSystem": "GIT",
+    "authorityType": "IMPLEMENTATION_AUTHORITY",
+    "supersedes": "0.3"
+  },
+  "currentArtifacts": [
+    {
+      "artifactId": "ilka-expedition-os.kernel.project",
+      "documentType": "STANDARD",
+      "currentVersion": "0.4",
+      "status": "REVIEW",
+      "location": ".weekly-os/PROJECT.json",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "relation": "CURRENT_PROJECT_KERNEL"
+    },
+    {
+      "artifactId": "ilka-expedition-os.kernel.artifact-index",
+      "documentType": "STANDARD",
+      "currentVersion": "0.4",
+      "status": "REVIEW",
+      "location": ".weekly-os/ARTIFACT_INDEX.json",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "relation": "CURRENT_ARTIFACT_INDEX"
+    },
+    {
+      "artifactId": "ilka-expedition-os.kernel.approved-state",
+      "documentType": "STANDARD",
+      "currentVersion": "0.4",
+      "status": "REVIEW",
+      "location": ".weekly-os/APPROVED_STATE.json",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "relation": "PROTECTED_STATE"
+    },
+    {
+      "artifactId": "ilka-expedition-os.result.mp-dsl-project-kernel-adoption",
+      "documentType": "RESULT",
+      "currentVersion": "0.4",
+      "status": "REVIEW",
+      "location": ".weekly-os/results/mp-dsl-project-kernel-adoption.v0.4.md",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY",
+      "relation": "CURRENT_RESULT",
+      "gate": "G6_VALIDATION",
+      "integrationBranch": "result/mp-dsl-project-kernel-adoption"
+    },
+    {
+      "artifactId": "ilka-expedition-os.decision.canonical-repository",
+      "documentType": "DECISION",
+      "currentVersion": "1.0",
+      "status": "APPROVED",
+      "location": "docs/decisions/ADR-022-canonical-repository-and-mp-dsl-kernel.md",
+      "sourceSystem": "GIT",
+      "authorityType": "APPROVED_AUTHORITY",
+      "relation": "CANONICAL_REPOSITORY_DECISION"
+    },
+    {
+      "artifactId": "ilka-expedition-os.report.mp-dsl-project-kernel-adoption-validation",
+      "documentType": "REPORT",
+      "currentVersion": "0.1",
+      "status": "REVIEW",
+      "location": ".weekly-os/reports/mp-dsl-project-kernel-adoption.validation.v0.1.md",
+      "sourceSystem": "GIT",
+      "authorityType": "EVIDENCE",
+      "relation": "VALIDATION_EVIDENCE",
+      "gate": "G6_VALIDATION"
+    }
+  ],
+  "referenceArtifacts": [
+    {
+      "artifactId": "ilka-expedition-os.reference.readme-baseline",
+      "documentType": "PRODUCT",
+      "status": "REVIEW",
+      "location": "README.md",
+      "sourceSystem": "GIT",
+      "authorityType": "REFERENCE"
+    },
+    {
+      "artifactId": "ilka-expedition-os.reference.decision-system",
+      "documentType": "DECISION",
+      "status": "REVIEW",
+      "location": "docs/decisions/",
+      "sourceSystem": "GIT",
+      "authorityType": "REFERENCE"
+    },
+    {
+      "artifactId": "ilka-expedition-os.reference.domain-contracts",
+      "documentType": "DOMAIN",
+      "status": "REVIEW",
+      "location": "schemas/",
+      "sourceSystem": "GIT",
+      "authorityType": "REFERENCE"
+    },
+    {
+      "artifactId": "ilka-expedition-os.reference.engine",
+      "documentType": "DOMAIN",
+      "status": "REVIEW",
+      "location": "engine/",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY"
+    },
+    {
+      "artifactId": "ilka-expedition-os.reference.architecture",
+      "documentType": "ARCHITECTURE",
+      "status": "REVIEW",
+      "location": "docs/architecture/",
+      "sourceSystem": "GIT",
+      "authorityType": "REFERENCE"
+    },
+    {
+      "artifactId": "ilka-expedition-os.reference.design-system",
+      "documentType": "DESIGN",
+      "status": "REVIEW",
+      "location": "design-system/",
+      "sourceSystem": "GIT",
+      "authorityType": "IMPLEMENTATION_AUTHORITY"
+    },
+    {
+      "artifactId": "ilka-expedition-os.release.canonical-baseline",
+      "documentType": "RELEASE",
+      "status": "APPROVED",
+      "currentVersion": "0.1.0",
+      "location": "README.md",
+      "sourceSystem": "GIT",
+      "authorityType": "EVIDENCE",
+      "relation": "PUBLISHED_BASELINE_EVIDENCE"
+    }
+  ],
+  "rules": {
+    "oneCurrentPointerPerArtifactId": true,
+    "inferCurrentFromRecency": false,
+    "promoteReferenceToApprovedAutomatically": false
+  }
+}
